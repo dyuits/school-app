@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>스마트 수업교체 도우미 (웹버전)</title>
+  <style>
+    :root{
+      --bg:#f9f7ff;--card:#ffffff;--line:#e6deef;--ink:#334155;--muted:#6b7280;
+      --brand:#8b9cf6;--brand2:#a5b4fc;--warn:#f7d794;
+      --pastel-yellow:#fef9c3;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+    .wrap{max-width:1600px;margin:0 auto;padding:14px}
+    .hero{background:linear-gradient(135deg,#a5b4fc,#c4b5fd);color:#1f2937;border-radius:14px;padding:16px}
+    .hero h1{margin:0 0 6px;font-size:22px}
+    .notice{margin-top:8px;background:#fffdf3;color:#7c5e10;border:1px solid #f3e3b2;border-left:5px solid var(--warn);padding:10px;border-radius:10px;font-size:13px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+    .tab{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;color:#1f2a37;font-weight:600}
+    .tab.on{background:#ede9fe;border-color:#c4b5fd;font-weight:700}
+    .page{display:none}
+    .page.on{display:block}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .muted{font-size:12px;color:var(--muted)}
+    input,select,button,textarea{border:1px solid #cbd7e5;border-radius:8px;padding:8px;font:inherit}
+    button{background:#a5b4fc;color:#1f2937;cursor:pointer;font-weight:700}
+    .ghost{background:#fff;color:#334155}
+    .table-wrap{overflow:auto;max-height:72vh}
+    table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+    th,td{border:1px solid var(--line);padding:6px;text-align:center;vertical-align:middle;word-break:keep-all}
+    th{background:#f3f4f6}
+    .left{text-align:left}
+    .click{cursor:pointer}
+    .click:hover{background:#f5f3ff}
+    .cell-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.2;min-height:42px}
+    .cell-title{font-size:11px;font-weight:700;color:#334155}
+    .cell-sub{font-size:10px;color:#64748b;margin-top:2px}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;background:#f5f3ff;border:1px solid #ddd6fe;font-size:12px;margin:2px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+    .cal-head{background:#eef5ff;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center;font-size:12px;font-weight:700}
+    .cal-cell{min-height:98px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px;font-size:12px}
+    .cal-date{font-weight:700;color:#334155}
+    .cal-event{margin-top:4px;padding:4px;border-radius:6px;background:#eff6ff;color:#1e3a8a;font-size:11px;line-height:1.3}
+    .free-grid{overflow:auto}
+    .free-table td.ok{background:#dcfce7;color:#166534;font-weight:700}
+    .free-table td.no{background:#f8fafc;color:#94a3b8}
+    .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:12px}
+    .modal-bg.on{display:flex}
+    .modal{background:#fff;border-radius:12px;width:min(900px,100%);max-height:90vh;overflow:auto;padding:14px}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;background:#ddd6fe;color:#312e81;padding:12px 14px;border-radius:10px}
+    .result-section{margin-top:12px}
+    .result-title{font-weight:800;font-size:16px;margin:8px 0}
+    .result-card{display:flex;gap:10px;align-items:flex-start;border:1px solid #e2e8f0;border-radius:12px;padding:10px;margin-bottom:10px;background:#fff}
+    .result-idx{width:28px;height:28px;border-radius:999px;background:#c4b5fd;color:#312e81;display:flex;align-items:center;justify-content:center;font-weight:700;flex:0 0 28px}
+    .teacher-matrix{max-width:980px}
+    .teacher-matrix table{table-layout:fixed}
+    .teacher-matrix .period-col{width:160px;font-weight:700;background:#f5f5f5}
+    .teacher-matrix .day-head{font-size:34px;font-weight:500;background:#f0f0f0}
+    .teacher-matrix .subject-cell{height:88px;line-height:1.2;background:#fff}
+    .teacher-matrix .subject-cell.elective{background:var(--pastel-yellow)}
+    .teacher-matrix .subj-main{font-size:22px}
+    .teacher-matrix .subj-sub{font-size:14px;color:#2563eb;margin-top:3px}
+    .result-main{font-weight:700}
+    .result-sub{font-size:13px;color:#475569;margin-top:2px}
+    .footer{font-size:12px;color:#64748b;text-align:center;padding:8px}
+    @media (max-width:900px){
+      .hero h1{font-size:18px}
+      .wrap{padding:10px}
+      .tabs{gap:6px}
+      .tab{padding:8px 10px;font-size:13px}
+      .grid2{grid-template-columns:1fr}
+      th,td{font-size:11px;padding:5px}
+      .table-wrap{max-height:65vh}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>스마트 수업교체 도우미 (독립 웹버전)</h1>
+      <div class="muted" style="color:#374151">교체/대체 · 학년별 · 교사별 · 공강 · 학사일정 · 연락처</div>
+      <div class="notice">창체는 <b>담임만 근무</b>로 계산하며, <b>비담임의 창체 표기</b>는 공강으로 처리합니다.</div>
+    </section>
+
+    <nav class="tabs" id="tabs"></nav>
+
+    <section id="swap" class="page on"></section>
+    <section id="teacher" class="page"></section>
+    <section id="grade" class="page"></section>
+    <section id="free" class="page"></section>
+    <section id="calendar" class="page"></section>
+    <section id="contact" class="page"></section>
+    <section id="data" class="page"></section>
+
+    <div class="footer">기존 코드 수정 없이, 별도 웹파일로 제작됨</div>
+  </div>
+
+  <div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+  <script>
+    const SHEET_ID = "1nNFrAic-UtXMcHB_1hdjBs8Ik2rSFbNKWzYw8W-4tBw";
+    const SHEET_GID = "1525206097";
+
+    const SUBJECT_RULES = {
+      "국어": ["황혜인","강승표","김연아","홍민영","김보민","오재원","홍원정"],
+      "일본어": ["김수정"],
+      "사회": ["강창규","안미진","양찬호","김민권","양정원","현은심","이상희","김대현","강부열","김민정"],
+      "과학": ["박종찬","오승철","현창식","장진혁","김현정"],
+      "체육": ["고세권","김재현","김형우"],
+      "음악": ["강진석"],
+      "정보": ["김영주","문원호","임수진","박정민","오소연","김태환","고대홍","백은정","이상분","송주연","임홍재","김영조"],
+      "상업": ["고대홍","백은정","김지연","송주연","임홍재","김영조","강향아","김태환"],
+      "미술": ["고지은","김윤주","김제령","백경민"],
+      "디자인": ["김윤주","송준한","김제령","박정민","김영주","문원호","임수진","오소연","고대홍","이상분"],
+      "영어": ["조설아","김희경","김민지","김도연","김지선","송진호"],
+      "수학": ["공은표","김한주","오소영","오재영","강혜민","고지수"]
+    };
+
+    const HOMEROOM = ["김도연","박종찬","강부열","강혜민","양찬호","황혜인","백은정","장진혁","이상희","고지은","강창규","현은심","오소연","김지선","김민권","김현정","송진호","김지연","안미진","고지수","김보민","양정원","김민지","오재영","오재원","김민정","임홍재","강향아","송준한","김윤주","김제령","임수진"];
+
+    let APP = window.SCHOOL_DATA || {
+      schedule:{
+        teachers:["김영주","김도연","강혜민","양찬호","황혜인","오소연"],
+        days:["월","화","수","목","금"],
+        periods:[1,2,3,4,5,6,7],
+        tableData:[
+          {teacher:"김영주","화1":"106 정보1","수1":"106 정보1","목1":"105 정보1","화2":"204 정보2","수2":"206 정보2","목2":"205 정보2","금7":"106 정보1"},
+          {teacher:"김도연","월1":"102 영어1","월2":"103 영어1","수4":"101 영어1","목4":"101 영어1","금6":"창체"},
+          {teacher:"강혜민","월1":"102 수학1","월2":"104 수학1","수4":"103 수학1","목7":"103 수학1"},
+          {teacher:"양찬호","월1":"103 국사","월2":"104 국사","화3":"101 국사","금5":"창체","금6":"창체"},
+          {teacher:"황혜인","월1":"106 국어1","화1":"105 국어1","목1":"304 고전","금1":"106 국어1"},
+          {teacher:"오소연","월1":"202 정보2","화1":"103 정보1","수1":"102 정보1","목1":"207 사행"}
+        ]
+      },
+      teacherGroups:{ "김영주":"12","김도연":"12","강혜민":"12","양찬호":"12","황혜인":"3","오소연":"12" },
+      academicEvents:[
+        {date:"2026-03-03",title:"개학식/입학식"},
+        {date:"2026-03-06",title:"기초학력진단평가(1,2)"},
+        {date:"2026-03-24",title:"학력평가(1,2,3)"},
+        {date:"2026-04-03",title:"재량휴업일(부활절방학)"},
+        {date:"2026-04-08",title:"건강검진(1)"},
+        {date:"2026-04-15",title:"학부모 수업공개의 날"},
+        {date:"2026-04-28",title:"1차고사 시작"},
+        {date:"2026-05-04",title:"재량휴업일"},
+        {date:"2026-05-07",title:"학력평가(3)"},
+        {date:"2026-05-14",title:"체육한마당"},
+        {date:"2026-06-04",title:"학력평가(1,2), 수능모의평가(3)"},
+        {date:"2026-06-09",title:"수학여행(1), 현장실습(3직)"},
+        {date:"2026-06-19",title:"학생회장선거/교직원연수의날"},
+        {date:"2026-07-01",title:"2차고사 시작"},
+        {date:"2026-07-07",title:"직업기초능력평가(3직)"},
+        {date:"2026-07-17",title:"방학선언"},
+        {date:"2026-08-13",title:"개학"},
+        {date:"2026-09-02",title:"학력평가(1,2), 수능모의평가(3)"},
+        {date:"2026-10-13",title:"1차고사(2학기) 시작"},
+        {date:"2026-10-20",title:"학력평가(1,2,3)"},
+        {date:"2026-11-19",title:"수능/재량휴업일"},
+        {date:"2026-12-10",title:"개교기념일"},
+        {date:"2026-12-16",title:"2차고사(2학기) 시작"},
+        {date:"2026-12-29",title:"교내축제"},
+        {date:"2027-01-07",title:"졸업식/수료식"}
+      ],
+      contactRows:[
+        {role:"교장",name:"조성배",phone:"010-3691-9850",ext:"801"},
+        {role:"교감",name:"고대홍",phone:"010-2696-8552",ext:"802"},
+        {role:"교무부장",name:"조설아",phone:"010-4691-8281",ext:"811"},
+        {role:"교육과정부장",name:"김희경",phone:"010-4652-5402",ext:"812"},
+        {role:"연구부장",name:"공은표",phone:"010-2535-4643",ext:"813"},
+        {role:"복지인성부장",name:"현창식",phone:"010-4690-6746",ext:"814"},
+        {role:"창의융합교육부장",name:"오소영",phone:"010-6282-4454",ext:"815"},
+        {role:"특성화부장",name:"김태환",phone:"010-6575-7100",ext:"816"},
+        {role:"진학부장",name:"김한주",phone:"010-5236-2511",ext:"817"},
+        {role:"교육정보부장",name:"문원호",phone:"010-2074-9972",ext:"836"},
+        {role:"학생생활안전부장",name:"오승철",phone:"010-9525-3060",ext:"820"},
+        {role:"자치/학폭/축제",name:"강승표",phone:"010-7242-6533",ext:"821"},
+        {role:"1학년부장",name:"김재현",phone:"010-7394-8555",ext:"822"},
+        {role:"2학년부장",name:"강창규",phone:"010-9371-3828",ext:"825"},
+        {role:"3학년부장",name:"양정원",phone:"010-9636-6963",ext:"828"},
+        {role:"보건실",name:"홍연주",phone:"010-6329-8290",ext:"831"},
+        {role:"방송실",name:"김제령",phone:"010-5523-6318",ext:"833"},
+        {role:"교목실",name:"이순규",phone:"010-8484-2582",ext:"834"},
+        {role:"상담실",name:"김두산",phone:"010-6798-0195",ext:"835"},
+        {role:"취업부장",name:"김영조",phone:"010-2692-2000",ext:"837"},
+        {role:"음악실(체육관)",name:"강진석",phone:"010-4430-6461",ext:"846"},
+        {role:"도서관 사서",name:"정성현",phone:"010-7151-1687",ext:"840"},
+        {role:"법인사무국 본부장",name:"김하석",phone:"010-3699-5801",ext:"849"},
+        {role:"행정실장",name:"강영석",phone:"010-3694-2659",ext:"803"},
+        {role:"행정팀장",name:"김정미",phone:"010-2793-6405",ext:"804"},
+        {role:"주무관",name:"고대현",phone:"010-6605-7012",ext:"805"},
+        {role:"주무관",name:"양태환",phone:"010-3691-9455",ext:"806"},
+        {role:"주무관",name:"정기철",phone:"010-6563-0628",ext:"807"},
+        {role:"주무관",name:"양훈석",phone:"010-3748-0610",ext:"808"},
+        {role:"교육행정",name:"신숙희",phone:"010-3542-1260",ext:"810"},
+        {role:"1-1 담임",name:"김도연",phone:"010-5146-6425",ext:"823"},
+        {role:"1-2 담임",name:"박종찬",phone:"010-2686-3649",ext:"860"},
+        {role:"1-3 담임",name:"강부열",phone:"010-8323-0237",ext:"852"},
+        {role:"1-4 담임",name:"강혜민",phone:"010-6723-1041",ext:"862"},
+        {role:"1-5 담임",name:"양찬호",phone:"010-3311-9710",ext:"861"},
+        {role:"1-6 담임",name:"황혜인",phone:"010-9460-6469",ext:"838"},
+        {role:"1-7 담임",name:"백은정",phone:"010-2689-3697",ext:"851"},
+        {role:"1-8 담임",name:"장진혁",phone:"010-5696-8012",ext:"823"},
+        {role:"1-9 담임",name:"이상희",phone:"010-6624-3308",ext:"852"},
+        {role:"1-10 담임",name:"고지은",phone:"010-8516-0567",ext:"852"},
+        {role:"2-1 담임",name:"현은심",phone:"010-2480-0471",ext:"853"},
+        {role:"2-2 담임",name:"오소연",phone:"010-2806-1330",ext:"854"},
+        {role:"2-3 담임",name:"김지선",phone:"010-7562-0823",ext:"858"},
+        {role:"2-4 담임",name:"김민권",phone:"010-7646-3471",ext:"863"},
+        {role:"2-5 담임",name:"김현정",phone:"010-3174-2761",ext:"853"},
+        {role:"2-6 담임",name:"송진호",phone:"010-9305-2563",ext:"829"},
+        {role:"2-7 담임",name:"김지연",phone:"010-8769-2306",ext:"857"},
+        {role:"2-8 담임",name:"안미진",phone:"010-4934-5290",ext:"827"},
+        {role:"2-9 담임",name:"고지수",phone:"010-6438-8690",ext:"827"},
+        {role:"2-10 담임",name:"김보민",phone:"010-9147-5670",ext:"826"},
+        {role:"3-1 담임",name:"김민지",phone:"010-7963-0567",ext:"830"},
+        {role:"3-2 담임",name:"오재영",phone:"010-2297-1409",ext:"832"},
+        {role:"3-3 담임",name:"오재원",phone:"010-4301-2625",ext:"830"},
+        {role:"3-4 담임",name:"김민정",phone:"010-6468-5029",ext:"866"},
+        {role:"3-5 담임",name:"임홍재",phone:"010-6383-9883",ext:"855"},
+        {role:"3-6 담임",name:"강향아",phone:"010-6646-9330",ext:"865"},
+        {role:"3-7 담임",name:"송준한",phone:"010-9924-6588",ext:"855"},
+        {role:"3-8 담임",name:"김윤주",phone:"010-9280-4373",ext:""},
+        {role:"3-9 담임",name:"김제령",phone:"010-5523-6318",ext:""},
+        {role:"3-10 담임",name:"임수진",phone:"010-6524-0334",ext:"839"},
+        {role:"교사",name:"홍원정",phone:"010-9019-9870",ext:""},
+        {role:"교사",name:"김유리",phone:"010-3647-9062",ext:""},
+        {role:"교사",name:"백경민",phone:"010-7599-5311",ext:""},
+        {role:"교육행정",name:"정성현",phone:"010-7151-1687",ext:"840"},
+        {role:"보건실",name:"홍연주",phone:"010-6329-8290",ext:"831"},
+        {role:"급식소 영양",name:"송임숙",phone:"010-9192-2507",ext:""},
+        {role:"석식영양사",name:"정은령",phone:"010-9670-8665",ext:""},
+        {role:"조리사",name:"오금선",phone:"010-9838-6407",ext:""},
+        {role:"조리사",name:"김창희",phone:"010-2422-2019",ext:""},
+        {role:"조리실무사",name:"고영숙",phone:"010-2824-4955",ext:""},
+        {role:"조리실무사",name:"김경양",phone:"010-7100-7861",ext:""},
+        {role:"조리실무사",name:"이승경",phone:"010-9629-0428",ext:""},
+        {role:"조리실무사",name:"장성화",phone:"010-3698-2246",ext:""},
+        {role:"조리실무사",name:"장혜순",phone:"010-9622-7515",ext:""},
+        {role:"조리실무사",name:"장경아",phone:"010-5422-9437",ext:""},
+        {role:"조리실무사",name:"강정숙",phone:"010-7179-5531",ext:""},
+        {role:"조리실무사",name:"정진옥",phone:"010-2636-8452",ext:""},
+        {role:"배움터지킴이",name:"강영철",phone:"010-6365-7854",ext:""},
+        {role:"감독",name:"정수진",phone:"010-4598-4732",ext:""},
+        {role:"코치",name:"김성수",phone:"010-5254-4452",ext:""},
+        {role:"환경미화",name:"부정순",phone:"010-7274-3313",ext:""},
+        {role:"행정실(FAX)",name:"행정실",phone:"750-3888",ext:""},
+        {role:"급식소(FAX)",name:"급식소",phone:"750-3889",ext:"856"}
+      ]
+    };
+
+    const PAGES = [["swap","교체/대체"],["teacher","교사별"],["grade","학년별"],["free","공강"],["calendar","학사일정"],["contact","연락처"],["data","데이터"]];
+    const q = (s)=>document.querySelector(s);
+    const rowOf = (t)=>APP.schedule.tableData.find(r=>r.teacher===t);
+
+    function normalizeName(raw){
+      if(!raw) return "";
+      const s = String(raw).trim();
+      const m = s.match(/\(([^)]+)\)/);
+      return (m ? m[1] : s).trim();
+    }
+
+    function parseGvizText(text){
+      const m = text.match(/setResponse\(([\s\S]+)\);?$/);
+      if(!m) throw new Error("gviz 응답 파싱 실패");
+      return JSON.parse(m[1]);
+    }
+
+    function cellValue(row, idx){
+      const c = row && row.c && row.c[idx];
+      if(!c) return "";
+      if(typeof c.v === "string" || typeof c.v === "number") return String(c.v).trim();
+      if(typeof c.f === "string" || typeof c.f === "number") return String(c.f).trim();
+      return "";
+    }
+    function normalizeDayToken(v){
+      const s = String(v || "").replace(/\s+/g,"").trim();
+      if(!s) return "";
+      if(s.includes("월")) return "월";
+      if(s.includes("화")) return "화";
+      if(s.includes("수")) return "수";
+      if(s.includes("목")) return "목";
+      if(s.includes("금")) return "금";
+      return "";
+    }
+
+    function parseClassGrade(value){
+      const s = String(value || "");
+      const m1 = s.match(/([1-3])학년/);
+      if(m1) return m1[1];
+      const m2 = s.match(/(?:^|[^0-9])([1-3])(?:0[1-9]|[1-9][0-9])(?:[^0-9]|$)/);
+      if(m2) return m2[1];
+      const m3 = s.match(/(?:^|[^0-9])([1-3])-(\d+)(?:[^0-9]|$)/);
+      if(m3) return m3[1];
+      return null;
+    }
+
+    function calculateTeacherGroups(schedule){
+      const map = {};
+      schedule.teachers.forEach((teacher)=>{
+        const row = schedule.tableData.find(r=>r.teacher===teacher);
+        let g12=0, g3=0;
+        if(row){
+          schedule.days.forEach(d=>schedule.periods.forEach(p=>{
+            const v = row[d+p];
+            if(!v) return;
+            const g = parseClassGrade(v);
+            if(g==="3") g3++;
+            if(g==="1"||g==="2") g12++;
+          }));
+        }
+        map[teacher] = g3 > g12 ? "3" : "12";
+      });
+      return map;
+    }
+
+    function buildScheduleFromGviz(gvizJson){
+      const rows = (gvizJson && gvizJson.table && gvizJson.table.rows) ? gvizJson.table.rows : [];
+      if(rows.length < 6) throw new Error("시트 데이터 행이 부족합니다.");
+      const days = ["월","화","수","목","금"];
+      
+      // 헤더(교사성명/요일) 행 자동 탐색
+      let headerDayIdx = -1;
+      let headerPeriodIdx = -1;
+      for(let r=0; r<Math.min(rows.length, 30); r++){
+        const col1 = cellValue(rows[r],1);
+        const col2 = normalizeDayToken(cellValue(rows[r],2));
+        const hasTeacherHeader = col1.includes("교사성명");
+        const hasDayHeader = days.includes(col2) || days.includes(normalizeDayToken(cellValue(rows[r],3)));
+        if(hasTeacherHeader && hasDayHeader){
+          headerDayIdx = r;
+          headerPeriodIdx = r + 1;
+          break;
+        }
+      }
+      if(headerDayIdx === -1 || !rows[headerPeriodIdx]) {
+        // 백업: 기존 구조 가정
+        headerDayIdx = 2;
+        headerPeriodIdx = 3;
+      }
+
+      const headerDayRow = rows[headerDayIdx];
+      const headerPeriodRow = rows[headerPeriodIdx];
+
+      // 마지막 열 탐색: 헤더 + 초반 데이터 일부를 함께 검사
+      let lastCol = 2;
+      const sampleEnd = Math.min(rows.length, headerPeriodIdx + 30);
+      for(let c=2;c<260;c++){
+        let hasAny = false;
+        if(cellValue(headerDayRow,c)) hasAny = true;
+        if(cellValue(headerPeriodRow,c)) hasAny = true;
+        if(!hasAny){
+          for(let r=headerPeriodIdx+1; r<sampleEnd; r++){
+            if(cellValue(rows[r],c)){ hasAny = true; break; }
+          }
+        }
+        if(hasAny) lastCol = c + 1;
+      }
+
+      // 열별 요일/교시 메타 구성 (병합/빈칸 헤더 대응)
+      const colMeta = [];
+      let currentDay = "";
+      const dayColCount = { "월":0,"화":0,"수":0,"목":0,"금":0 };
+      for(let c=2; c<lastCol; c++){
+        const dayCell = normalizeDayToken(cellValue(headerDayRow,c));
+        if(dayCell && days.includes(dayCell)) currentDay = dayCell;
+        if(!days.includes(currentDay)) continue;
+
+        let p = parseInt(cellValue(headerPeriodRow,c),10);
+        if(isNaN(p)){
+          // 교시 헤더가 비어있으면 같은 요일 내 순서로 보정
+          dayColCount[currentDay] = (dayColCount[currentDay] || 0) + 1;
+          p = dayColCount[currentDay];
+        }else{
+          dayColCount[currentDay] = Math.max(dayColCount[currentDay] || 0, p);
+        }
+        colMeta.push({ col:c, day:currentDay, period:p });
+      }
+
+      const periodSet = new Set(colMeta.map(m=>m.period).filter(p=>!isNaN(p) && p>=1 && p<=7));
+      const periods = Array.from(periodSet).sort((a,b)=>a-b);
+      const finalPeriods = periods.length ? periods : [1,2,3,4,5,6,7];
+
+      const teachers = [];
+      const tableData = [];
+      for(let r=headerPeriodIdx+1; r<rows.length; r++){
+        const rawName = cellValue(rows[r],1);
+        const teacher = normalizeName(rawName);
+        if(!teacher || teacher.includes("교사성명")) continue;
+        const rowObj = { teacher };
+        colMeta.forEach((meta)=>{
+          if(meta.period < 1 || meta.period > 7) return;
+          const v = cellValue(rows[r], meta.col);
+          const key = meta.day + meta.period;
+          // 같은 요일/교시 키가 중복될 경우, 빈 값으로 기존 과목을 덮어쓰지 않음
+          if(!(key in rowObj) || (v && String(v).trim() !== "")) {
+            rowObj[key] = v;
+          }
+        });
+        teachers.push(teacher);
+        tableData.push(rowObj);
+      }
+
+      return {
+        teachers:Array.from(new Set(teachers)).sort(),
+        days,
+        periods: finalPeriods,
+        tableData
+      };
+    }
+
+    async function loadFromGoogleSheet(){
+      const base = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${SHEET_GID}`;
+
+      // 1) 일반 fetch (http/https 환경에서 우선 시도)
+      try{
+        const url = `${base}&tqx=out:json`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error("시트 요청 실패");
+        const text = await res.text();
+        const gviz = parseGvizText(text);
+        const schedule = buildScheduleFromGviz(gviz);
+        APP.schedule = schedule;
+        APP.teacherGroups = calculateTeacherGroups(schedule);
+        return;
+      }catch(fetchErr){
+        // 2) file:// 환경 등 fetch 차단 시 JSONP로 재시도
+      }
+
+      const gviz = await loadGvizByJsonp(base);
+      const schedule = buildScheduleFromGviz(gviz);
+      if(!schedule.teachers || schedule.teachers.length < 5) {
+        throw new Error("시트에서 교사 데이터 파싱 실패(교사 수 부족)");
+      }
+      APP.schedule = schedule;
+      APP.teacherGroups = calculateTeacherGroups(schedule);
+    }
+
+    function loadGvizByJsonp(baseUrl){
+      return new Promise((resolve,reject)=>{
+        const cbName = `__gviz_cb_${Date.now()}_${Math.floor(Math.random()*10000)}`;
+        const script = document.createElement("script");
+        const timeoutId = setTimeout(()=>{
+          cleanup();
+          reject(new Error("시트 JSONP 로드 시간 초과"));
+        }, 10000);
+
+        function cleanup(){
+          clearTimeout(timeoutId);
+          try{ delete window[cbName]; }catch(_e){ window[cbName] = undefined; }
+          if(script && script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[cbName] = function(payload){
+          cleanup();
+          if(!payload || !payload.table) {
+            reject(new Error("시트 JSONP 응답 형식 오류"));
+            return;
+          }
+          resolve(payload);
+        };
+
+        script.onerror = function(){
+          cleanup();
+          reject(new Error("시트 JSONP 스크립트 로드 실패"));
+        };
+
+        // responseHandler를 지정하면 callback({...}) 형태로 내려와 file://에서도 로드 가능
+        script.src = `${baseUrl}&tqx=out:json;responseHandler:${cbName}`;
+        document.head.appendChild(script);
+      });
+    }
+
+    function renderTabs(){
+      q("#tabs").innerHTML = PAGES.map(([id,name],i)=>`<button class="tab ${i===0?"on":""}" onclick="openTab('${id}',this)">${name}</button>`).join("");
+    }
+    function openTab(id,btn){
+      document.querySelectorAll(".page").forEach(p=>p.classList.remove("on"));
+      q("#"+id).classList.add("on");
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
+      btn.classList.add("on");
+    }
+
+    function parseInfo(v){
+      if(!v) return {g:null,c:null};
+      const s=String(v);
+      let m=s.match(/(?:^|\\D)([1-3])(0[1-9]|[1-9]\\d)(?=\\D|$)/);
+      if(m){const n=parseInt(m[2],10);return{g:m[1],c:n>10?"선택":String(n)};}
+      m=s.match(/(?:^|\\D)([1-3])-(\\d+)(?=\\D|$)/);
+      if(m){const n=parseInt(m[2],10);return{g:m[1],c:n>10?"선택":String(n)};}
+      return {g:null,c:null};
+    }
+    function isElectiveClass(v){
+      const s = String(v || "");
+      if(!s.trim()) return false;
+      if(s.includes("선택")) return true;
+      if(/[A-Z]_/.test(s)) return true; // E_언매, J_실국 등
+      const info = parseInfo(s);
+      if(info.c === "선택") return true;
+      return false;
+    }
+    function displayCell(v){
+      const s = String(v || "").trim();
+      if(!s) return "";
+      // 예: "1학년 /통합사회1(3)" -> "통합사회1(3)"
+      const slash = s.split("/");
+      if(slash.length > 1){
+        return slash[slash.length - 1].trim();
+      }
+      return s;
+    }
+    function splitCell(v){
+      const raw = String(v || "").trim();
+      if(!raw) return {title:"", sub:""};
+      const part = displayCell(raw);
+      const m = part.match(/^(.+?)\(([^)]+)\)$/);
+      if(m) return { title:m[1].trim(), sub:m[2].trim() };
+      return { title:part, sub:"" };
+    }
+    function isHomeroomBusy(t,d,p){ return HOMEROOM.includes(t) && ((d==="월"&&p===7) || (d==="금"&&(p===5||p===6))); }
+    function isLunchBusy(t,p){ return (APP.teacherGroups[t]||"12")==="3" && p===4; }
+    function isTeaching(t,d,p){
+      const r=rowOf(t); if(!r) return false;
+      const v=String(r[d+p]||"").trim();
+      if(v.includes("창체") && !HOMEROOM.includes(t)) return false;
+      return v!=="" && !v.includes("공강");
+    }
+    function isAvailable(t,d,p){ return !isHomeroomBusy(t,d,p) && !isLunchBusy(t,p) && !isTeaching(t,d,p); }
+    function subjectOf(t){ for(const [k,v] of Object.entries(SUBJECT_RULES)) if(v.includes(t)) return k; return null; }
+
+    function showModal(html){ q("#modal").innerHTML=html; q("#modalBg").classList.add("on"); }
+    q("#modalBg").addEventListener("click",(e)=>{ if(e.target.id==="modalBg") q("#modalBg").classList.remove("on"); });
+
+    function openMatch(t,d,p){
+      const r=rowOf(t), mine=r?String(r[d+p]||"").trim():""; if(!mine) return;
+      const isElective = isElectiveClass(mine);
+      const me=parseInfo(mine);
+      const swaps=[], subs=[];
+      if(!isElective){
+        APP.schedule.tableData.forEach(o=>{
+          if(o.teacher===t) return;
+          APP.schedule.days.forEach(day=>APP.schedule.periods.forEach(per=>{
+            const ov=String(o[day+per]||"").trim(); if(!ov) return;
+            const oi=parseInfo(ov);
+            const ok=me.g&&me.c&&me.c!=="선택"&&oi.g===me.g&&oi.c===me.c&&oi.c!=="선택" && !isElectiveClass(ov);
+            if(!ok) return;
+            if(!isAvailable(o.teacher,d,p)) return;
+            if(!isAvailable(t,day,per)) return;
+            swaps.push({teacher:o.teacher,day,per});
+          }));
+        });
+      }
+      const sbj=subjectOf(t), pool=sbj?SUBJECT_RULES[sbj].filter(x=>x!==t):[];
+      pool.forEach(name=>{ if(isAvailable(name,d,p)) subs.push(name); });
+
+      const swapHtml = swaps.length
+        ? swaps.map((s,i)=>`
+            <div class="result-card">
+              <div class="result-idx">${i+1}</div>
+              <div>
+                <div class="result-main">${s.teacher} 선생님</div>
+                <div class="result-sub">${s.day}요일 ${s.per}교시 · 내 시간과 맞교환</div>
+              </div>
+            </div>
+          `).join("")
+        : `<div class="result-card"><div><div class="result-main">교체 가능 교사가 없습니다</div><div class="result-sub">선택/이동수업 또는 조건 일치 대상 없음</div></div></div>`;
+
+      const subHtml = subs.length
+        ? subs.map((name,i)=>`
+            <div class="result-card">
+              <div class="result-idx">${i+1}</div>
+              <div>
+                <div class="result-main">${name} 선생님</div>
+                <div class="result-sub">${d}요일 ${p}교시 공강으로 대체 가능</div>
+              </div>
+            </div>
+          `).join("")
+        : `<div class="result-card"><div><div class="result-main">대체 가능 교사가 없습니다</div><div class="result-sub">동일 교과 그룹 중 공강 교사 없음</div></div></div>`;
+
+      showModal(`
+        <div class="modal-head">
+          <div style="font-size:30px;font-weight:900;line-height:1">수업 매칭 결과</div>
+          <button class="ghost" onclick="document.getElementById('modalBg').classList.remove('on')">닫기</button>
+        </div>
+        <div class="card" style="margin-top:10px"><b>${t}</b> · ${d}요일 ${p}교시 · ${displayCell(mine)}</div>
+        <div class="result-section">
+          <div class="result-title">교체 가능 교사</div>
+          ${swapHtml}
+        </div>
+        <div class="result-section">
+          <div class="result-title">대체 가능 교사</div>
+          ${subHtml}
+        </div>
+      `);
+    }
+
+    function buildSchedule(names, clickable){
+      const {days,periods}=APP.schedule;
+      let h=`<div class="table-wrap"><table><thead><tr><th rowspan="2">교사명</th>`;
+      days.forEach(d=>h+=`<th colspan="${periods.length}">${d}</th>`);
+      h+=`</tr><tr>`;
+      days.forEach(()=>periods.forEach(p=>h+=`<th>${p}</th>`));
+      h+=`</tr></thead><tbody>`;
+      names.forEach(n=>{
+        const r=rowOf(n)||{teacher:n};
+        h+=`<tr><td class="left">${n}</td>`;
+        days.forEach(d=>periods.forEach(p=>{
+          const v=String(r[d+p]||"");
+          const parts = splitCell(v);
+          const content = parts.title
+            ? `<div class="cell-wrap"><div class="cell-title">${parts.title}</div><div class="cell-sub">${parts.sub}</div></div>`
+            : "";
+          if(clickable&&v) h+=`<td class="click" onclick="openMatch('${n}','${d}',${p})">${content}</td>`;
+          else h+=`<td>${content}</td>`;
+        }));
+        h+=`</tr>`;
+      });
+      h+=`</tbody></table></div>`;
+      return h;
+    }
+
+    function renderSwap(){
+      q("#swap").innerHTML = `<div class="card"><div class="muted">시간표 칸 클릭 시 교체/대체 후보 표시</div>${buildSchedule(APP.schedule.teachers,true)}</div>`;
+    }
+    function renderTeacher(){
+      const opts=APP.schedule.teachers.map(t=>`<option>${t}</option>`).join("");
+      q("#teacher").innerHTML = `<div class="card row"><label>교사</label><select id="tSel">${opts}</select><button onclick="searchTeacher()">검색</button></div><div class="card" id="tRes"></div>`;
+      searchTeacher();
+    }
+    function searchTeacher(){
+      const teacher = q("#tSel").value;
+      const row = rowOf(teacher) || { teacher };
+      const days = APP.schedule.days;
+      const periods = APP.schedule.periods;
+      const periodTimes = {1:"08:40",2:"09:40",3:"10:40",4:"11:40",5:"13:40",6:"14:40",7:"15:40"};
+
+      let html = `<div class="teacher-matrix"><table><thead><tr><th class="period-col">${teacher}</th>`;
+      days.forEach(d=>html += `<th class="day-head">${d}</th>`);
+      html += `</tr></thead><tbody>`;
+      periods.forEach(p=>{
+        html += `<tr><th class="period-col">${p}(${periodTimes[p] || ""})</th>`;
+        days.forEach(d=>{
+          const v = String(row[d+p] || "");
+          const text = displayCell(v);
+          const electiveCls = isElectiveClass(v) ? "elective" : "";
+          if(v){
+            html += `<td class="subject-cell ${electiveCls} click" onclick="openMatch('${teacher}','${d}',${p})"><div class="subj-main">${text || "-"}</div><div class="subj-sub">${isElectiveClass(v) ? "교체불가(대체만 가능)" : ""}</div></td>`;
+          }else{
+            html += `<td class="subject-cell"></td>`;
+          }
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      q("#tRes").innerHTML = html;
+    }
+
+    function renderGrade(){
+      q("#grade").innerHTML = `<div class="card row"><label>학년</label><select id="gSel"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option></select><button onclick="searchGrade()">검색</button></div><div class="card" id="gRes"></div>`;
+      searchGrade();
+    }
+    function searchGrade(){
+      const g=q("#gSel").value;
+      const names=APP.schedule.teachers.filter(t=>{
+        const r=rowOf(t); if(!r) return false;
+        let hit=0; APP.schedule.days.forEach(d=>APP.schedule.periods.forEach(p=>{ const i=parseInfo(r[d+p]); if(i.g===g) hit++; }));
+        return hit>0;
+      });
+      q("#gRes").innerHTML=buildSchedule(names,true);
+    }
+
+    function renderFree(){
+      const c=APP.schedule.teachers.map(t=>`<label class="tag"><input type="checkbox" value="${t}" onchange="searchFree()"> ${t}</label>`).join("");
+      q("#free").innerHTML = `<div class="card"><div class="muted">여러 명 선택 시 공통 공강을 시간표 형태로 표시</div>${c}</div><div class="card free-grid" id="fRes">교사를 선택하세요.</div>`;
+    }
+    function searchFree(){
+      const selected=[...document.querySelectorAll("#free input:checked")].map(e=>e.value);
+      if(!selected.length){ q("#fRes").innerHTML="교사를 선택하세요."; return; }
+      const {days,periods} = APP.schedule;
+      let html = `<div class="muted" style="margin-bottom:8px"><b>선택:</b> ${selected.join(", ")}</div>`;
+      html += `<table class="free-table"><thead><tr><th>교시</th>${days.map(d=>`<th>${d}</th>`).join("")}</tr></thead><tbody>`;
+      periods.forEach(p=>{
+        html += `<tr><th>${p}교시</th>`;
+        days.forEach(d=>{
+          const ok = selected.every(t=>isAvailable(t,d,p));
+          html += `<td class="${ok?'ok':'no'}">${ok?'가능':'-'}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table>`;
+      q("#fRes").innerHTML = html;
+    }
+
+    function renderCalendar(){
+      q("#calendar").innerHTML = `
+        <div class="card row">
+          <label>월 필터</label>
+          <select id="calMonth" onchange="searchCalendar()">
+            <option value="">전체</option>
+            <option value="-03-">3월</option><option value="-04-">4월</option><option value="-05-">5월</option>
+            <option value="-06-">6월</option><option value="-07-">7월</option><option value="-08-">8월</option>
+            <option value="-09-">9월</option><option value="-10-">10월</option><option value="-11-">11월</option>
+            <option value="-12-">12월</option><option value="-01-">1월</option>
+          </select>
+          <input id="calKeyword" placeholder="일정 검색" oninput="searchCalendar()"/>
+          <button class="ghost" onclick="printCurrentTab('calendar')">인쇄/PDF</button>
+        </div>
+        <div class="card" id="calRes"></div>
+      `;
+      searchCalendar();
+    }
+    function searchCalendar(){
+      const month = q("#calMonth") ? q("#calMonth").value : "";
+      const keyword = q("#calKeyword") ? q("#calKeyword").value.trim() : "";
+      const list = [...APP.academicEvents]
+        .sort((a,b)=>String(a.date).localeCompare(String(b.date)))
+        .filter(x => !month || String(x.date).includes(month))
+        .filter(x => !keyword || String(x.title).includes(keyword) || String(x.date).includes(keyword));
+
+      if(!month){
+        const rows = list.map(x=>`<tr><td>${x.date}</td><td class="left">${x.title}</td></tr>`).join("");
+        q("#calRes").innerHTML = `<div class="muted" style="margin-bottom:8px">월을 선택하면 달력 형태로 표시됩니다.</div><table><thead><tr><th>일자</th><th>학사일정</th></tr></thead><tbody>${rows || "<tr><td colspan='2'>검색 결과 없음</td></tr>"}</tbody></table>`;
+        return;
+      }
+
+      const y = Number((list[0]?.date || "2026-03-01").split("-")[0]);
+      const m = Number(month.replace(/-/g,""));
+      const first = new Date(y, m-1, 1);
+      const startDow = first.getDay();
+      const lastDate = new Date(y, m, 0).getDate();
+
+      const eventMap = {};
+      list.forEach(ev=>{
+        const d = Number(String(ev.date).split("-")[2]);
+        if(!eventMap[d]) eventMap[d] = [];
+        eventMap[d].push(ev.title);
+      });
+
+      const dayNames = ["일","월","화","수","목","금","토"];
+      let grid = `<div class="calendar-grid">${dayNames.map(n=>`<div class="cal-head">${n}</div>`).join("")}`;
+      for(let i=0;i<startDow;i++) grid += `<div class="cal-cell"></div>`;
+      for(let d=1; d<=lastDate; d++){
+        const events = eventMap[d] || [];
+        grid += `<div class="cal-cell"><div class="cal-date">${d}</div>${events.map(t=>`<div class="cal-event">${t}</div>`).join("")}</div>`;
+      }
+      grid += `</div>`;
+      q("#calRes").innerHTML = grid;
+    }
+    function renderContact(){
+      q("#contact").innerHTML = `
+        <div class="card row">
+          <input id="contactKeyword" placeholder="이름/업무/내선 검색" oninput="searchContact()" />
+          <button class="ghost" onclick="printCurrentTab('contact')">인쇄/PDF</button>
+        </div>
+        <div class="card table-wrap" id="contactRes"><div class="muted">검색어를 입력하면 결과가 표시됩니다.</div></div>
+      `;
+    }
+    function searchContact(){
+      const keyword = q("#contactKeyword") ? q("#contactKeyword").value.trim() : "";
+      if(!keyword){
+        q("#contactRes").innerHTML = `<div class="muted">검색어를 입력하면 결과가 표시됩니다.</div>`;
+        return;
+      }
+      const list = [...APP.contactRows].filter(x=>{
+        const target = `${x.role} ${x.name} ${x.phone} ${x.ext||""}`;
+        return target.includes(keyword);
+      });
+      const r = list.map(x=>`<tr><td>${x.role}</td><td>${x.name}</td><td>${x.phone}</td><td>${x.ext||""}</td></tr>`).join("");
+      q("#contactRes").innerHTML = `<table><thead><tr><th>업무</th><th>성명</th><th>연락처</th><th>내선</th></tr></thead><tbody>${r || "<tr><td colspan='4'>검색 결과 없음</td></tr>"}</tbody></table>`;
+    }
+    function renderData(){
+      q("#data").innerHTML = `
+        <div class="card">
+          <div><b>데이터 교체(선택)</b></div>
+          <div class="muted">아래에 JSON을 붙여넣고 적용하면 페이지 새로고침 없이 즉시 반영됩니다. (키: schedule/teacherGroups/academicEvents/contactRows)</div>
+          <textarea id="jsonInput" rows="10" style="width:100%;margin-top:8px"></textarea>
+          <div class="row" style="margin-top:8px">
+            <button onclick="applyJson()">JSON 적용</button>
+            <button class="ghost" onclick="downloadTemplate()">템플릿 저장</button>
+          </div>
+        </div>`;
+    }
+    function applyJson(){
+      try{
+        const v=JSON.parse(q("#jsonInput").value);
+        APP=v;
+        renderAll();
+        alert("적용 완료");
+      }catch(e){ alert("JSON 형식 오류: "+e.message); }
+    }
+    function downloadTemplate(){
+      const blob=new Blob([JSON.stringify(APP,null,2)],{type:"application/json"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="school-data-template.json";a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function printCurrentTab(tabId){
+      const target = q("#"+tabId);
+      if(!target) return;
+      const w = window.open("", "_blank");
+      if(!w) return;
+      w.document.write(`
+        <html><head><meta charset="utf-8"><title>출력</title>
+        <style>
+          body{font-family:Arial,"Noto Sans KR",sans-serif;padding:16px}
+          table{width:100%;border-collapse:collapse;font-size:12px}
+          th,td{border:1px solid #cbd5e1;padding:6px;text-align:center}
+          th{background:#eff6ff}
+          .left{text-align:left}
+        </style></head><body>${target.innerHTML}</body></html>
+      `);
+      w.document.close();
+      w.focus();
+      setTimeout(()=>w.print(), 150);
+    }
+
+    function renderAll(){ renderTabs(); renderSwap(); renderTeacher(); renderGrade(); renderFree(); renderCalendar(); renderContact(); renderData(); }
+
+    (async function boot(){
+      try{
+        await loadFromGoogleSheet();
+      }catch(err){
+        console.warn("시트 자동 로드 실패, 내장 예시 데이터 사용:", err);
+        alert("구글시트 자동 로드에 실패했습니다. 공유권한(보기 가능) 또는 네트워크 상태를 확인해주세요.");
+      }
+      renderAll();
+    })();
+  </script>
+</body>
+</html>

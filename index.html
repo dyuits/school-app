@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; background:#f6f8fb; margin:0; color:#1f2937; }
+    .header { background:#1d4ed8; color:#fff; padding:14px 20px; }
+    .header h1 { margin:0; font-size:20px; }
+    .tabs { display:flex; gap:8px; padding:10px; background:#fff; border-bottom:1px solid #dbe2ea; flex-wrap:wrap; }
+    .tab { border:1px solid #dbe2ea; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
+    .tab.active { background:#dbeafe; border-color:#93c5fd; font-weight:700; }
+    .page { padding:14px; display:none; }
+    .page.active { display:block; }
+    .card { background:#fff; border:1px solid #dbe2ea; border-radius:12px; padding:12px; margin-bottom:12px; }
+    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    input, select, button { padding:7px 9px; border:1px solid #c7d0db; border-radius:8px; }
+    button { background:#2563eb; color:#fff; cursor:pointer; }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    th, td { border:1px solid #dbe2ea; padding:6px; text-align:center; }
+    th { background:#eff6ff; }
+    .left { text-align:left; }
+    .small { font-size:12px; color:#64748b; }
+    .badge { display:inline-block; background:#ecfeff; border:1px solid #bae6fd; padding:2px 7px; border-radius:10px; margin:2px; }
+    .modal-bg { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); }
+    .modal-bg.on { display:flex; }
+    .modal { background:#fff; border-radius:12px; width:min(720px,92vw); max-height:85vh; overflow:auto; padding:14px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .highlight { background:#fef9c3; }
+    .clickable-cell { cursor:pointer; }
+    .clickable-cell:hover { background:#eff6ff; }
+    .notice-banner {
+      background:#fffbeb;
+      border:1px solid #fcd34d;
+      border-left:5px solid #f59e0b;
+      color:#78350f;
+      padding:10px 12px;
+      border-radius:10px;
+      font-size:12px;
+      margin-top:8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>스마트 시간표 교체/대체 시스템</h1>
+    <div class="small">교체/대체 · 학년별 · 교사별 · 공강 · 학사일정 · 연락처</div>
+    <div class="notice-banner">창체 시간은 <b>담임만 근무</b>로 처리하며, <b>비담임의 창체 표기</b>는 공강으로 처리됩니다.</div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+
+  <div id="swap" class="page active"></div>
+  <div id="grade" class="page"></div>
+  <div id="teacher" class="page"></div>
+  <div id="free" class="page"></div>
+  <div id="calendar" class="page"></div>
+  <div id="contact" class="page"></div>
+
+  <div id="modalBg" class="modal-bg"><div class="modal" id="modalBox"></div></div>
+
+  <script>
+  const TABS = [
+    ["swap","교체/대체 찾기"],["grade","학년별 시간표"],["teacher","교사별 시간표"],
+    ["free","교사 공강"],["calendar","학사일정"],["contact","연락처"]
+  ];
+  let app = null;
+
+  function initTabs() {
+    const el = document.getElementById("tabs");
+    el.innerHTML = TABS.map(([id,name],i)=>`<button class="tab ${i===0?'active':''}" onclick="switchTab('${id}',this)">${name}</button>`).join("");
+  }
+  function switchTab(id, btn) {
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    btn.classList.add("active");
+  }
+  function closeModal(){document.getElementById("modalBg").classList.remove("on");}
+  document.getElementById("modalBg").addEventListener("click",e=>{if(e.target.id==="modalBg")closeModal();});
+
+  function parseClassInfo(v){
+    if(!v) return {g:null,c:null,s:""};
+    const s = String(v);
+    let m = s.match(/(?:^|\D)([1-3])(0[1-9]|[1-9]\d)(?=\D|$)/);
+    if(m){ const c = parseInt(m[2],10); return {g:m[1], c:c>10?"선택":String(c), s}; }
+    m = s.match(/(?:^|\D)([1-3])-(\d+)(?=\D|$)/);
+    if(m){ const c = parseInt(m[2],10); return {g:m[1], c:c>10?"선택":String(c), s}; }
+    m = s.match(/([1-3])학년/); const g = m?m[1]:null;
+    m = s.match(/(\d+)반/); const c = m?m[1]:null;
+    return {g,c,s};
+  }
+  function teacherRow(name){ return app.schedule.tableData.find(r=>r.teacher===name); }
+  function isHomeroomBusy(name, day, period){
+    const n = name.replace(" 선생님","").trim();
+    if(!app.homeroomTeachers.includes(n)) return false;
+    if(day==="월" && period===7) return true;
+    if(day==="금" && (period===5 || period===6)) return true;
+    return false;
+  }
+  function isLunchBusy(name, period){
+    const g = app.teacherGroups[name] || "12";
+    if(g==="3" && period===4) return true;
+    return false;
+  }
+  function isTeaching(name, day, period){
+    const row = teacherRow(name); if(!row) return false;
+    const v = (row[day+period]||"").trim();
+    if(v.includes("창체") && !app.homeroomTeachers.includes(name)) return false;
+    return v !== "" && !v.includes("공강");
+  }
+  function isAvailable(name, day, period){
+    if(isLunchBusy(name, period)) return false;
+    if(isHomeroomBusy(name, day, period)) return false;
+    return !isTeaching(name, day, period);
+  }
+
+  function renderSwapPage(){
+    const {days,periods,tableData} = app.schedule;
+    let html = `<div class="card"><div class="small">시간표 칸을 클릭하면 <b>교체 가능</b> + <b>대체 가능</b>이 함께 표시됩니다.</div><div class="notice-banner">창체는 담임만 근무 처리, 비담임은 공강 처리</div>`;
+    html += `<div style="overflow:auto;max-height:72vh"><table><thead><tr><th>교사</th>`;
+    days.forEach(d=>periods.forEach((p,i)=>html += `<th>${d}${p}</th>`));
+    html += `</tr></thead><tbody>`;
+    tableData.forEach(row=>{
+      html += `<tr><td class="left">${row.teacher}</td>`;
+      days.forEach(d=>periods.forEach(p=>{
+        const v = row[d+p] || "";
+        html += `<td onclick="openSwapModal('${row.teacher}','${d}',${p})">${v?v:""}</td>`;
+      }));
+      html += `</tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+    document.getElementById("swap").innerHTML = html;
+  }
+
+  function getTeacherSubject(name){
+    for(const [sub,arr] of Object.entries(app.subjectRules)){ if(arr.includes(name)) return sub; }
+    return null;
+  }
+
+  function getSubstituteCandidates(requester){
+    const subject = getTeacherSubject(requester);
+    if(!subject) return [];
+    const pool = app.subjectRules[subject] || [];
+    return pool.filter(n => n !== requester);
+  }
+
+  function openSwapModal(teacher, day, period){
+    const row = teacherRow(teacher);
+    const mine = row ? row[day+period] : "";
+    if(!mine) return;
+    const info = parseClassInfo(mine);
+    const swap = [];
+    const subs = [];
+
+    app.schedule.tableData.forEach(other=>{
+      if(other.teacher===teacher) return;
+      app.schedule.days.forEach(d=>{
+        app.schedule.periods.forEach(p=>{
+          const ov = other[d+p];
+          if(!ov) return;
+          const oi = parseClassInfo(ov);
+          const sameClass = info.g && info.c && info.c!=="선택" && oi.g===info.g && oi.c===info.c && oi.c!=="선택";
+          if(!sameClass) return;
+          if(!isAvailable(other.teacher, day, period)) return;
+          if(!isAvailable(teacher, d, p)) return;
+          swap.push({teacher:other.teacher, day:d, period:p, classText:ov});
+        });
+      });
+    });
+
+    getSubstituteCandidates(teacher).forEach(name=>{
+      if(isAvailable(name, day, period)) subs.push(name);
+    });
+
+    const html = `
+      <div class="row" style="justify-content:space-between"><h3 style="margin:0">매칭 결과</h3><button onclick="closeModal()">닫기</button></div>
+      <div class="card"><b>${teacher}</b> · ${day}요일 ${period}교시 · ${mine}</div>
+      <div class="grid2">
+        <div class="card"><b>교체 가능한 선생님</b><div class="small">동일 학년/반 교환</div>
+          ${swap.length?swap.map((s,i)=>`<div>${i+1}. ${s.teacher} (${s.day} ${s.period}교시)</div>`).join(""):"<div class='small'>없음</div>"}
+        </div>
+        <div class="card"><b>대체 가능한 선생님</b><div class="small">동일 교과 그룹 + 공강</div>
+          ${subs.length?subs.map(n=>`<span class="badge">${n}</span>`).join(""):"<div class='small'>없음</div>"}
+        </div>
+      </div>`;
+    document.getElementById("modalBox").innerHTML = html;
+    document.getElementById("modalBg").classList.add("on");
+  }
+
+  function buildTeacherScheduleTable(names, enableMatchClick){
+    const days = app.schedule.days, periods = app.schedule.periods;
+    let html = `<table><thead><tr><th>교사</th>`;
+    days.forEach(d=>periods.forEach(p=>html += `<th>${d}${p}</th>`));
+    html += `</tr></thead><tbody>`;
+    names.forEach(name=>{
+      const row = teacherRow(name);
+      html += `<tr><td class="left">${name}</td>`;
+      days.forEach(d=>periods.forEach(p=>{
+        const v = row ? (row[d+p] || "") : "";
+        if (enableMatchClick && v) {
+          html += `<td class="clickable-cell" onclick="openSwapModal('${name}','${d}',${p})">${v}</td>`;
+        } else {
+          html += `<td>${v}</td>`;
+        }
+      }));
+      html += `</tr>`;
+    });
+    html += `</tbody></table>`;
+    return html;
+  }
+
+  function renderTeacherPage(){
+    const opts = app.schedule.teachers.map(n=>`<option>${n}</option>`).join("");
+    document.getElementById("teacher").innerHTML = `
+      <div class="card row">
+        <label>교사 선택</label><select id="teacherSel">${opts}</select>
+        <button onclick="searchTeacher()">검색</button>
+      </div>
+      <div class="card" id="teacherResult"></div>`;
+    searchTeacher();
+  }
+  function searchTeacher(){
+    const name = document.getElementById("teacherSel").value;
+    document.getElementById("teacherResult").innerHTML = buildTeacherScheduleTable([name], true);
+  }
+
+  function renderGradePage(){
+    document.getElementById("grade").innerHTML = `
+      <div class="card row">
+        <label>학년 선택</label><select id="gradeSel"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option></select>
+        <button onclick="searchGrade()">검색</button>
+      </div>
+      <div class="card" id="gradeResult"></div>`;
+    searchGrade();
+  }
+  function searchGrade(){
+    const g = document.getElementById("gradeSel").value;
+    const names = app.schedule.teachers.filter(n=>{
+      const r = teacherRow(n); if(!r) return false;
+      let hit=0;
+      app.schedule.days.forEach(d=>app.schedule.periods.forEach(p=>{
+        const v = r[d+p]; if(!v) return;
+        const info = parseClassInfo(v); if(info.g===g) hit++;
+      }));
+      return hit>0;
+    });
+    document.getElementById("gradeResult").innerHTML = buildTeacherScheduleTable(names, true);
+  }
+
+  function renderFreePage(){
+    const checks = app.schedule.teachers.map(n=>`<label class="badge"><input type="checkbox" value="${n}" onchange="searchFree()"> ${n}</label>`).join("");
+    document.getElementById("free").innerHTML = `
+      <div class="card"><div class="small">선생님 이름을 클릭하면 공강이 계산됩니다. (담임 창체/점심 규칙 반영)</div><div class="notice-banner">창체는 담임만 근무로 계산, 비담임은 공강으로 계산</div>${checks}</div>
+      <div class="card" id="freeResult"></div>`;
+  }
+  function searchFree(){
+    const selected = Array.from(document.querySelectorAll("#free input[type=checkbox]:checked")).map(e=>e.value);
+    if(!selected.length){ document.getElementById("freeResult").innerHTML = "<div class='small'>교사를 선택하세요.</div>"; return; }
+    const rows = [];
+    app.schedule.days.forEach(d=>app.schedule.periods.forEach(p=>{
+      const ok = selected.every(t=>isAvailable(t,d,p));
+      if(ok) rows.push(`${d}요일 ${p}교시`);
+    }));
+    document.getElementById("freeResult").innerHTML = `
+      <div><b>선택 교사:</b> ${selected.join(", ")}</div>
+      <div style="margin-top:8px">${rows.length?rows.map(r=>`<span class='badge'>${r}</span>`).join(""):"<span class='small'>공통 공강 없음</span>"}</div>`;
+  }
+
+  function renderCalendarPage(){
+    const rows = app.academicEvents.map(e=>`<tr><td>${e.date}</td><td class="left">${e.title}</td></tr>`).join("");
+    document.getElementById("calendar").innerHTML = `<div class="card"><table><thead><tr><th>일자</th><th>주요 일정</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function renderContactPage(){
+    const rows = app.contactRows.map(r=>`<tr><td>${r.role}</td><td>${r.name}</td><td>${r.phone}</td><td>${r.ext||""}</td></tr>`).join("");
+    document.getElementById("contact").innerHTML = `<div class="card"><table><thead><tr><th>업무</th><th>성명</th><th>연락처</th><th>내선</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+
+  function boot(data){
+    app = data;
+    initTabs();
+    renderSwapPage();
+    renderGradePage();
+    renderTeacherPage();
+    renderFreePage();
+    renderCalendarPage();
+    renderContactPage();
+  }
+
+  google.script.run.withSuccessHandler(boot).withFailureHandler(err=>{
+    document.body.innerHTML = `<div class='card' style='margin:20px'>오류: ${err.message}</div>`;
+  }).getAppData();
+  </script>
+</body>
+</html>
