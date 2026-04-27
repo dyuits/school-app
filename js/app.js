@@ -246,8 +246,7 @@ function renderSwapTable() {
               <span style="font-size:7.5px;color:#b8860b;font-weight:700;margin-top:1px;">선택·교체불가</span>
             </div>`;
           } else if (info.isMint) {
-            cellStyle = 'style="background:var(--cell-mint-bg);border-color:var(--cell-mint-bd);cursor:default;"';
-            clickable = ''; // 민트: 클릭 불가
+            cellStyle = 'style="background:var(--cell-mint-bg);border-color:var(--cell-mint-bd);"';
             const mintLabel = teacher === '체육순회' ? '순회' : '강사';
             cellContent = `<div class="cell-inner">
               <span class="cell-subject">${info.subject}</span>
@@ -324,13 +323,6 @@ function onCellClick(teacher, day, period) {
   // 체육순회 안내
   if (teacher === '체육순회') {
     renderResultModal_blocked(teacher, day, period, val, '체육순회 수업은 교체 및 대체가 불가합니다.');
-    openModal();
-    return;
-  }
-
-  // 민트(시간강사/산학협력교사)이면 안내만
-  if (info.isMint) {
-    renderResultModal_blocked(teacher, day, period, val, '시간강사·산학협력교사 수업은 교체 및 대체가 불가합니다.');
     openModal();
     return;
   }
@@ -479,6 +471,14 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
     </div>`;
 
   let html = '';
+
+  // ── 민트(시간강사/산학협력교사) 경고 메시지 ──
+  if (info.isMint) {
+    html += `<div style="background:#fffde7;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">⚠️</span>
+      <span style="font-weight:700;font-size:13px;color:#e65100;">시간 또는 산학강사가 수업하는 시간입니다</span>
+    </div>`;
+  }
 
   // ── 1. 교체 가능 (맞교환) ──
   html += `<div class="result-section-hd swap">
