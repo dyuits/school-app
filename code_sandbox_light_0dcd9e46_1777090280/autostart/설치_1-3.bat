@@ -33,7 +33,7 @@ set "VBS=%STARTUP%\교실알림_1-3.vbs"
 :: ======================================================
 > "%VBS%" echo Set oShell = CreateObject("WScript.Shell")
 >> "%VBS%" echo Set fso = CreateObject("Scripting.FileSystemObject")
->> "%VBS%" echo Dim sChrome, sURL, sUserData, sLock, sParent
+>> "%VBS%" echo Dim sChrome, sURL, sUserData, sLock, sParent, bHidden
 >> "%VBS%" echo sChrome = "%CHROME%"
 >> "%VBS%" echo sURL = "%URL%"
 >> "%VBS%" echo sParent = oShell.ExpandEnvironmentStrings("%%LOCALAPPDATA%%") ^& "\교실알림"
@@ -41,13 +41,27 @@ set "VBS=%STARTUP%\교실알림_1-3.vbs"
 >> "%VBS%" echo sLock = sUserData ^& "\lockfile"
 >> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
 >> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
+>> "%VBS%" echo bHidden = False
 >> "%VBS%" echo WScript.Sleep 5000
 >> "%VBS%" echo Do While True
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
 >> "%VBS%" echo     WScript.Sleep 3000
 >> "%VBS%" echo     If Not fso.FileExists(sLock) Then
+>> "%VBS%" echo       bHidden = False
 >> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --start-minimized --window-position=-32000,-32000", 7, False
 >> "%VBS%" echo       WScript.Sleep 15000
+>> "%VBS%" echo     End If
+>> "%VBS%" echo   Else
+>> "%VBS%" echo     If Not bHidden Then
+>> "%VBS%" echo       On Error Resume Next
+>> "%VBS%" echo       Dim bResult
+>> "%VBS%" echo       bResult = oShell.AppActivate("[HIDE]")
+>> "%VBS%" echo       If bResult Then
+>> "%VBS%" echo         WScript.Sleep 200
+>> "%VBS%" echo         oShell.SendKeys "%% n"
+>> "%VBS%" echo         bHidden = True
+>> "%VBS%" echo       End If
+>> "%VBS%" echo       On Error GoTo 0
 >> "%VBS%" echo     End If
 >> "%VBS%" echo   End If
 >> "%VBS%" echo   WScript.Sleep 10000
