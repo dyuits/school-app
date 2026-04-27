@@ -36,7 +36,7 @@ set "VBS=%STARTUP%\교실알림_3-5.vbs"
 >> "%VBS%" echo Dim sChrome, sURL, sUserData, sLock
 >> "%VBS%" echo sChrome = "%CHROME%"
 >> "%VBS%" echo sURL = "%URL%"
->> "%VBS%" echo sUserData = Environ("LOCALAPPDATA") ^& "\교실알림\3-5"
+>> "%VBS%" echo sUserData = oShell.ExpandEnvironmentStrings("%LOCALAPPDATA%") ^& "\교실알림\3-5"
 >> "%VBS%" echo sLock = sUserData ^& "\lockfile"
 >> "%VBS%" echo WScript.Sleep 10000
 >> "%VBS%" echo Do While True
