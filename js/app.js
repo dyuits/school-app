@@ -232,8 +232,9 @@ function renderSwapTable() {
           cellStyle = 'style="background:var(--cell-blocked-bg);cursor:default;"';
           cellContent = `<span style="font-size:9.5px;color:#c07070;">불가</span>`;
         } else if (isChatech && !val) {
-          cellStyle = 'style="background:var(--cell-chatech-bg);cursor:default;"';
+          cellStyle = 'style="background:var(--cell-chatech-bg);"';
           cellContent = `<span class="cell-chatech">창체</span>`;
+          clickable = `onclick="onCellClick('${teacher}','${day}',${period})"`;
         } else if (val) {
           const info = parseCellValue(val, teacher, key);
           cellInfo = info;
@@ -398,6 +399,20 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
 
 // 대체 후보 (공강 선생님 중 같은 교과)
 function findSubstituteCandidates(myTeacher, day, period) {
+  // 창체 시간인 경우: 비담임 교사 명단에서 해당 시간 공강인 교사를 대체 후보로 반환
+  if (isChatcheTime(myTeacher, day, period)) {
+    const results = [];
+    const key = day + period;
+    CHANGCHE_AVAILABLE_TEACHERS.forEach(candidate => {
+      if (isBlockedTime(candidate, day, period)) return;
+      const candRow = TEACHER_SCHEDULE[candidate] || {};
+      if (!(candRow[key] || '').trim()) {
+        results.push({ teacher: candidate, subject: '창체' });
+      }
+    });
+    return results;
+  }
+
   const subMap = SUBJECT_SUBSTITUTE_MAP[myTeacher];
   if (!subMap || subMap.canSubFor.length === 0) return [];
 
