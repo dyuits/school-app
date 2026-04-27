@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교실 알림 설치 안내</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
+    body{font-family:'Noto Sans KR',sans-serif;background:#f8fafc;color:#0f172a;padding:24px}
+    .wrap{max-width:920px;margin:0 auto}
+    .hero,.step,.tips{background:#fff;border-radius:24px;padding:24px;box-shadow:0 14px 36px rgba(15,23,42,.08);margin-bottom:18px}
+    h1{font-size:36px;font-weight:900;margin-bottom:10px}
+    h2{font-size:24px;font-weight:900;margin-bottom:14px}
+    p,li{line-height:1.8;color:#334155}
+    ol,ul{padding-left:22px}
+    .step-num{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#667eea;color:#fff;font-weight:900;margin-right:8px}
+    .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .btn{padding:12px 16px;border-radius:12px;background:#667eea;color:#fff;text-decoration:none;font-weight:800}
+    .sub{font-size:14px;color:#64748b;margin-top:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>전자칠판 설치 안내</h1>
+      <p>안드로이드 전자칠판에서 GitHub Pages 주소만 열면 교실 알림을 사용할 수 있습니다. 초기 설정은 1~2분이면 끝납니다.</p>
+      <div class="links">
+        <a class="btn" href="./classroom.html">교실 알림 열기</a>
+        <a class="btn" href="./qr.html">QR 코드 인쇄</a>
+      </div>
+    </section>
+
+    <section class="step">
+      <h2><span class="step-num">1</span>Chrome에서 URL 접속</h2>
+      <ol>
+        <li>전자칠판에서 Chrome 브라우저를 실행합니다.</li>
+        <li>GitHub Pages 주소 또는 반별 QR 코드를 엽니다.</li>
+        <li>예: `classroom.html?class=1-1` 또는 `classroom.html` 후 반 선택</li>
+      </ol>
+    </section>
+
+    <section class="step">
+      <h2><span class="step-num">2</span>반 선택 및 초기 권한 허용</h2>
+      <ol>
+        <li>반 파라미터가 없으면 1-1부터 3-10까지 버튼이 표시됩니다.</li>
+        <li>해당 반을 선택하면 교실 대기 화면이 열립니다.</li>
+        <li>화면을 한 번 터치해 전체 화면, 오디오, 화면 켜짐 유지 기능을 활성화합니다.</li>
+      </ol>
+    </section>
+
+    <section class="step">
+      <h2><span class="step-num">3</span>홈 화면에 추가</h2>
+      <ol>
+        <li>Chrome 우측 상단 메뉴를 엽니다.</li>
+        <li>`홈 화면에 추가` 또는 `앱 설치` 메뉴를 선택합니다.</li>
+        <li>앱 이름을 `교실 알림`으로 저장합니다.</li>
+        <li>이후 홈 화면 아이콘을 눌러 앱처럼 실행합니다.</li>
+      </ol>
+      <p class="sub">브라우저 종류에 따라 메뉴 이름은 조금 다를 수 있습니다.</p>
+    </section>
+
+    <section class="step">
+      <h2><span class="step-num">4</span>전체 화면과 절전 방지</h2>
+      <ol>
+        <li>페이지를 처음 터치하면 전체 화면 전환을 시도합니다.</li>
+        <li>Wake Lock 지원 기기에서는 화면 꺼짐 방지를 자동 요청합니다.</li>
+        <li>기기 정책상 잠금이 계속되면 안드로이드 설정에서 자동 꺼짐 시간을 길게 설정하세요.</li>
+      </ol>
+    </section>
+
+    <section class="tips">
+      <h2>운영 팁</h2>
+      <ul>
+        <li>좌측 상단 설정에서 음성, 호출음, 볼륨, 반복 횟수를 반별로 저장할 수 있습니다.</li>
+        <li>상단 연결 표시가 `✅ 연결됨`이면 Firebase 실시간 수신이 정상입니다.</li>
+        <li>오프라인 또는 연결 끊김 시 자동으로 재연결을 시도합니다.</li>
+        <li>QR 코드를 출력해 전자칠판 옆에 붙여두면 재설치가 쉬워집니다.</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>

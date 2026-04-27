@@ -1,0 +1,5 @@
+{
+  "defaultClass": "",
+  "heartbeatIntervalMs": 5000,
+  "presenceOfflineMs": 15000
+}

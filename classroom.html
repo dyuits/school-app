@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>교실 알림</title>
+  <meta name="theme-color" content="#667eea">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="교실 알림">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:#111827}
+    body{overflow:hidden}
+    button,input,select{font:inherit}
+    .idle,.picker{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;text-align:center;padding:24px}
+    .hidden{display:none!important}
+    .idle-class{font-size:clamp(34px,5vw,56px);font-weight:900;color:#ffd700;margin-bottom:8px}
+    .idle-icon{font-size:72px;margin-bottom:16px;opacity:.85}
+    .idle-title{font-size:clamp(24px,3vw,36px);font-weight:800;margin-bottom:6px}
+    .idle-sub{font-size:16px;opacity:.7}
+    .idle-time{font-size:clamp(72px,12vw,120px);font-weight:900;margin-top:28px;letter-spacing:2px}
+    .idle-date{font-size:18px;opacity:.6;margin-top:6px}
+    .idle-status{position:absolute;top:20px;right:20px;padding:8px 16px;border-radius:24px;font-size:13px;font-weight:700}
+    .status-ok{background:rgba(60,200,100,.2);color:#7fff7f}
+    .status-err{background:rgba(255,80,80,.2);color:#ff9d9d}
+    .settings-btn,.top-btn{position:absolute;top:20px;padding:10px 18px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.28);border-radius:999px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;backdrop-filter:blur(6px)}
+    .settings-btn{left:20px}
+    .picker-btn{right:20px}
+    .wakelock-badge{position:absolute;bottom:20px;right:20px;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16)}
+    .fs-hint{position:absolute;bottom:20px;left:20px;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16)}
+    .picker-wrap{width:min(1100px,100%);background:rgba(14,23,43,.24);border:1px solid rgba(255,255,255,.16);border-radius:28px;padding:28px;backdrop-filter:blur(10px);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+    .picker-title{font-size:clamp(30px,4vw,48px);font-weight:900;margin-bottom:10px}
+    .picker-sub{font-size:16px;opacity:.8;margin-bottom:24px}
+    .picker-tools{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
+    .picker-tools input{width:min(340px,100%);padding:14px 16px;border-radius:14px;border:none;background:rgba(255,255,255,.14);color:#fff}
+    .picker-tools input::placeholder{color:rgba(255,255,255,.65)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:12px}
+    .class-btn{padding:18px 12px;border:none;border-radius:18px;background:#fff;color:#24304a;font-size:24px;font-weight:900;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+    .class-btn:hover,.class-btn:focus{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.16)}
+    .class-btn small{display:block;font-size:12px;font-weight:700;color:#6b7280;margin-top:6px}
+    .soverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+    .soverlay.open{display:flex}
+    .sbox{width:90%;max-width:460px;background:#1e2a3a;border:2px solid rgba(255,255,255,.15);border-radius:20px;padding:24px;color:#fff;max-height:85vh;overflow-y:auto}
+    .stitle{font-size:18px;font-weight:900;color:#ffd700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+    .sclose{background:none;border:none;color:rgba(255,255,255,.5);font-size:20px;cursor:pointer}
+    .srow{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .slbl{min-width:80px;font-size:13px;font-weight:700;color:rgba(255,255,255,.66);text-align:right}
+    .ssel{flex:1;padding:11px 12px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-size:14px;font-weight:600;appearance:auto}
+    .ssel option{background:#1a1a2e;color:#fff}
+    .srng{flex:1;accent-color:#ffd700;height:6px}
+    .sval{min-width:30px;font-size:15px;font-weight:900;color:#ffd700;text-align:center}
+    .tbtn{width:100%;padding:12px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px}
+    .call{display:none;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;text-align:center;padding:40px}
+    .call.show{display:flex;animation:fi .5s ease}
+    @keyframes fi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .cbell{font-size:94px;animation:br .5s ease-in-out 3;margin-bottom:24px}
+    @keyframes br{0%{transform:rotate(0)}25%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}75%{transform:rotate(8deg)}100%{transform:rotate(0)}}
+    .cteacher{font-size:26px;font-weight:600;color:rgba(255,255,255,.55);margin-bottom:8px}
+    .cname{font-size:clamp(68px,10vw,110px);font-weight:900;margin-bottom:24px;line-height:1.2;text-shadow:0 4px 20px rgba(0,0,0,.3)}
+    .cname .hl{color:#ffd700}
+    .cmsg{font-size:clamp(34px,5vw,54px);font-weight:700;color:rgba(255,255,255,.94);line-height:1.5;padding:24px 48px;background:rgba(255,255,255,.08);border-radius:24px;border:2px solid rgba(255,255,255,.12);max-width:90%}
+    .ctime{font-size:15px;opacity:.35;position:absolute;bottom:24px}
+    .call.fo{animation:fo 1s ease forwards}
+    @keyframes fo{to{opacity:0;transform:scale(.9)}}
+    .permission{position:absolute;left:50%;bottom:64px;transform:translateX(-50%);padding:14px 18px;border-radius:18px;background:rgba(17,24,39,.72);border:1px solid rgba(255,255,255,.16);max-width:min(92vw,560px);font-size:14px;line-height:1.5}
+    .permission button{margin-top:10px;padding:11px 16px;border:none;border-radius:12px;background:#ffd700;color:#1f2937;font-weight:900;cursor:pointer}
+    @media (max-width:768px){
+      .settings-btn,.picker-btn,.idle-status{position:static;margin-bottom:12px}
+      .idle,.picker{padding-top:32px;padding-bottom:32px}
+      .srow{flex-direction:column;align-items:stretch}
+      .slbl{text-align:left;min-width:0}
+      .permission{bottom:20px}
+    }
+  </style>
+</head>
+<body>
+  <div class="picker hidden" id="pickerScreen">
+    <div class="picker-wrap">
+      <div class="picker-title">교실 알림 반 선택</div>
+      <div class="picker-sub">전자칠판에서 한 번 선택하면 해당 반 URL을 북마크하거나 홈 화면에 추가하세요.</div>
+      <div class="picker-tools">
+        <input id="classSearch" type="text" placeholder="반 검색 예: 2-5" oninput="renderClassButtons()">
+      </div>
+      <div class="grid" id="classGrid"></div>
+    </div>
+  </div>
+
+  <div class="idle hidden" id="idle">
+    <button class="settings-btn" onclick="openS()">⚙️ 설정</button>
+    <button class="top-btn picker-btn" onclick="goPicker()">🏫 반 선택</button>
+    <div class="idle-status status-ok" id="statusBadge">✅ 연결됨</div>
+    <div class="idle-class" id="idleClassLabel">-</div>
+    <div class="idle-icon">📢</div>
+    <div class="idle-title">호출 대기중</div>
+    <div class="idle-sub">교무실에서 호출하면 자동으로 표시됩니다</div>
+    <div class="idle-time" id="iT">--:--</div>
+    <div class="idle-date" id="iD">-</div>
+    <div class="fs-hint" id="fsHint">🖐️ 한 번 터치하면 전체 화면으로 전환</div>
+    <div class="wakelock-badge" id="wakeBadge">🔆 화면 켜짐 유지 시도 중</div>
+    <div class="permission hidden" id="audioPermission">
+      호출음과 음성 안내를 안정적으로 재생하려면 한 번 눌러 오디오를 활성화하세요.
+      <br>
+      <button onclick="primeAudio()">오디오 활성화</button>
+    </div>
+  </div>
+
+  <div class="soverlay" id="sO" onclick="if(event.target===this)closeS()"><div class="sbox">
+    <div class="stitle">⚙️ 알림 설정<button class="sclose" onclick="closeS()">✕</button></div>
+    <div class="srow"><span class="slbl">음성</span><select class="ssel" id="vSel" onchange="saveS()"></select></div>
+    <div class="srow"><span class="slbl">호출음</span><select class="ssel" id="cSel" onchange="saveS()"><option value="dingdong">🔔 딩동</option><option value="chime">🎵 차임</option><option value="melody">🎶 멜로디</option><option value="knock">🪵 노크</option><option value="drop">💧 물방울</option><option value="bell">🔔 종소리</option><option value="phone">📞 전화벨</option><option value="alarm">🚨 알람</option></select></div>
+    <div class="srow"><span class="slbl">호출 횟수</span><select class="ssel" id="rSel" onchange="saveS()"><option value="1">1회</option><option value="2" selected>2회</option><option value="3">3회</option></select></div>
+    <div class="srow"><span class="slbl">볼륨</span><input type="range" class="srng" id="vR" min="1" max="10" value="8" oninput="document.getElementById('vV').textContent=this.value;saveS()"><span class="sval" id="vV">8</span></div>
+    <button class="tbtn" onclick="testC()">🔊 소리 테스트</button>
+    <div class="srow"><span class="slbl">음성 크기</span><input type="range" class="srng" id="sR" min="1" max="10" value="10" oninput="document.getElementById('sV').textContent=this.value;saveS()"><span class="sval" id="sV">10</span></div>
+    <button class="tbtn" onclick="testSp()">🗣️ 음성 테스트</button>
+  </div></div>
+
+  <div class="call" id="call">
+    <div class="cbell">🔔</div>
+    <div class="cteacher" id="cT"></div>
+    <div class="cname" id="cN"></div>
+    <div class="cmsg" id="cM"></div>
+    <div class="ctime" id="cTm"></div>
+  </div>
+
+  <script>
+    const CLASS_LIST = Array.from({length: 3}, (_, grade) => Array.from({length: 10}, (_, number) => `${grade + 1}-${number + 1}`)).flat();
+    const params = new URLSearchParams(location.search);
+    let CLS = normalizeClass(params.get('class'));
+    let selV = null;
+    let db = null;
+    let lastCallTs = 0;
+    let heartbeatTimer = null;
+    let reconnectTimer = null;
+    let wakeLock = null;
+    let broadcastChannel = null;
+    let currentCallRef = null;
+    let currentHeartbeatRef = null;
+    let currentConnectedRef = null;
+    let audioCtx = null;
+    let nativeBridgeReady = false;
+    let callQueue = [];
+    let isHandlingCall = false;
+
+    function detectBridge(){
+      const bridge = window.AndroidBridge || window.ClassroomNativeBridge || window.electronAPI || null;
+      nativeBridgeReady = !!bridge;
+      return bridge;
+    }
+
+    function getAudioContext(){
+      if(!audioCtx || audioCtx.state === 'closed'){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if(audioCtx.state === 'suspended'){
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function getRuntimeSource(){
+      const bridge = detectBridge();
+      if(bridge && typeof bridge.getRuntimeInfo === 'function'){
+        try{
+          const info = bridge.getRuntimeInfo();
+          if(info && info.source) return info.source;
+        }catch(error){}
+      }
+      if(window.electronAPI) return 'electron';
+      if(window.AndroidBridge || window.ClassroomNativeBridge) return 'android';
+      return 'web';
+    }
+
+    function normalizeClass(value){
+      if(!value) return '';
+      const match = String(value).trim().match(/^([1-3])[- ]?(10|[1-9])$/);
+      return match ? `${match[1]}-${match[2]}` : '';
+    }
+
+    function getClassTitle(cls){
+      if(!cls) return '교실 알림';
+      const [grade, room] = cls.split('-');
+      return `${grade}학년 ${room}반 교실`;
+    }
+
+    function setClassUI(){
+      const label = getClassTitle(CLS);
+      document.title = clsAvailable() ? `${label} 알림` : '교실 알림';
+      document.getElementById('idleClassLabel').textContent = label;
+    }
+
+    function clsAvailable(){
+      return CLASS_LIST.includes(CLS);
+    }
+
+    function showPicker(){
+      document.getElementById('pickerScreen').classList.remove('hidden');
+      document.getElementById('idle').classList.add('hidden');
+      closeS();
+      renderClassButtons();
+    }
+
+    function showIdle(){
+      document.getElementById('pickerScreen').classList.add('hidden');
+      document.getElementById('idle').classList.remove('hidden');
+      setClassUI();
+    }
+
+    function renderClassButtons(){
+      const grid = document.getElementById('classGrid');
+      const keyword = document.getElementById('classSearch').value.trim();
+      const classes = CLASS_LIST.filter(cls => !keyword || cls.includes(keyword));
+      grid.innerHTML = classes.map(cls => `<button class="class-btn" onclick="selectClass('${cls}')">${cls}<small>${getClassTitle(cls)}</small></button>`).join('');
+    }
+
+    function selectClass(cls){
+      const url = new URL(location.href);
+      url.searchParams.set('class', cls);
+      history.replaceState({}, '', url);
+      CLS = cls;
+      initForClass();
+    }
+
+    function goPicker(){
+      history.replaceState({}, '', location.pathname);
+      CLS = '';
+      teardownRealtime();
+      showPicker();
+    }
+
+    function updateStatus(text, ok){
+      const badge = document.getElementById('statusBadge');
+      badge.textContent = text;
+      badge.className = `idle-status ${ok ? 'status-ok' : 'status-err'}`;
+    }
+
+    function setupFirebase(){
+      if(!firebase.apps.length){
+        firebase.initializeApp({
+          apiKey:"AIzaSyDF8OLuBylKToxAxKDfZAm9D1uBRlBjv4s",
+          databaseURL:"https://numeric-mile-356201-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId:"numeric-mile-356201"
+        });
+      }
+      db = firebase.database();
+    }
+
+    function sendHeartbeat(){
+      if(!clsAvailable() || !db) return;
+      currentHeartbeatRef = db.ref('heartbeat/' + CLS);
+      currentHeartbeatRef.set({
+        ts: Date.now(),
+        source: getRuntimeSource(),
+        audioReady: nativeBridgeReady || !!audioCtx
+      });
+    }
+
+    function startHeartbeat(){
+      clearInterval(heartbeatTimer);
+      sendHeartbeat();
+      heartbeatTimer = setInterval(sendHeartbeat, 5000);
+      currentHeartbeatRef = db.ref('heartbeat/' + CLS);
+      currentHeartbeatRef.onDisconnect().remove();
+    }
+
+    function teardownRealtime(){
+      clearInterval(heartbeatTimer);
+      heartbeatTimer = null;
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+      if(currentCallRef) currentCallRef.off();
+      if(currentHeartbeatRef) currentHeartbeatRef.off();
+      if(currentConnectedRef) currentConnectedRef.off();
+      if(broadcastChannel) broadcastChannel.close();
+      currentCallRef = null;
+      currentHeartbeatRef = null;
+      currentConnectedRef = null;
+      broadcastChannel = null;
+      lastCallTs = 0;
+    }
+
+    function scheduleReconnect(){
+      if(reconnectTimer || !clsAvailable()) return;
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        bindRealtime();
+      }, 5000);
+    }
+
+    function bindRealtime(){
+      if(!clsAvailable()) return;
+      teardownRealtime();
+      setupFirebase();
+      updateStatus('⏳ 연결 확인 중', false);
+      currentConnectedRef = db.ref('.info/connected');
+      currentConnectedRef.on('value', snap => {
+        if(snap.val()){
+          updateStatus('✅ 연결됨', true);
+          startHeartbeat();
+        }else{
+          updateStatus('❌ 연결 끊김', false);
+          scheduleReconnect();
+        }
+      });
+      currentCallRef = db.ref('calls/' + CLS);
+      currentCallRef.on('value', snap => {
+        const data = snap.val();
+        if(data && data.timestamp && data.timestamp > lastCallTs){
+          lastCallTs = data.timestamp;
+          showCall(data);
+        }
+      }, () => {
+        updateStatus('⚠️ 재연결 시도 중', false);
+        scheduleReconnect();
+      });
+      try{
+        broadcastChannel = new BroadcastChannel('student-call-' + CLS);
+        broadcastChannel.onmessage = event => {
+          if(event.data && event.data.type === 'call') showCall(event.data);
+        };
+      }catch(error){}
+    }
+
+    function uCk(){
+      const now = new Date();
+      const pad = value => String(value).padStart(2,'0');
+      const week = ['일','월','화','수','목','금','토'];
+      const time = document.getElementById('iT');
+      const date = document.getElementById('iD');
+      if(time) time.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      if(date) date.textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${week[now.getDay()]})`;
+    }
+
+    function ensureVoices(){
+      return new Promise(resolve => {
+        const voices = speechSynthesis.getVoices();
+        if(voices.length > 0){ resolve(voices); return; }
+        let done = false;
+        speechSynthesis.onvoiceschanged = () => {
+          if(!done){ done = true; resolve(speechSynthesis.getVoices()); }
+        };
+        let tries = 0;
+        const interval = setInterval(() => {
+          const v2 = speechSynthesis.getVoices();
+          if(v2.length > 0 || tries++ > 20){
+            clearInterval(interval);
+            if(!done){ done = true; resolve(v2); }
+          }
+        }, 200);
+      });
+    }
+
+    function ldV(){
+      if(!('speechSynthesis' in window)) return;
+      ensureVoices().then(voices => {
+        const select = document.getElementById('vSel');
+        const korean = voices.filter(voice => voice.lang.startsWith('ko'));
+        const list = korean.length ? korean : voices.slice(0, 15);
+        select.innerHTML = '';
+        list.forEach((voice, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.textContent = voice.name;
+          option.dataset.n = voice.name;
+          select.appendChild(option);
+        });
+        const savedVoice = localStorage.getItem('cr_voice_' + (CLS || 'default'));
+        if(savedVoice){
+          for(const option of select.options){
+            if(option.dataset.n === savedVoice){
+              select.value = option.value;
+              break;
+            }
+          }
+        }
+        updV(voices);
+      });
+    }
+
+    function updV(voiceList){
+      const select = document.getElementById('vSel');
+      const voices = voiceList || speechSynthesis.getVoices();
+      const korean = voices.filter(voice => voice.lang.startsWith('ko'));
+      const list = korean.length ? korean : voices.slice(0, 15);
+      selV = list[parseInt(select.value, 10) || 0] || null;
+    }
+
+    function getStorageKey(){
+      return 'cr_s_' + (CLS || 'default');
+    }
+
+    function saveS(){
+      updV();
+      try{
+        localStorage.setItem(getStorageKey(), JSON.stringify({
+          v: selV ? selV.name : '',
+          c: document.getElementById('cSel').value,
+          r: document.getElementById('rSel').value,
+          vl: document.getElementById('vR').value,
+          sv: document.getElementById('sR').value
+        }));
+        localStorage.setItem('cr_voice_' + (CLS || 'default'), selV ? selV.name : '');
+      }catch(error){}
+    }
+
+    function ldS(){
+      try{
+        const settings = JSON.parse(localStorage.getItem(getStorageKey()));
+        if(!settings) return;
+        document.getElementById('cSel').value = settings.c || 'dingdong';
+        document.getElementById('rSel').value = settings.r || '2';
+        document.getElementById('vR').value = settings.vl || 8;
+        document.getElementById('vV').textContent = settings.vl || 8;
+        document.getElementById('sR').value = settings.sv || 10;
+        document.getElementById('sV').textContent = settings.sv || 10;
+      }catch(error){}
+    }
+
+    function openS(){ document.getElementById('sO').classList.add('open'); }
+    function closeS(){ document.getElementById('sO').classList.remove('open'); }
+    function gVol(){ return parseInt(document.getElementById('vR').value, 10) / 10; }
+    function gSV(){ return parseInt(document.getElementById('sR').value, 10) / 10; }
+
+    function playTone(context, frequency, start, duration, wave, volume){
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.type = wave || 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(volume * gVol(), context.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(.01, context.currentTime + start + duration);
+      oscillator.start(context.currentTime + start);
+      oscillator.stop(context.currentTime + start + duration);
+    }
+
+    async function playNativeAlert(type){
+      const bridge = detectBridge();
+      if(!bridge) return false;
+      try{
+        if(typeof bridge.playAlert === 'function'){
+          await bridge.playAlert(type, gVol());
+          return true;
+        }
+      }catch(error){}
+      return false;
+    }
+
+    function playC(){
+      const type = document.getElementById('cSel').value;
+      return new Promise(resolve => {
+        try{
+          const context = getAudioContext();
+          const sounds = {
+            dingdong: () => { playTone(context, 880, 0, .5, 'sine', .4); playTone(context, 659, .4, .7, 'sine', .4); },
+            chime: () => { playTone(context, 523, 0, .8, 'sine', .3); playTone(context, 659, .3, .8, 'sine', .3); playTone(context, 784, .6, 1, 'sine', .3); },
+            melody: () => [523,659,784,1047].forEach((frequency, index) => playTone(context, frequency, index * .2, .5, 'sine', .3)),
+            knock: () => { playTone(context, 200, 0, .1, 'square', .5); playTone(context, 180, .2, .1, 'square', .5); playTone(context, 200, .5, .1, 'square', .4); },
+            drop: () => { playTone(context, 1200, 0, .3, 'sine', .3); playTone(context, 800, .15, .4, 'sine', .25); playTone(context, 600, .35, .5, 'sine', .2); },
+            bell: () => { playTone(context, 880, 0, 1.2, 'sine', .4); playTone(context, 660, .8, 1, 'sine', .3); },
+            phone: () => { for(let index = 0; index < 4; index++){ playTone(context, 1400, index * .3, .12, 'square', .3); playTone(context, 1800, index * .3 + .12, .12, 'square', .3); } },
+            alarm: () => { for(let index = 0; index < 6; index++) playTone(context, 800 + (index % 2) * 400, index * .25, .2, 'sawtooth', .25); }
+          };
+          (sounds[type] || sounds.dingdong)();
+          setTimeout(resolve, 2000);
+        }catch(error){
+          resolve();
+        }
+      });
+    }
+
+    async function speakNative(text){
+      const bridge = detectBridge();
+      if(!bridge) return false;
+      try{
+        if(typeof bridge.speakText === 'function'){
+          await bridge.speakText(text, {
+            volume: gSV(),
+            voiceName: selV ? selV.name : '',
+            lang: 'ko-KR'
+          });
+          return true;
+        }
+      }catch(error){}
+      return false;
+    }
+
+    function spk(text){
+      if(!('speechSynthesis' in window)) return Promise.resolve();
+      speechSynthesis.cancel();
+      const clean = text.replace(/[^가-힣a-zA-Z0-9\s,.!?\-]/g,'').slice(0, 100);
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = 'ko-KR';
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = gSV();
+      if(selV) utterance.voice = selV;
+      return new Promise(resolve => {
+        utterance.onend = resolve;
+        utterance.onerror = resolve;
+        speechSynthesis.speak(utterance);
+        setTimeout(resolve, 30000);
+      });
+    }
+
+    function testC(){ playC(); }
+    function testSp(){ spk('안녕하세요. 음성 테스트입니다.'); }
+
+    async function consumeCallQueue(){
+      if(isHandlingCall || !callQueue.length) return;
+      isHandlingCall = true;
+      const data = callQueue.shift();
+      closeS();
+      if('speechSynthesis' in window && !selV){
+        await new Promise(resolve => { ensureVoices().then(v => { updV(v); resolve(); }); });
+      }
+      const idle = document.getElementById('idle');
+      const call = document.getElementById('call');
+      idle.style.display = 'none';
+      call.style.display = 'flex';
+      call.className = 'call show';
+      document.getElementById('cT').textContent = data.callerTeacher ? `${data.callerTeacher} 선생님 호출` : '';
+      document.getElementById('cN').innerHTML = `<span class="hl">${data.studentName || '학생'}</span> 학생`;
+      document.getElementById('cM').textContent = data.message || '교무실로 와주세요';
+      const now = new Date();
+      document.getElementById('cTm').textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      const speech = `${data.studentName || '학생'} 학생, ${data.message || '교무실로 와주세요'}`;
+      const repeat = parseInt(document.getElementById('rSel').value, 10) || 2;
+      for(let index = 0; index < repeat; index++){
+        if(index > 0) await new Promise(resolve => setTimeout(resolve, 2000));
+        const playedNatively = await playNativeAlert(document.getElementById('cSel').value);
+        if(!playedNatively) await playC();
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const spokenNatively = await speakNative(speech);
+        if(!spokenNatively) await spk(speech);
+      }
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      call.className = 'call fo';
+      setTimeout(() => {
+        call.style.display = 'none';
+        idle.style.display = 'flex';
+        isHandlingCall = false;
+        consumeCallQueue();
+      }, 1000);
+    }
+
+    function showCall(data){
+      callQueue.push(data);
+      consumeCallQueue();
+    }
+
+    async function requestWakeLock(){
+      const badge = document.getElementById('wakeBadge');
+      if(!('wakeLock' in navigator)){
+        badge.textContent = '🔅 Wake Lock 미지원 브라우저';
+        return;
+      }
+      try{
+        wakeLock = await navigator.wakeLock.request('screen');
+        badge.textContent = '🔆 화면 꺼짐 방지 활성화';
+        wakeLock.addEventListener('release', () => {
+          badge.textContent = '🔅 화면 유지 재시도 대기';
+        });
+      }catch(error){
+        badge.textContent = '🔅 화면 유지 권한 필요';
+      }
+    }
+
+    async function requestFullscreen(){
+      const hint = document.getElementById('fsHint');
+      if(document.fullscreenElement || !document.documentElement.requestFullscreen) return;
+      try{
+        await document.documentElement.requestFullscreen();
+        hint.textContent = '✅ 전체 화면 활성화됨';
+      }catch(error){
+        hint.textContent = 'ℹ️ 브라우저 메뉴에서 전체 화면 가능';
+      }
+    }
+
+    function handleUserActivation(){
+      requestWakeLock();
+      requestFullscreen();
+      primeAudio();
+    }
+
+    async function primeAudio(){
+      const panel = document.getElementById('audioPermission');
+      try{
+        const bridge = detectBridge();
+        if(bridge && typeof bridge.primeAudio === 'function'){
+          await bridge.primeAudio();
+        }
+        const ac = getAudioContext();
+        await ac.resume();
+        // speechSynthesis 초기화
+        if('speechSynthesis' in window){
+          const dummy = new SpeechSynthesisUtterance('');
+          speechSynthesis.speak(dummy);
+          speechSynthesis.cancel();
+        }
+        await playC();
+        panel.classList.add('hidden');
+      }catch(error){
+        panel.classList.remove('hidden');
+      }
+    }
+
+    async function registerServiceWorker(){
+      if('serviceWorker' in navigator){
+        try{
+          await navigator.serviceWorker.register('./sw.js');
+        }catch(error){}
+      }
+    }
+
+    function initForClass(){
+      if(!clsAvailable()){
+        showPicker();
+        return;
+      }
+      showIdle();
+      setClassUI();
+      ldS();
+      bindRealtime();
+      requestWakeLock();
+    }
+
+    window.addEventListener('online', () => bindRealtime());
+    window.addEventListener('offline', () => updateStatus('❌ 오프라인', false));
+    document.addEventListener('visibilitychange', () => {
+      if(document.visibilityState === 'visible') requestWakeLock();
+    });
+    document.addEventListener('click', handleUserActivation, {once: true});
+    document.addEventListener('touchstart', handleUserActivation, {once: true});
+
+    if('speechSynthesis' in window){
+      ldV();
+    }
+
+    uCk();
+    setInterval(uCk, 10000);
+    registerServiceWorker();
+    initForClass();
+  </script>
+</body>
+</html>

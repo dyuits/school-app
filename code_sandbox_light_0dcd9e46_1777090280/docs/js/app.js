@@ -2230,15 +2230,22 @@ function toggleFilterChip(el) {
 // ═══════════════════════════════════════════════
 // 교실 연결 상태 모니터링 (하트비트)
 // ═══════════════════════════════════════════════
-const connectedClasses = {};  // { "1-1": timestamp, ... }
+const connectedClasses = {};  // { "1-1": { ts, source, audioReady }, ... }
 
 // Firebase 하트비트 수신
 function startHeartbeatListener() {
   if (!firebaseDB) return;
   firebaseDB.ref('heartbeat').on('value', (snap) => {
     const data = snap.val() || {};
+    Object.keys(connectedClasses).forEach(cls => {
+      if (!data[cls]) delete connectedClasses[cls];
+    });
     Object.keys(data).forEach(cls => {
-      connectedClasses[cls] = data[cls].ts || 0;
+      connectedClasses[cls] = {
+        ts: data[cls].ts || 0,
+        source: data[cls].source || 'web',
+        audioReady: !!data[cls].audioReady
+      };
     });
   });
 }
@@ -2248,14 +2255,35 @@ try {
   const heartbeatChannel = new BroadcastChannel('heartbeat');
   heartbeatChannel.onmessage = (e) => {
     if (e.data && e.data.type === 'alive' && e.data.cls) {
-      connectedClasses[e.data.cls] = Date.now();
+      connectedClasses[e.data.cls] = {
+        ts: Date.now(),
+        source: e.data.source || 'web',
+        audioReady: e.data.audioReady !== false
+      };
     }
   };
 } catch(e) {}
 
 function isClassConnected(cls) {
-  const last = connectedClasses[cls];
-  return last && (Date.now() - last < 10000); // 10초 이내 하트비트
+  const info = connectedClasses[cls];
+  const last = info?.ts || 0;
+  return last && (Date.now() - last < 15000);
+}
+
+function getClassConnectionMeta(cls) {
+  const info = connectedClasses[cls] || {};
+  const source = info.source || 'web';
+  const sourceLabel = source === 'electron'
+    ? 'Windows 앱'
+    : source === 'android-webview'
+      ? 'Android 앱'
+      : '웹';
+  return {
+    source,
+    sourceLabel,
+    audioReady: !!info.audioReady,
+    ts: info.ts || 0
+  };
 }
 
 // ═══════════════════════════════════════════════
@@ -2421,10 +2449,11 @@ window.addEventListener('DOMContentLoaded', () => {
     if (el && STATE.rosterUnlockedClass) {
       const cls = STATE.rosterUnlockedClass;
       const conn = isClassConnected(cls);
+      const meta = getClassConnectionMeta(cls);
       const dc = conn ? '#3da86a' : '#e05050';
       el.style.background = conn ? '#e8f8ee' : '#fff0f0';
       el.style.borderColor = dc;
-      el.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dc};"></span><strong style="color:${dc};">${conn ? '교실 연결됨' : '교실 미연결'}</strong><span style="color:var(--txt-light);">— classroom/${cls}.html 파일을 교실 전자칠판에서 열어두세요</span>`;
+      el.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dc};"></span><strong style="color:${dc};">${conn ? '교실 연결됨' : '교실 미연결'}</strong><span style="color:var(--txt-light);">— ${meta.sourceLabel}${meta.audioReady ? ' · 오디오 준비됨' : ''}</span>`;
     }
   }, 3000);
 
