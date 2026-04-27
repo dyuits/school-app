@@ -35,7 +35,7 @@ set "VBS=%STARTUP%\교실알림_3-9.vbs"
 >> "%VBS%" echo Dim sChrome, sURL, sUserData
 >> "%VBS%" echo sChrome = "%CHROME%"
 >> "%VBS%" echo sURL = "%URL%"
->> "%VBS%" echo sUserData = Environ("LOCALAPPDATA") ^& "\교실알림\3-9"
+>> "%VBS%" echo sUserData = oShell.ExpandEnvironmentStrings("%%LOCALAPPDATA%%") ^& "\교실알림\3-9"
 >> "%VBS%" echo Function IsRunning()
 >> "%VBS%" echo   Dim oWMI, procs, p
 >> "%VBS%" echo   Set oWMI = GetObject("winmgmts:\\\\.\oot\\cimv2")
