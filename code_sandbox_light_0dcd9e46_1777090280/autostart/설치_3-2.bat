@@ -26,35 +26,20 @@ set "VBS=%STARTUP%\교실알림_3-2.vbs"
 
 :: ======================================================
 :: VBS 감시 스크립트 생성
-:: 로직: 30초마다 WMI로 chrome.exe 프로세스 확인
-::   해당 user-data-dir의 Chrome 실행 중 → 대기
-::   Chrome 종료됨 → 재실행 → 20초 대기
-:: 중복 실행 방지: WMI 프로세스 확인 후에만 실행하므로 절대 중복 없음
+:: 로직: Chrome을 실행하고 종료될 때까지 대기 (bWaitOnReturn=True)
+::   Chrome 종료되면 5초 후 재실행
+::   WMI/lockfile 사용 안 함 - 학교 PC 호환
+:: 중복 실행 방지: Run의 True 파라미터가 프로세스 종료까지 대기하므로 절대 중복 없음
 :: ======================================================
 > "%VBS%" echo Set oShell = CreateObject("WScript.Shell")
 >> "%VBS%" echo Dim sChrome, sURL, sUserData
 >> "%VBS%" echo sChrome = "%CHROME%"
 >> "%VBS%" echo sURL = "%URL%"
 >> "%VBS%" echo sUserData = oShell.ExpandEnvironmentStrings("%%LOCALAPPDATA%%") ^& "\교실알림\3-2"
->> "%VBS%" echo Function IsRunning()
->> "%VBS%" echo   Dim oWMI, procs, p
->> "%VBS%" echo   Set oWMI = GetObject("winmgmts:\\\\.\oot\\cimv2")
->> "%VBS%" echo   Set procs = oWMI.ExecQuery("SELECT CommandLine FROM Win32_Process WHERE Name='chrome.exe'")
->> "%VBS%" echo   IsRunning = False
->> "%VBS%" echo   For Each p In procs
->> "%VBS%" echo     If Not IsNull(p.CommandLine) Then
->> "%VBS%" echo       If InStr(p.CommandLine, "교실알림\3-2") ^> 0 Then IsRunning = True
->> "%VBS%" echo     End If
->> "%VBS%" echo   Next
->> "%VBS%" echo End Function
 >> "%VBS%" echo WScript.Sleep 10000
 >> "%VBS%" echo Do While True
->> "%VBS%" echo   If Not IsRunning() Then
->> "%VBS%" echo     oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --start-minimized --window-position=-32000,-32000", 0, False
->> "%VBS%" echo     WScript.Sleep 20000
->> "%VBS%" echo   Else
->> "%VBS%" echo     WScript.Sleep 30000
->> "%VBS%" echo   End If
+>> "%VBS%" echo   oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --start-minimized --window-position=-32000,-32000", 7, True
+>> "%VBS%" echo   WScript.Sleep 5000
 >> "%VBS%" echo Loop
 
 :: Chrome 실행 (최소화)
