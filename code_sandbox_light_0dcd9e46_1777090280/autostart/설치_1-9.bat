@@ -41,7 +41,7 @@ set "VBS=%STARTUP%\교실알림_1-9.vbs"
 >> "%VBS%" echo sLock = sUserData ^& "\lockfile"
 >> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
 >> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
->> "%VBS%" echo WScript.Sleep 5000
+>> "%VBS%" echo WScript.Sleep 2000
 >> "%VBS%" echo Do While True
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
 >> "%VBS%" echo     WScript.Sleep 3000
@@ -59,11 +59,9 @@ set "VBS=%STARTUP%\교실알림_1-9.vbs"
 >> "%VBS%" echo     End If
 >> "%VBS%" echo     On Error GoTo 0
 >> "%VBS%" echo   End If
->> "%VBS%" echo   WScript.Sleep 5000
+>> "%VBS%" echo   WScript.Sleep 2000
 >> "%VBS%" echo Loop
 
-:: Chrome 실행 (최소화)
-start "" "%CHROME%" "--app=%URL%" "--user-data-dir=%USERDATA%" --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --start-minimized --window-position=-32000,-32000
 
 :: VBS 감시 스크립트 즉시 실행 (숨김/백그라운드)
 start "" wscript.exe //nologo "%VBS%"
