@@ -1,296 +1,516 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { font-family: Arial, sans-serif; background:#f6f8fb; margin:0; color:#1f2937; }
-    .header { background:#1d4ed8; color:#fff; padding:14px 20px; }
-    .header h1 { margin:0; font-size:20px; }
-    .tabs { display:flex; gap:8px; padding:10px; background:#fff; border-bottom:1px solid #dbe2ea; flex-wrap:wrap; }
-    .tab { border:1px solid #dbe2ea; background:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
-    .tab.active { background:#dbeafe; border-color:#93c5fd; font-weight:700; }
-    .page { padding:14px; display:none; }
-    .page.active { display:block; }
-    .card { background:#fff; border:1px solid #dbe2ea; border-radius:12px; padding:12px; margin-bottom:12px; }
-    .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    input, select, button { padding:7px 9px; border:1px solid #c7d0db; border-radius:8px; }
-    button { background:#2563eb; color:#fff; cursor:pointer; }
-    table { width:100%; border-collapse:collapse; font-size:12px; }
-    th, td { border:1px solid #dbe2ea; padding:6px; text-align:center; }
-    th { background:#eff6ff; }
-    .left { text-align:left; }
-    .small { font-size:12px; color:#64748b; }
-    .badge { display:inline-block; background:#ecfeff; border:1px solid #bae6fd; padding:2px 7px; border-radius:10px; margin:2px; }
-    .modal-bg { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.4); }
-    .modal-bg.on { display:flex; }
-    .modal { background:#fff; border-radius:12px; width:min(720px,92vw); max-height:85vh; overflow:auto; padding:14px; }
-    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .highlight { background:#fef9c3; }
-    .clickable-cell { cursor:pointer; }
-    .clickable-cell:hover { background:#eff6ff; }
-    .notice-banner {
-      background:#fffbeb;
-      border:1px solid #fcd34d;
-      border-left:5px solid #f59e0b;
-      color:#78350f;
-      padding:10px 12px;
-      border-radius:10px;
-      font-size:12px;
-      margin-top:8px;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>수업확인 프로그램</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="header">
-    <h1>스마트 시간표 교체/대체 시스템</h1>
-    <div class="small">교체/대체 · 학년별 · 교사별 · 공강 · 학사일정 · 연락처</div>
-    <div class="notice-banner">창체 시간은 <b>담임만 근무</b>로 처리하며, <b>비담임의 창체 표기</b>는 공강으로 처리됩니다.</div>
+<div class="app-wrapper">
+
+  <!-- ══════════ 헤더 ══════════ -->
+  <header class="app-header">
+    <div class="header-icon">🌸</div>
+    <div class="header-title">
+      <h1>수업확인 프로그램</h1>
+      <div class="header-sub">시간표 · 교체·대체 관리</div>
+    </div>
+    <div class="header-datetime">
+      <div class="datetime-date" id="headerDate">-</div>
+      <div class="datetime-time" id="headerTime">--:--:--</div>
+      <div class="datetime-weekday" id="headerWeekday">-</div>
+    </div>
+  </header>
+
+  <!-- ══════════ 탭 네비게이션 (버튼형) ══════════ -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" data-tab="swap" onclick="switchTab('swap')">
+      <i class="fas fa-exchange-alt tab-icon"></i><span class="tab-label"> 교체·대체</span>
+    </button>
+    <button class="tab-btn" data-tab="teacher" onclick="switchTab('teacher')">
+      <i class="fas fa-chalkboard-teacher tab-icon"></i><span class="tab-label"> 교사별 시간표</span>
+    </button>
+    <button class="tab-btn" data-tab="classSchedule" onclick="switchTab('classSchedule')">
+      <i class="fas fa-th tab-icon"></i><span class="tab-label"> 학급별 시간표</span>
+    </button>
+    <button class="tab-btn" data-tab="lab" onclick="switchTab('lab')">
+      <i class="fas fa-flask tab-icon"></i><span class="tab-label"> 실습실 시간표</span>
+    </button>
+    <button class="tab-btn" onclick="location.href='club.html'" style="background:var(--orange-pale);border-color:var(--orange-soft);">
+      <i class="fas fa-clipboard-check tab-icon" style="color:var(--orange);"></i><span class="tab-label"> 동아리 출석부</span>
+    </button>
+
+    <button class="tab-btn" data-tab="meeting" onclick="switchTab('meeting')">
+      <i class="fas fa-users tab-icon"></i><span class="tab-label"> 협의시간</span>
+    </button>
+    <button class="tab-btn" data-tab="calendar" onclick="switchTab('calendar')">
+      <i class="fas fa-calendar-alt tab-icon"></i><span class="tab-label"> 학사일정</span>
+    </button>
+    <button class="tab-btn" data-tab="roster" onclick="switchTab('roster')">
+      <i class="fas fa-list-ol tab-icon"></i><span class="tab-label"> 학생명단 및 호출</span>
+    </button>
+    <button class="tab-btn" data-tab="contact" onclick="switchTab('contact')">
+      <i class="fas fa-address-book tab-icon"></i><span class="tab-label"> 연락처</span>
+    </button>
+    <button class="tab-btn" data-tab="block" onclick="switchTab('block')">
+      <i class="fas fa-ban tab-icon"></i><span class="tab-label"> 교체 불가</span>
+    </button>
+    <button class="tab-btn" data-tab="util" onclick="switchTab('util')">
+      <i class="fas fa-sun tab-icon"></i><span class="tab-label"> 금일 일정 요약</span>
+    </button>
+  </nav>
+
+  <!-- ══════════ 메인 ══════════ -->
+  <main>
+
+    <!-- ── 1. 교체/대체 시간표 ── -->
+    <section id="swapTab" class="tab-panel active">
+      <div class="card">
+        <div class="card-header" style="flex-wrap:wrap;gap:8px;">
+          <i class="fas fa-exchange-alt"></i>
+          <span>수업 교체·대체 찾기</span>
+          <span style="font-size:11px;font-weight:400;color:var(--txt-mid);margin-left:4px;">수업 칸을 클릭 → 교체·대체 가능 선생님 자동 검색</span>
+          <div style="margin-left:auto;min-width:160px;">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="swapSearch" placeholder="교사 검색 (쉼표/공백 다중검색)" oninput="renderSwapTable()">
+            </div>
+          </div>
+        </div>
+        <!-- 범례 -->
+        <div class="legend-bar">
+          <span style="color:var(--txt-mid);font-weight:700;font-size:11px;">범례</span>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--cell-select-bg);border:2px solid var(--cell-select-bd);"></div>
+            <span>선택과목 (대체만)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--cell-mint-bg);border:2px solid var(--cell-mint-bd);"></div>
+            <span>시간강사·산학협력 (교체·대체불가)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#e8f5e9;border:2px solid #81c784;"></div>
+            <span>온라인·체육순회 (교체·대체불가)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--cell-chatech-bg);border:2px solid #aab;"></div>
+            <span>창체</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#dae3ff;border:2px solid var(--primary);"></div>
+            <span>선택됨</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#d8f5e8;border:2px solid #3da86a;"></div>
+            <span>교체 가능</span>
+          </div>
+          <span style="margin-left:auto;font-size:10.5px;color:var(--txt-light);">반호: 101=1학년1반 | 311이상=선택과목</span>
+        </div>
+        <div class="table-scroll-wrap" id="swapTableWrap">
+          <div class="loading-state"><div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2. 교사별 시간표 ── -->
+    <section id="teacherTab" class="tab-panel">
+      <div class="side-btn-layout">
+        <!-- 왼쪽: 교사 버튼 목록 -->
+        <div class="side-btn-panel">
+          <div class="side-btn-panel-header"><i class="fas fa-chalkboard-teacher"></i> 교사 목록</div>
+          <div class="side-btn-search">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="teacherScheduleSearch" placeholder="이름 검색 (다중 가능)" oninput="renderTeacherListPanel()">
+            </div>
+          </div>
+          <div class="side-btn-list" id="teacherScheduleList">
+            <div class="empty-state" style="padding:20px;"><p>로딩 중...</p></div>
+          </div>
+        </div>
+        <!-- 오른쪽: 시간표 상세 -->
+        <div id="teacherDetailPanel" class="side-btn-content card">
+          <div class="empty-state">
+            <div class="empty-icon">👈</div>
+            <h3>왼쪽에서 선생님을 선택해주세요</h3>
+            <p>선생님의 전체 시간표와 공강 현황을 보여드립니다</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3. 학급별 시간표 ── -->
+    <section id="classScheduleTab" class="tab-panel">
+      <div class="side-btn-layout">
+        <!-- 왼쪽: 학급 버튼 목록 -->
+        <div class="side-btn-panel">
+          <div class="side-btn-panel-header"><i class="fas fa-th"></i> 학급 목록</div>
+          <div class="side-btn-search">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="classScheduleSearch" placeholder="학년·반 검색..." oninput="renderClassScheduleList()">
+            </div>
+          </div>
+          <div class="side-btn-list" id="classScheduleList">
+            <div class="empty-state" style="padding:20px;"><p>로딩 중...</p></div>
+          </div>
+        </div>
+        <!-- 오른쪽: 시간표 상세 -->
+        <div id="classScheduleDetail" class="side-btn-content card">
+          <div class="empty-state">
+            <div class="empty-icon">🏫</div>
+            <h3>왼쪽에서 학급을 선택해주세요</h3>
+            <p>학급별 주간 시간표를 보여드립니다</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4. 실습실 시간표 ── -->
+    <section id="labTab" class="tab-panel">
+      <div class="side-btn-layout">
+        <!-- 왼쪽: 실습실 버튼 목록 -->
+        <div class="side-btn-panel">
+          <div class="side-btn-panel-header"><i class="fas fa-flask"></i> 실습실 목록</div>
+          <div class="side-btn-list" id="labSideList">
+            <!-- JS로 채워짐 -->
+          </div>
+        </div>
+        <!-- 오른쪽: 시간표 -->
+        <div class="side-btn-content card" id="labTableWrap">
+          <div class="empty-state">
+            <div class="empty-icon">🏫</div>
+            <h3>왼쪽에서 실습실을 선택해주세요</h3>
+            <p>실습실별 주간 시간표를 보여드립니다</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+    <!-- ── 6. 협의회 시간 ── -->
+    <section id="meetingTab" class="tab-panel">
+      <div class="meeting-layout">
+        <!-- 왼쪽 패널 -->
+        <div class="side-btn-panel" style="position:sticky;top:8px;">
+          <div class="side-btn-panel-header"><i class="fas fa-users"></i> 참석자 선택</div>
+          <div class="side-btn-search">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="meetingSearch" placeholder="이름 검색 (다중 가능)" oninput="renderMeetingTab()">
+            </div>
+          </div>
+          <!-- 요일 필터 -->
+          <div class="meeting-filter-section">
+            <div class="meeting-filter-title">📅 요일 필터</div>
+            <div class="meeting-filter-options" id="meetingDayFilters"></div>
+          </div>
+          <!-- 교시 필터 -->
+          <div class="meeting-filter-section">
+            <div class="meeting-filter-title">🕐 교시 필터</div>
+            <div class="meeting-filter-options" id="meetingPeriodFilters"></div>
+          </div>
+          <!-- 교사 버튼 목록 -->
+          <div class="side-btn-list meeting-teacher-btn-list" id="meetingTeacherList"></div>
+          <!-- 하단 바 -->
+          <div class="meeting-left-footer">
+            <button class="btn btn-outline btn-sm" onclick="resetMeetingSelection()"><i class="fas fa-undo"></i> 전체 해제</button>
+            <div style="margin-left:auto;font-size:12px;color:var(--txt-mid);" id="meetingCount">0명 선택됨</div>
+          </div>
+        </div>
+        <!-- 오른쪽: 결과 -->
+        <div class="card meeting-result">
+          <div class="card-header" style="justify-content:space-between;">
+            <div><i class="fas fa-calendar-check"></i> 협의회 가능 시간</div>
+            <button class="btn btn-primary btn-sm" id="meetingCopyBtn" style="display:none;"><i class="fas fa-copy"></i> 복사</button>
+          </div>
+          <div id="meetingResult">
+            <div class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <h3>교사를 2명 이상 선택해주세요</h3>
+              <p>선택 즉시 공통 공강 시간을 자동으로 찾아드립니다</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7. 학사일정 달력 ── -->
+    <section id="calendarTab" class="tab-panel">
+      <div class="calendar-layout">
+        <!-- 월 목록 -->
+        <div class="card" style="overflow:hidden;">
+          <div class="card-header"><i class="fas fa-calendar-alt"></i> 2026학년도</div>
+          <div id="calendarMonthList"></div>
+        </div>
+        <!-- 달력 뷰 -->
+        <div class="card" style="overflow:hidden;">
+          <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div><i class="fas fa-calendar-day"></i> 월별 달력</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;font-size:11px;align-items:center;">
+              <span class="cal-legend important">중요</span>
+              <span class="cal-legend exam">시험</span>
+              <span class="cal-legend holiday">공휴일</span>
+              <span class="cal-legend vacation">방학</span>
+              <span class="cal-legend event">행사</span>
+            </div>
+          </div>
+          <div id="calendarContent"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8. 학생 명렬표 (비밀번호 보호) ── -->
+    <section id="rosterTab" class="tab-panel">
+      <!-- 비밀번호 입력 화면 -->
+      <div id="rosterLockScreen" class="lock-screen">
+        <div class="lock-card">
+          <div class="lock-icon">🔒</div>
+          <h2 class="lock-title">학생 명렬표</h2>
+          <p class="lock-desc">개인정보 보호를 위해 비밀번호가 필요합니다.<br>담임 선생님의 핸드폰 뒷 4자리를 입력해주세요.</p>
+          <div class="lock-form">
+            <select id="rosterClassSelect" class="lock-select" onchange="rosterClassChanged()">
+              <option value="">-- 학급 선택 --</option>
+            </select>
+            <div class="lock-input-wrap">
+              <input type="password" id="rosterPassword" class="lock-input" placeholder="핸드폰 뒷 4자리" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <button class="lock-btn" onclick="verifyRosterPassword()"><i class="fas fa-unlock"></i> 열람</button>
+            </div>
+            <div class="lock-hint" id="rosterHint"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 명렬표 내용 -->
+      <div id="rosterContent" style="display:none;">
+        <div class="card">
+          <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div><i class="fas fa-list-ol"></i> <span id="rosterClassTitle"></span></div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="lockRoster()"><i class="fas fa-lock"></i> 잠금</button>
+              <select id="rosterClassSwitch" class="search-input" style="padding:5px 10px;font-size:12px;" onchange="switchRosterClass(this.value)"></select>
+            </div>
+          </div>
+          <div style="padding:10px 16px;background:var(--bg-soft);border-bottom:1px solid var(--border-lt);font-size:11.5px;color:var(--txt-light);display:flex;align-items:center;gap:6px;">
+            <i class="fas fa-info-circle" style="color:var(--sky-deep);"></i>
+            학생 이름을 클릭하면 호출할 수 있습니다. 교실 전자칠판에 <strong style="color:var(--brown);">classroom/(반).html</strong> 파일을 열어두세요.
+          </div>
+          <div id="rosterBody" style="padding:16px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 9. 연락처 (비밀번호 보호) ── -->
+    <section id="contactTab" class="tab-panel">
+      <!-- 비밀번호 입력 화면 -->
+      <div id="contactLockScreen" class="lock-screen">
+        <div class="lock-card">
+          <div class="lock-icon">📱</div>
+          <h2 class="lock-title">교직원 연락처</h2>
+          <p class="lock-desc">개인정보 보호를 위해 비밀번호가 필요합니다.<br>본인 핸드폰 번호의 뒷 4자리를 입력해주세요.</p>
+          <div class="lock-form">
+            <div class="lock-input-wrap">
+              <input type="password" id="contactPassword" class="lock-input" placeholder="핸드폰 뒷 4자리" maxlength="4" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <button class="lock-btn" onclick="verifyContactPassword()"><i class="fas fa-unlock"></i> 열람</button>
+            </div>
+            <div class="lock-hint" id="contactHint">※ 연락처에 등록된 전화번호 뒷 4자리</div>
+          </div>
+        </div>
+      </div>
+      <!-- 연락처 내용 -->
+      <div id="contactContent" style="display:none;">
+        <div class="card">
+          <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div><i class="fas fa-address-book"></i> 교직원 연락처 · 내선번호</div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-outline btn-sm" onclick="lockContact()"><i class="fas fa-lock"></i> 잠금</button>
+              <div style="min-width:180px;">
+                <div class="search-wrap">
+                  <i class="fas fa-search"></i>
+                  <input type="text" class="search-input" id="contactSearch" placeholder="이름·직책·내선번호..." oninput="renderContactList()">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="contact-filter-bar" id="contactDeptBar"></div>
+          <div class="contact-grid" id="contactGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 10. 교체 불가 설정 ── -->
+    <section id="blockTab" class="tab-panel">
+      <div class="block-tip">
+        <strong>💡 사용법</strong><br>
+        ① 왼쪽에서 교사 선택 → ② 교체 불가 요일 클릭 → ③ 교시 세부 조정 → ④ [교체 불가 추가] 클릭<br>
+        설정된 시간은 교체·대체 검색과 협의회 찾기에서 자동으로 제외됩니다.
+      </div>
+      <div class="block-layout">
+        <!-- 왼쪽: 교사 버튼 목록 -->
+        <div class="side-btn-panel" style="position:sticky;top:8px;">
+          <div class="side-btn-panel-header"><i class="fas fa-user-slash"></i> 교사 선택</div>
+          <div class="side-btn-search">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="blockSearch" placeholder="이름 검색 (다중 가능)" oninput="renderBlockTab()">
+            </div>
+          </div>
+          <div class="side-btn-list" id="blockTeacherList"></div>
+        </div>
+        <!-- 가운데: 설정 영역 -->
+        <div class="card">
+          <div class="card-header"><i class="fas fa-calendar-times"></i> 교체 불가 요일·교시 설정</div>
+          <div style="padding:16px;" id="blockSettingArea">
+            <div class="empty-state"><div class="empty-icon">👈</div><h3>왼쪽에서 교사를 선택해주세요</h3></div>
+          </div>
+        </div>
+        <!-- 오른쪽: 목록 -->
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-list-ul"></i> 교체 불가 목록
+            <span id="blockCount" style="font-size:11px;font-weight:400;color:var(--txt-light);margin-left:6px;"></span>
+          </div>
+          <div style="padding:14px;" id="blockList">
+            <div class="empty-state"><div class="empty-icon">✅</div><h3>등록된 항목 없음</h3><p>설정하면 자동으로 제외됩니다</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 11. 금일 일정 요약 ── -->
+    <section id="utilTab" class="tab-panel">
+      <div style="margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+        <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);"><i class="fas fa-sun" style="color:var(--primary);"></i> 금일 일정 요약</h2>
+      </div>
+      <div class="util-grid">
+
+        <!-- 메모장 -->
+        <div class="util-card">
+          <div class="util-card-header blue"><i class="fas fa-sticky-note"></i> 메모장</div>
+          <div class="util-card-body">
+            <p style="font-size:11.5px;color:var(--txt-light);margin-bottom:8px;">중요 메모를 저장해두세요 (브라우저 자동저장)</p>
+            <textarea class="memo-textarea" id="memoArea" placeholder="메모를 입력하세요...&#10;• 수업 교체 내용&#10;• 협의회 일정"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn btn-primary btn-sm" onclick="saveMemo()"><i class="fas fa-save"></i> 저장</button>
+              <button class="btn btn-ghost btn-sm" onclick="if(confirm('메모를 삭제하시겠습니까?')){qs('#memoArea').value='';localStorage.removeItem('memo');}"><i class="fas fa-trash"></i> 삭제</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 오늘 수업 현황 -->
+        <div class="util-card">
+          <div class="util-card-header green"><i class="fas fa-calendar-day"></i> 오늘 수업 현황</div>
+          <div class="util-card-body" id="todayStatus"></div>
+        </div>
+
+        <!-- 오늘 학사일정 -->
+        <div class="util-card">
+          <div class="util-card-header orange"><i class="fas fa-bell"></i> 오늘 학사일정</div>
+          <div class="util-card-body" id="todayCalendar"></div>
+        </div>
+
+        <!-- 담임 명단 -->
+        <div class="util-card">
+          <div class="util-card-header purple"><i class="fas fa-users"></i> 담임 명단</div>
+          <div class="util-card-body" id="homeroomListBody" style="padding:10px;max-height:280px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- 교과별 대체 그룹 -->
+        <div class="util-card">
+          <div class="util-card-header blue"><i class="fas fa-book"></i> 교과별 대체 그룹</div>
+          <div class="util-card-body" id="subjectGroupBody" style="max-height:280px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- 일과 시간표 -->
+        <div class="util-card">
+          <div class="util-card-header green"><i class="fas fa-clock"></i> 일과 시간표</div>
+          <div class="util-card-body">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+              <thead>
+                <tr>
+                  <th style="background:var(--primary);color:white;padding:7px;border-radius:6px 0 0 0;text-align:center;">교시</th>
+                  <th style="background:var(--primary);color:white;padding:7px;text-align:center;">시간</th>
+                  <th style="background:var(--primary);color:white;padding:7px;border-radius:0 6px 0 0;text-align:center;">비고</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;border-bottom:1px solid var(--border-lt);">1교시</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:var(--txt-mid);">08:40~09:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:11.5px;"></td></tr>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;border-bottom:1px solid var(--border-lt);">2교시</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:var(--txt-mid);">09:40~10:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:11.5px;"></td></tr>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;border-bottom:1px solid var(--border-lt);">3교시</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:var(--txt-mid);">10:40~11:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:11.5px;color:#2e7d55;font-weight:600;">← 3학년 점심 후</td></tr>
+                <tr style="background:#fff8ea;"><td style="padding:7px;text-align:center;font-style:italic;border-bottom:1px solid var(--border-lt);font-size:11px;color:#b8860b;">점심(3학년)</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:#b8860b;font-style:italic;font-size:11px;">11:30~12:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:10.5px;color:#b8860b;">3학년 점심시간</td></tr>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;border-bottom:1px solid var(--border-lt);">4교시</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:var(--txt-mid);">11:40~12:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:11.5px;color:#2a6db5;font-weight:600;">1·2학년 수업 / 3학년 점심</td></tr>
+                <tr style="background:#fff8ea;"><td style="padding:7px;text-align:center;font-style:italic;border-bottom:1px solid var(--border-lt);font-size:11px;color:#b8860b;">점심(1·2)</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:#b8860b;font-style:italic;font-size:11px;">12:30~13:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:10.5px;color:#b8860b;">1·2학년 점심시간</td></tr>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;border-bottom:1px solid var(--border-lt);">5교시</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:var(--txt-mid);">13:40~14:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:11.5px;color:#c0392b;font-weight:600;">금요일: 담임 창체</td></tr>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;border-bottom:1px solid var(--border-lt);">6교시</td><td style="padding:7px;text-align:center;border-bottom:1px solid var(--border-lt);color:var(--txt-mid);">14:40~15:30</td><td style="padding:7px;border-bottom:1px solid var(--border-lt);font-size:11.5px;color:#c0392b;font-weight:600;">금요일: 담임 창체</td></tr>
+                <tr><td style="padding:7px;text-align:center;font-weight:700;">7교시</td><td style="padding:7px;text-align:center;color:var(--txt-mid);">15:40~16:30</td><td style="padding:7px;font-size:11.5px;color:#c0392b;font-weight:600;">월요일: 담임 창체</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 사용법 안내 -->
+        <div class="util-card">
+          <div class="util-card-header orange"><i class="fas fa-question-circle"></i> 사용법 안내</div>
+          <div class="util-card-body">
+            <ol style="padding-left:18px;font-size:13px;line-height:2.1;color:var(--txt-mid);">
+              <li><strong style="color:var(--txt-dark);">교체·대체 탭</strong>: 수업 칸 클릭 → 맞교환·공강대체 선생님 자동 검색</li>
+              <li><strong style="color:var(--txt-dark);">교사별 시간표</strong>: 특정 선생님의 주간 시간표 전체 조회</li>
+              <li><strong style="color:var(--txt-dark);">학급별 시간표</strong>: 반별 주간 시간표 조회</li>
+              <li><strong style="color:var(--txt-dark);">실습실 시간표</strong>: 실습실·특별실별 사용 시간표 조회</li>
+              <li><strong style="color:var(--txt-dark);">공강 시간표</strong>: 선생님별 공강 시간 확인</li>
+              <li><strong style="color:var(--txt-dark);">협의회 시간</strong>: 여러 선생님 선택 → 공통 공강 자동 탐색</li>
+              <li><strong style="color:var(--txt-dark);">학생 명렬표</strong>: 담임 핸드폰 뒷 4자리 비밀번호로 열람</li>
+              <li><strong style="color:var(--txt-dark);">연락처</strong>: 본인 핸드폰 뒷 4자리 비밀번호로 열람</li>
+              <li><strong style="color:var(--txt-dark);">교체 불가 설정</strong>: 개인 사정으로 교체 불가한 시간 등록</li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══ 교체/대체 결과 모달 ══ -->
+<div class="modal-overlay" id="resultModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal result-modal">
+    <!-- 헤더 -->
+    <div class="result-modal-header">
+      <div class="result-modal-title"><i class="fas fa-search"></i> 수업 매칭 결과</div>
+      <div class="result-modal-header-btns">
+        <button class="result-copy-btn" id="modalCopyBtn"><i class="fas fa-copy"></i> 내용복사</button>
+        <button class="result-close-btn" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <!-- 선택 수업 박스 -->
+    <div id="modalMyLesson"></div>
+    <!-- 결과 목록 -->
+    <div class="result-modal-body" id="modalSwapList"></div>
   </div>
-  <div class="tabs" id="tabs"></div>
+</div>
 
-  <div id="swap" class="page active"></div>
-  <div id="grade" class="page"></div>
-  <div id="teacher" class="page"></div>
-  <div id="free" class="page"></div>
-  <div id="calendar" class="page"></div>
-  <div id="contact" class="page"></div>
+<!-- ══ 알림 모달 ══ -->
+<div class="modal-overlay alert-modal" id="alertModal" onclick="if(event.target===this)closeAlert()">
+  <div class="modal">
+    <div class="modal-body alert-modal-body">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-msg" id="alertMsg"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:center;">
+      <button class="btn btn-primary" onclick="closeAlert()">확인</button>
+    </div>
+  </div>
+</div>
 
-  <div id="modalBg" class="modal-bg"><div class="modal" id="modalBox"></div></div>
-
-  <script>
-  const TABS = [
-    ["swap","교체/대체 찾기"],["grade","학년별 시간표"],["teacher","교사별 시간표"],
-    ["free","교사 공강"],["calendar","학사일정"],["contact","연락처"]
-  ];
-  let app = null;
-
-  function initTabs() {
-    const el = document.getElementById("tabs");
-    el.innerHTML = TABS.map(([id,name],i)=>`<button class="tab ${i===0?'active':''}" onclick="switchTab('${id}',this)">${name}</button>`).join("");
-  }
-  function switchTab(id, btn) {
-    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    btn.classList.add("active");
-  }
-  function closeModal(){document.getElementById("modalBg").classList.remove("on");}
-  document.getElementById("modalBg").addEventListener("click",e=>{if(e.target.id==="modalBg")closeModal();});
-
-  function parseClassInfo(v){
-    if(!v) return {g:null,c:null,s:""};
-    const s = String(v);
-    let m = s.match(/(?:^|\D)([1-3])(0[1-9]|[1-9]\d)(?=\D|$)/);
-    if(m){ const c = parseInt(m[2],10); return {g:m[1], c:c>10?"선택":String(c), s}; }
-    m = s.match(/(?:^|\D)([1-3])-(\d+)(?=\D|$)/);
-    if(m){ const c = parseInt(m[2],10); return {g:m[1], c:c>10?"선택":String(c), s}; }
-    m = s.match(/([1-3])학년/); const g = m?m[1]:null;
-    m = s.match(/(\d+)반/); const c = m?m[1]:null;
-    return {g,c,s};
-  }
-  function teacherRow(name){ return app.schedule.tableData.find(r=>r.teacher===name); }
-  function isHomeroomBusy(name, day, period){
-    const n = name.replace(" 선생님","").trim();
-    if(!app.homeroomTeachers.includes(n)) return false;
-    if(day==="월" && period===7) return true;
-    if(day==="금" && (period===5 || period===6)) return true;
-    return false;
-  }
-  function isLunchBusy(name, period){
-    const g = app.teacherGroups[name] || "12";
-    if(g==="3" && period===4) return true;
-    return false;
-  }
-  function isTeaching(name, day, period){
-    const row = teacherRow(name); if(!row) return false;
-    const v = (row[day+period]||"").trim();
-    if(v.includes("창체") && !app.homeroomTeachers.includes(name)) return false;
-    return v !== "" && !v.includes("공강");
-  }
-  function isAvailable(name, day, period){
-    if(isLunchBusy(name, period)) return false;
-    if(isHomeroomBusy(name, day, period)) return false;
-    return !isTeaching(name, day, period);
-  }
-
-  function renderSwapPage(){
-    const {days,periods,tableData} = app.schedule;
-    let html = `<div class="card"><div class="small">시간표 칸을 클릭하면 <b>교체 가능</b> + <b>대체 가능</b>이 함께 표시됩니다.</div><div class="notice-banner">창체는 담임만 근무 처리, 비담임은 공강 처리</div>`;
-    html += `<div style="overflow:auto;max-height:72vh"><table><thead><tr><th>교사</th>`;
-    days.forEach(d=>periods.forEach((p,i)=>html += `<th>${d}${p}</th>`));
-    html += `</tr></thead><tbody>`;
-    tableData.forEach(row=>{
-      html += `<tr><td class="left">${row.teacher}</td>`;
-      days.forEach(d=>periods.forEach(p=>{
-        const v = row[d+p] || "";
-        html += `<td onclick="openSwapModal('${row.teacher}','${d}',${p})">${v?v:""}</td>`;
-      }));
-      html += `</tr>`;
-    });
-    html += `</tbody></table></div></div>`;
-    document.getElementById("swap").innerHTML = html;
-  }
-
-  function getTeacherSubject(name){
-    for(const [sub,arr] of Object.entries(app.subjectRules)){ if(arr.includes(name)) return sub; }
-    return null;
-  }
-
-  function getSubstituteCandidates(requester){
-    const subject = getTeacherSubject(requester);
-    if(!subject) return [];
-    const pool = app.subjectRules[subject] || [];
-    return pool.filter(n => n !== requester);
-  }
-
-  function openSwapModal(teacher, day, period){
-    const row = teacherRow(teacher);
-    const mine = row ? row[day+period] : "";
-    if(!mine) return;
-    const info = parseClassInfo(mine);
-    const swap = [];
-    const subs = [];
-
-    app.schedule.tableData.forEach(other=>{
-      if(other.teacher===teacher) return;
-      app.schedule.days.forEach(d=>{
-        app.schedule.periods.forEach(p=>{
-          const ov = other[d+p];
-          if(!ov) return;
-          const oi = parseClassInfo(ov);
-          const sameClass = info.g && info.c && info.c!=="선택" && oi.g===info.g && oi.c===info.c && oi.c!=="선택";
-          if(!sameClass) return;
-          if(!isAvailable(other.teacher, day, period)) return;
-          if(!isAvailable(teacher, d, p)) return;
-          swap.push({teacher:other.teacher, day:d, period:p, classText:ov});
-        });
-      });
-    });
-
-    getSubstituteCandidates(teacher).forEach(name=>{
-      if(isAvailable(name, day, period)) subs.push(name);
-    });
-
-    const html = `
-      <div class="row" style="justify-content:space-between"><h3 style="margin:0">매칭 결과</h3><button onclick="closeModal()">닫기</button></div>
-      <div class="card"><b>${teacher}</b> · ${day}요일 ${period}교시 · ${mine}</div>
-      <div class="grid2">
-        <div class="card"><b>교체 가능한 선생님</b><div class="small">동일 학년/반 교환</div>
-          ${swap.length?swap.map((s,i)=>`<div>${i+1}. ${s.teacher} (${s.day} ${s.period}교시)</div>`).join(""):"<div class='small'>없음</div>"}
-        </div>
-        <div class="card"><b>대체 가능한 선생님</b><div class="small">동일 교과 그룹 + 공강</div>
-          ${subs.length?subs.map(n=>`<span class="badge">${n}</span>`).join(""):"<div class='small'>없음</div>"}
-        </div>
-      </div>`;
-    document.getElementById("modalBox").innerHTML = html;
-    document.getElementById("modalBg").classList.add("on");
-  }
-
-  function buildTeacherScheduleTable(names, enableMatchClick){
-    const days = app.schedule.days, periods = app.schedule.periods;
-    let html = `<table><thead><tr><th>교사</th>`;
-    days.forEach(d=>periods.forEach(p=>html += `<th>${d}${p}</th>`));
-    html += `</tr></thead><tbody>`;
-    names.forEach(name=>{
-      const row = teacherRow(name);
-      html += `<tr><td class="left">${name}</td>`;
-      days.forEach(d=>periods.forEach(p=>{
-        const v = row ? (row[d+p] || "") : "";
-        if (enableMatchClick && v) {
-          html += `<td class="clickable-cell" onclick="openSwapModal('${name}','${d}',${p})">${v}</td>`;
-        } else {
-          html += `<td>${v}</td>`;
-        }
-      }));
-      html += `</tr>`;
-    });
-    html += `</tbody></table>`;
-    return html;
-  }
-
-  function renderTeacherPage(){
-    const opts = app.schedule.teachers.map(n=>`<option>${n}</option>`).join("");
-    document.getElementById("teacher").innerHTML = `
-      <div class="card row">
-        <label>교사 선택</label><select id="teacherSel">${opts}</select>
-        <button onclick="searchTeacher()">검색</button>
-      </div>
-      <div class="card" id="teacherResult"></div>`;
-    searchTeacher();
-  }
-  function searchTeacher(){
-    const name = document.getElementById("teacherSel").value;
-    document.getElementById("teacherResult").innerHTML = buildTeacherScheduleTable([name], true);
-  }
-
-  function renderGradePage(){
-    document.getElementById("grade").innerHTML = `
-      <div class="card row">
-        <label>학년 선택</label><select id="gradeSel"><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option></select>
-        <button onclick="searchGrade()">검색</button>
-      </div>
-      <div class="card" id="gradeResult"></div>`;
-    searchGrade();
-  }
-  function searchGrade(){
-    const g = document.getElementById("gradeSel").value;
-    const names = app.schedule.teachers.filter(n=>{
-      const r = teacherRow(n); if(!r) return false;
-      let hit=0;
-      app.schedule.days.forEach(d=>app.schedule.periods.forEach(p=>{
-        const v = r[d+p]; if(!v) return;
-        const info = parseClassInfo(v); if(info.g===g) hit++;
-      }));
-      return hit>0;
-    });
-    document.getElementById("gradeResult").innerHTML = buildTeacherScheduleTable(names, true);
-  }
-
-  function renderFreePage(){
-    const checks = app.schedule.teachers.map(n=>`<label class="badge"><input type="checkbox" value="${n}" onchange="searchFree()"> ${n}</label>`).join("");
-    document.getElementById("free").innerHTML = `
-      <div class="card"><div class="small">선생님 이름을 클릭하면 공강이 계산됩니다. (담임 창체/점심 규칙 반영)</div><div class="notice-banner">창체는 담임만 근무로 계산, 비담임은 공강으로 계산</div>${checks}</div>
-      <div class="card" id="freeResult"></div>`;
-  }
-  function searchFree(){
-    const selected = Array.from(document.querySelectorAll("#free input[type=checkbox]:checked")).map(e=>e.value);
-    if(!selected.length){ document.getElementById("freeResult").innerHTML = "<div class='small'>교사를 선택하세요.</div>"; return; }
-    const rows = [];
-    app.schedule.days.forEach(d=>app.schedule.periods.forEach(p=>{
-      const ok = selected.every(t=>isAvailable(t,d,p));
-      if(ok) rows.push(`${d}요일 ${p}교시`);
-    }));
-    document.getElementById("freeResult").innerHTML = `
-      <div><b>선택 교사:</b> ${selected.join(", ")}</div>
-      <div style="margin-top:8px">${rows.length?rows.map(r=>`<span class='badge'>${r}</span>`).join(""):"<span class='small'>공통 공강 없음</span>"}</div>`;
-  }
-
-  function renderCalendarPage(){
-    const rows = app.academicEvents.map(e=>`<tr><td>${e.date}</td><td class="left">${e.title}</td></tr>`).join("");
-    document.getElementById("calendar").innerHTML = `<div class="card"><table><thead><tr><th>일자</th><th>주요 일정</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }
-
-  function renderContactPage(){
-    const rows = app.contactRows.map(r=>`<tr><td>${r.role}</td><td>${r.name}</td><td>${r.phone}</td><td>${r.ext||""}</td></tr>`).join("");
-    document.getElementById("contact").innerHTML = `<div class="card"><table><thead><tr><th>업무</th><th>성명</th><th>연락처</th><th>내선</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }
-
-  function boot(data){
-    app = data;
-    initTabs();
-    renderSwapPage();
-    renderGradePage();
-    renderTeacherPage();
-    renderFreePage();
-    renderCalendarPage();
-    renderContactPage();
-  }
-
-  google.script.run.withSuccessHandler(boot).withFailureHandler(err=>{
-    document.body.innerHTML = `<div class='card' style='margin:20px'>오류: ${err.message}</div>`;
-  }).getAppData();
-  </script>
+<!-- Firebase SDK (compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/data.js?v=1777298164"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
