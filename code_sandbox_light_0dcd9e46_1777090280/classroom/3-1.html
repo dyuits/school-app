@@ -81,7 +81,7 @@
   <script>
     let audioCtx=null;function getAudioContext(){if(!audioCtx||audioCtx.state==='closed'){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}audioCtx.resume().catch(()=>{});return audioCtx;}
     const CLS='3-1';
-    const ORIG_TITLE=document.title;document.title='[HIDE]'+ORIG_TITLE;let selV=null,db=null,lastCallTs=0;
+    const ORIG_TITLE=document.title;document.title='[HIDE]'+ORIG_TITLE;document.addEventListener('visibilitychange',()=>{if(document.hidden&&document.title.startsWith('[HIDE]'))document.title=ORIG_TITLE;});let selV=null,db=null,lastCallTs=0;
 
     // Firebase 초기화
     firebase.initializeApp({
