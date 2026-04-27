@@ -51,15 +51,19 @@ set "VBS=%STARTUP%\교실알림_1-4.vbs"
 >> "%VBS%" echo     End If
 >> "%VBS%" echo   Else
 >> "%VBS%" echo     On Error Resume Next
+>> "%VBS%" echo     If oShell.AppActivate("[CALL]") Then
+>> "%VBS%" echo       WScript.Sleep 200
+>> "%VBS%" echo       oShell.SendKeys "%% r"
+>> "%VBS%" echo     End If
 >> "%VBS%" echo     If oShell.AppActivate("[HIDE]") Then
 >> "%VBS%" echo       WScript.Sleep 200
 >> "%VBS%" echo       oShell.SendKeys "%% "
->> "%VBS%" echo       WScript.Sleep 500
+>> "%VBS%" echo       WScript.Sleep 300
 >> "%VBS%" echo       oShell.SendKeys "n"
 >> "%VBS%" echo     End If
 >> "%VBS%" echo     On Error GoTo 0
 >> "%VBS%" echo   End If
->> "%VBS%" echo   WScript.Sleep 2000
+>> "%VBS%" echo   WScript.Sleep 3000
 >> "%VBS%" echo Loop
 
 
