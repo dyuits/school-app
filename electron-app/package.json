@@ -29,17 +29,28 @@
       "../classroom.html"
     ],
     "extraResources": [
-      { "from": "../classroom.html", "to": "classroom.html" }
+      {
+        "from": "../classroom.html",
+        "to": "classroom.html"
+      }
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "icons/app.ico"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "createStartupShortcut": true
     }
   }
 }

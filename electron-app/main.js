@@ -174,8 +174,14 @@ function setupIpc() {
 
 // ─── 앱 초기화 ─────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
-  // 로그인 시 자동 실행 등록
-  app.setLoginItemSettings({ openAtLogin: true });
+  // 로그인 시 자동 실행 등록 (패키지된 앱에서만, 개발 환경 electron.exe가 등록되지 않도록)
+  if (app.isPackaged) {
+    app.setLoginItemSettings({
+      openAtLogin:   true,
+      openAsHidden:  false,
+      name:          '교실 알림',
+    });
+  }
 
   // 화면 절전 방지
   blockerId = powerSaveBlocker.start('prevent-display-sleep');
