@@ -145,6 +145,7 @@
   </div>
 
   <script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
     var CLASS_LIST = Array.from({length: 3}, function(_, grade){ return Array.from({length: 10}, function(_, number){ return (grade + 1) + '-' + (number + 1); }); }).flat();
     var params = new URLSearchParams(location.search);
     var CLS = normalizeClass(params.get('class'));

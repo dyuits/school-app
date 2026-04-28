@@ -79,6 +79,7 @@
     <div class="ctime" id="cTm"></div>
   </div>
   <script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
     let audioCtx=null;function getAudioContext(){if(!audioCtx||audioCtx.state==='closed'){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}audioCtx.resume().catch(()=>{});return audioCtx;}
     const CLS='2-5';
     const ORIG_TITLE=document.title;document.title='[HIDE]'+ORIG_TITLE;document.addEventListener('visibilitychange',()=>{if(document.hidden&&document.title.startsWith('[HIDE]'))document.title=ORIG_TITLE;});let selV=null,db=null,lastCallTs=0;
