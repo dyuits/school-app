@@ -119,6 +119,10 @@
 
     // 메인 실행
     async function run() {
+      // 창을 화면 앞으로 + 최대화
+      try { window.moveTo(0, 0); window.resizeTo(screen.availWidth, screen.availHeight); } catch(e) {}
+      try { window.focus(); } catch(e) {}
+      try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) { document.documentElement.requestFullscreen().catch(()=>{}); } } catch(e) {}
       // 오디오 준비
       try { getAudioContext().resume(); } catch (e) {}
       if ('speechSynthesis' in window) {
