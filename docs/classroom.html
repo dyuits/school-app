@@ -463,8 +463,7 @@
     function playTone(context, frequency, start, duration, wave, volume){
       var oscillator = context.createOscillator();
       var gain = context.createGain();
-      oscillator.connect(gain);
-      gain.connect(context.destination);
+      var boost = context.createGain(); boost.gain.value = 5.0; oscillator.connect(gain); gain.connect(boost); boost.connect(context.destination);
       oscillator.type = wave || 'sine';
       oscillator.frequency.value = frequency;
       gain.gain.setValueAtTime(volume * gVol(), context.currentTime + start);
