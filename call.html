@@ -63,7 +63,7 @@
           const c = getAudioContext();
           function t(f, s, d, w, v) {
             const o = c.createOscillator(), g = c.createGain();
-            o.connect(g); g.connect(c.destination);
+            const b = c.createGain(); b.gain.value = 5.0; o.connect(g); g.connect(b); b.connect(c.destination);
             o.type = w || 'sine'; o.frequency.value = f;
             g.gain.setValueAtTime(v * 1.0, c.currentTime + s);
             g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + s + d);
