@@ -345,7 +345,7 @@ function onCellClick(teacher, day, period) {
 // 그 시간에 내가 공강이며, 내 수업 시간에 상대방이 공강인 경우
 function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
   const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod);
-  if (!myVal || myInfo.isSelect || myInfo.isMint || !myInfo.grade || !myInfo.classNum) return [];
+  if (!myVal || myInfo.isSelect || !myInfo.grade || !myInfo.classNum) return [];
 
   const results = [];
   const myRow = TEACHER_SCHEDULE[myTeacher] || {};
