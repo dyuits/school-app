@@ -52,10 +52,8 @@ set "VBS=%STARTUP%\교실알림_2-1.vbs"
 >> "%VBS%" echo   Else
 >> "%VBS%" echo     On Error Resume Next
 >> "%VBS%" echo     If oShell.AppActivate("[CALL]") Then
->> "%VBS%" echo       WScript.Sleep 200
->> "%VBS%" echo       oShell.SendKeys "%% r"
->> "%VBS%" echo       WScript.Sleep 300
->> "%VBS%" echo       oShell.SendKeys "%% x"
+>> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34), 3, False
+>> "%VBS%" echo       WScript.Sleep 1000
 >> "%VBS%" echo     End If
 >> "%VBS%" echo     If oShell.AppActivate("[HIDE]") Then
 >> "%VBS%" echo       WScript.Sleep 200
