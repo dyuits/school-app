@@ -43,21 +43,11 @@ set "VBS=%STARTUP%\교실알림_2-2.vbs"
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
 >> "%VBS%" echo     WScript.Sleep 3000
 >> "%VBS%" echo     If Not fso.FileExists(sLock) Then
->> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --start-minimized --window-position=-32000,-32000", 7, False
+>> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --kiosk --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run", 7, False
 >> "%VBS%" echo       WScript.Sleep 15000
 >> "%VBS%" echo     End If
 >> "%VBS%" echo   Else
 >> "%VBS%" echo     On Error Resume Next
->> "%VBS%" echo     If oShell.AppActivate("[CALL]") Then
->> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34), 3, False
->> "%VBS%" echo       WScript.Sleep 30000
->> "%VBS%" echo     End If
->> "%VBS%" echo     If oShell.AppActivate("[HIDE]") Then
->> "%VBS%" echo       WScript.Sleep 200
->> "%VBS%" echo       oShell.SendKeys "%% "
->> "%VBS%" echo       WScript.Sleep 300
->> "%VBS%" echo       oShell.SendKeys "n"
->> "%VBS%" echo     End If
 >> "%VBS%" echo     On Error GoTo 0
 >> "%VBS%" echo   End If
 >> "%VBS%" echo   WScript.Sleep 3000
