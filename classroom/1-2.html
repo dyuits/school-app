@@ -79,9 +79,8 @@
     <div class="ctime" id="cTm"></div>
   </div>
   <script>
-    let audioCtx=null;function getAudioContext(){if(!audioCtx||audioCtx.state==='closed'){audioCtx=new(window.AudioContext||window.webkitAudioContext)();}audioCtx.resume().catch(()=>{});return audioCtx;}
     const CLS='1-2';
-    const ORIG_TITLE=document.title;document.title='[HIDE]'+ORIG_TITLE;document.addEventListener('visibilitychange',()=>{if(document.hidden&&document.title.startsWith('[HIDE]'))document.title=ORIG_TITLE;});let selV=null,db=null,lastCallTs=0;
+    const ORIG_TITLE=document.title;let selV=null,db=null,lastCallTs=0;
 
     // Firebase 초기화
     firebase.initializeApp({
@@ -132,26 +131,26 @@
     function openS(){document.getElementById('sO').classList.add('open');}
     function closeS(){document.getElementById('sO').classList.remove('open');}
     function gVol(){return parseInt(document.getElementById('vR').value)/10;}
-    function playC(){const tp=document.getElementById('cSel').value,vl=gVol();return new Promise(rv=>{try{const c=getAudioContext();function t(f,s,d,w,v){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=w||'sine';o.frequency.value=f;g.gain.setValueAtTime(v*vl,c.currentTime+s);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+s+d);o.start(c.currentTime+s);o.stop(c.currentTime+s+d);}({dingdong:()=>{t(880,0,.5,'sine',.4);t(659,.4,.7,'sine',.4)},chime:()=>{t(523,0,.8,'sine',.3);t(659,.3,.8,'sine',.3);t(784,.6,1,'sine',.3)},melody:()=>{[523,659,784,1047].forEach((f,i)=>t(f,i*.2,.5,'sine',.3))},knock:()=>{t(200,0,.1,'square',.5);t(180,.2,.1,'square',.5);t(200,.5,.1,'square',.4)},drop:()=>{t(1200,0,.3,'sine',.3);t(800,.15,.4,'sine',.25);t(600,.35,.5,'sine',.2)},bell:()=>{t(880,0,1.2,'sine',.4);t(660,.8,1,'sine',.3)},phone:()=>{for(let i=0;i<4;i++){t(1400,i*.3,.12,'square',.3);t(1800,i*.3+.12,.12,'square',.3)}},alarm:()=>{for(let i=0;i<6;i++)t(800+(i%2)*400,i*.25,.2,'sawtooth',.25)}}[tp]||function(){t(880,0,.5,'sine',.4);t(659,.4,.7,'sine',.4)})();setTimeout(()=>{rv()},2000);}catch(e){rv();}});}
+    function playC(){const tp=document.getElementById('cSel').value,vl=gVol();return new Promise(rv=>{try{const c=new(window.AudioContext||window.webkitAudioContext)();c.resume().catch(()=>{});function t(f,s,d,w,v){const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.type=w||'sine';o.frequency.value=f;g.gain.setValueAtTime(v*vl,c.currentTime+s);g.gain.exponentialRampToValueAtTime(.01,c.currentTime+s+d);o.start(c.currentTime+s);o.stop(c.currentTime+s+d);}({dingdong:()=>{t(880,0,.5,'sine',.4);t(659,.4,.7,'sine',.4)},chime:()=>{t(523,0,.8,'sine',.3);t(659,.3,.8,'sine',.3);t(784,.6,1,'sine',.3)},melody:()=>{[523,659,784,1047].forEach((f,i)=>t(f,i*.2,.5,'sine',.3))},knock:()=>{t(200,0,.1,'square',.5);t(180,.2,.1,'square',.5);t(200,.5,.1,'square',.4)},drop:()=>{t(1200,0,.3,'sine',.3);t(800,.15,.4,'sine',.25);t(600,.35,.5,'sine',.2)},bell:()=>{t(880,0,1.2,'sine',.4);t(660,.8,1,'sine',.3)},phone:()=>{for(let i=0;i<4;i++){t(1400,i*.3,.12,'square',.3);t(1800,i*.3+.12,.12,'square',.3)}},alarm:()=>{for(let i=0;i<6;i++)t(800+(i%2)*400,i*.25,.2,'sawtooth',.25)}}[tp]||function(){t(880,0,.5,'sine',.4);t(659,.4,.7,'sine',.4)})();setTimeout(()=>{c.close();rv()},2000);}catch(e){rv();}});}
     function gSV(){return parseInt(document.getElementById('sR').value)/10;}
-    function spk(text){if(!('speechSynthesis' in window))return Promise.resolve();speechSynthesis.cancel();if(!selV){const vv=speechSynthesis.getVoices();if(vv.length>0)updV(vv);}let cl=text.replace(/[^가-힣a-zA-Z0-9\s,.!?\-]/g,'').slice(0,100);function _attempt(){return new Promise(r=>{const u=new SpeechSynthesisUtterance(cl);u.lang='ko-KR';u.rate=0.9;u.pitch=1.0;u.volume=gSV();if(selV)u.voice=selV;let done=false;u.onend=()=>{if(!done){done=true;r(true);}};u.onerror=()=>{if(!done){done=true;r(false);}};speechSynthesis.speak(u);const ri=setInterval(()=>{if(speechSynthesis.speaking&&speechSynthesis.paused)speechSynthesis.resume();},3000);setTimeout(()=>{clearInterval(ri);if(!done){done=true;speechSynthesis.cancel();r(false);}},15000);});}return _attempt().then(ok=>{if(!ok)return new Promise(r=>setTimeout(r,500)).then(()=>{speechSynthesis.cancel();return _attempt();});});}
+    function spk(text){if(!('speechSynthesis' in window))return Promise.resolve();speechSynthesis.cancel();let cl=text.replace(/[^가-힣a-zA-Z0-9\s,.!?\-]/g,'').slice(0,100);const u=new SpeechSynthesisUtterance(cl);u.lang='ko-KR';u.rate=0.9;u.pitch=1.0;u.volume=gSV();if(selV)u.voice=selV;return new Promise(r=>{u.onend=r;u.onerror=r;speechSynthesis.speak(u);setTimeout(r,30000);});}
     function testC(){playC();}
     function testSp(){spk('안녕하세요. 음성 테스트입니다.');}
     // 첫 터치/클릭으로 오디오 정책 해제
-    function primeAudio(){try{const ac=getAudioContext();ac.resume().catch(()=>{});if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance('');speechSynthesis.speak(u);speechSynthesis.cancel();}}catch(e){}const h=document.getElementById('audioHint');if(h)h.style.display='none';}
+    function primeAudio(){try{const ac=new(window.AudioContext||window.webkitAudioContext)();ac.resume().then(()=>ac.close());if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance('');speechSynthesis.speak(u);speechSynthesis.cancel();}}catch(e){}const h=document.getElementById('audioHint');if(h)h.style.display='none';}
     document.addEventListener('click',primeAudio,{once:true});
     document.addEventListener('touchstart',primeAudio,{once:true});
     // Auto-prime audio (silent - no alarm sound)
     setTimeout(()=>{
       try{
-        const ac=getAudioContext();
+        const ac=new(window.AudioContext||window.webkitAudioContext)();
         ac.resume().then(()=>{
           const osc=ac.createOscillator();
           const g=ac.createGain();
           osc.connect(g);g.connect(ac.destination);
           g.gain.value=0;
           osc.start();osc.stop(ac.currentTime+0.01);
-          
+          setTimeout(()=>ac.close(),100);
         });
       }catch(e){}
       if('speechSynthesis' in window){
@@ -162,7 +161,7 @@
     // Prevent accidental close
     window.onbeforeunload=()=>'교실 알림이 종료됩니다.';
     async function showCall(d){document.title='[CALL] '+ORIG_TITLE;
-      document.title='[CALL]'+ORIG_TITLE;try{window.moveTo(0,0);window.resizeTo(screen.availWidth,screen.availHeight);window.focus();}catch(e){}try{getAudioContext().resume();}catch(e){}try{window.focus();if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}}catch(e){}await new Promise(r=>setTimeout(r,500));if('speechSynthesis' in window){speechSynthesis.cancel();const _wu=new SpeechSynthesisUtterance('');speechSynthesis.speak(_wu);speechSynthesis.cancel();}closeS();if('speechSynthesis' in window){await ensureVoices().then(v=>{updV(v);});}const idle=document.getElementById('idle'),call=document.getElementById('call');idle.style.display='none';call.style.display='flex';call.className='call show';document.getElementById('cT').textContent=d.callerTeacher?d.callerTeacher+' 선생님 호출':'';document.getElementById('cN').innerHTML='<span class="hl">'+d.studentName+'</span> 학생';document.getElementById('cM').textContent=d.message;const n=new Date();document.getElementById('cTm').textContent=n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');const sp=d.studentName+' 학생, '+d.message;const rp=parseInt(document.getElementById('rSel').value)||2;for(let i=0;i<rp;i++){if(i>0)await new Promise(r=>setTimeout(r,2000));await playC();await new Promise(r=>setTimeout(r,500));await spk(sp);}await new Promise(r=>setTimeout(r,4000));call.className='call fo';setTimeout(()=>{call.style.display='none';idle.style.display='flex';document.title=ORIG_TITLE;document.title='[HIDE]'+ORIG_TITLE;},1000);}
+      try{window.moveTo(0,0);window.resizeTo(screen.availWidth,screen.availHeight);window.focus();}catch(e){}try{const _ac=new(window.AudioContext||window.webkitAudioContext)();await _ac.resume();const osc=_ac.createOscillator();const g=_ac.createGain();osc.connect(g);g.connect(_ac.destination);g.gain.value=0.001;osc.start();osc.stop(_ac.currentTime+0.01);await new Promise(r=>setTimeout(r,100));_ac.close();}catch(e){}try{window.focus();if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}}catch(e){}closeS();if('speechSynthesis' in window&&!selV)await new Promise(rv=>{ensureVoices().then(v=>{updV(v);rv();});});const idle=document.getElementById('idle'),call=document.getElementById('call');idle.style.display='none';call.style.display='flex';call.className='call show';document.getElementById('cT').textContent=d.callerTeacher?d.callerTeacher+' 선생님 호출':'';document.getElementById('cN').innerHTML='<span class="hl">'+d.studentName+'</span> 학생';document.getElementById('cM').textContent=d.message;const n=new Date();document.getElementById('cTm').textContent=n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');const sp=d.studentName+' 학생, '+d.message;const rp=parseInt(document.getElementById('rSel').value)||2;for(let i=0;i<rp;i++){if(i>0)await new Promise(r=>setTimeout(r,2000));await playC();await new Promise(r=>setTimeout(r,500));await spk(sp);}await new Promise(r=>setTimeout(r,4000));call.className='call fo';setTimeout(()=>{call.style.display='none';idle.style.display='flex';document.title=ORIG_TITLE;try{window.resizeTo(1,1);window.moveTo(-32000,-32000);}catch(e){}},1000);}
   
   </script>
 </body>
