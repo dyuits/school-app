@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교실 알림 QR 코드</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap');
+    body{font-family:'Noto Sans KR',sans-serif;background:#f5f7fb;color:#111827;padding:24px}
+    .wrap{max-width:1280px;margin:0 auto}
+    .toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;background:#fff;padding:20px;border-radius:20px;box-shadow:0 12px 30px rgba(15,23,42,.08);margin-bottom:20px}
+    .toolbar label{font-weight:800}
+    .toolbar input{flex:1;min-width:280px;padding:12px 14px;border:1px solid #d1d5db;border-radius:12px}
+    .toolbar button,.toolbar a{padding:12px 16px;border:none;border-radius:12px;background:#4f46e5;color:#fff;font-weight:800;text-decoration:none;cursor:pointer}
+    .toolbar .secondary{background:#e5e7eb;color:#111827}
+    .help{font-size:14px;color:#4b5563;width:100%}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}
+    .card{background:#fff;border-radius:20px;padding:16px;text-align:center;box-shadow:0 12px 30px rgba(15,23,42,.08);break-inside:avoid}
+    .card h2{font-size:26px;margin-bottom:6px}
+    .card p{font-size:12px;color:#6b7280;margin-bottom:12px;word-break:break-all}
+    .card img{width:100%;max-width:180px;aspect-ratio:1/1;display:block;margin:0 auto 12px;border:1px solid #e5e7eb;border-radius:12px}
+    .card a{font-size:13px;color:#4338ca;text-decoration:none;font-weight:800;word-break:break-all}
+    @media print{
+      body{background:#fff;padding:0}
+      .toolbar{display:none}
+      .grid{grid-template-columns:repeat(3,1fr);gap:10px}
+      .card{box-shadow:none;border:1px solid #ddd;padding:10px;border-radius:10px}
+      .card img{max-width:150px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="toolbar">
+      <label for="baseUrl">GitHub Pages 기본 URL</label>
+      <input id="baseUrl" type="text" placeholder="예: https://username.github.io/repo" />
+      <button onclick="renderQRCards()">QR 생성</button>
+      <button class="secondary" onclick="window.print()">인쇄</button>
+      <a class="secondary" href="./setup.html">설치 안내</a>
+      <div class="help">저장한 기본 URL 뒤에 `classroom.html?class=학년-반`을 자동으로 붙여 30개 반의 QR 코드를 만듭니다. 기본값은 현재 페이지 주소를 기준으로 자동 계산됩니다.</div>
+    </div>
+    <div class="grid" id="qrGrid"></div>
+  </div>
+  <script>
+    const CLASSES = Array.from({length: 3}, (_, grade) => Array.from({length: 10}, (_, room) => `${grade + 1}-${room + 1}`)).flat();
+
+    function getDefaultBaseUrl(){
+      const url = new URL('./', location.href);
+      return url.href.replace(/\/$/, '');
+    }
+
+    function normalizeBaseUrl(value){
+      return (value || '').trim().replace(/\/$/, '');
+    }
+
+    function buildClassUrl(baseUrl, cls){
+      return `${baseUrl}/classroom.html?class=${encodeURIComponent(cls)}`;
+    }
+
+    function qrImageUrl(value){
+      return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(value)}`;
+    }
+
+    function renderQRCards(){
+      const input = document.getElementById('baseUrl');
+      const baseUrl = normalizeBaseUrl(input.value) || getDefaultBaseUrl();
+      input.value = baseUrl;
+      const grid = document.getElementById('qrGrid');
+      grid.innerHTML = CLASSES.map(cls => {
+        const url = buildClassUrl(baseUrl, cls);
+        return `
+          <article class="card">
+            <h2>${cls}</h2>
+            <p>${url}</p>
+            <img src="${qrImageUrl(url)}" alt="${cls} QR 코드">
+            <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>
+          </article>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('baseUrl').value = getDefaultBaseUrl();
+    renderQRCards();
+  </script>
+</body>
+</html>
