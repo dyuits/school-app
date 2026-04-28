@@ -2270,7 +2270,7 @@ try {
 
 function isClassConnected(cls) {
   const last = connectedClasses[cls];
-  return last && (Date.now() - last < 10000); // 10초 이내 하트비트
+  return last && (Date.now() - last < 120000); // 120초 이내 하트비트 (Chrome 타이머 throttle 대응)
 }
 
 // ═══════════════════════════════════════════════

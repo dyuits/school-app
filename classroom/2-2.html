@@ -95,7 +95,7 @@
     // 하트비트 전송 (5초마다)
     function sendHeartbeat(){db.ref('heartbeat/'+CLS).set({ts:Date.now()});}
     sendHeartbeat();
-    setInterval(sendHeartbeat,5000);
+    setInterval(sendHeartbeat,45000);
     // 오프라인 시 하트비트 삭제
     db.ref('heartbeat/'+CLS).onDisconnect().remove();
 
