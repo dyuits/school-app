@@ -7,10 +7,7 @@ set "CHROME="
 for %%p in ("%ProgramFiles%\Google\Chrome\Application\chrome.exe" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" "%LocalAppData%\Google\Chrome\Application\chrome.exe") do if exist %%p set "CHROME=%%~p"
 if "%CHROME%"=="" (echo Chrome을 찾을 수 없습니다. ^& pause ^& exit /b 1)
 
-for %%i in ("%~dp0..\classroom\3-1.html") do set "HTML=%%~fi"
-if not exist "%HTML%" (echo 파일을 찾을 수 없습니다. ^& pause ^& exit /b 1)
-set "URL=%HTML:\=/%"
-set "URL=file:///%URL%"
+set "URL=https://dyuits.github.io/school-app/classroom/3-1.html"
 
 set "USERDATA=%LOCALAPPDATA%\교실알림\3-1"
 if not exist "%USERDATA%" mkdir "%USERDATA%"
