@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>호출 알림</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;font-family:'Noto Sans KR',sans-serif;overflow:hidden}
+    .call{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;text-align:center;padding:40px;animation:fi .5s ease}
+    @keyframes fi{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+    .cbell{font-size:80px;animation:br .5s ease-in-out 3;margin-bottom:24px}
+    @keyframes br{0%{transform:rotate(0)}25%{transform:rotate(15deg)}50%{transform:rotate(-15deg)}75%{transform:rotate(8deg)}100%{transform:rotate(0)}}
+    .cteacher{font-size:22px;font-weight:600;color:rgba(255,255,255,.5);margin-bottom:8px}
+    .cname{font-size:80px;font-weight:900;margin-bottom:24px;line-height:1.2;text-shadow:0 4px 20px rgba(0,0,0,.3)}
+    .cname .hl{color:#ffd700}
+    .cmsg{font-size:40px;font-weight:700;color:rgba(255,255,255,.9);line-height:1.5;padding:24px 48px;background:rgba(255,255,255,.08);border-radius:24px;border:2px solid rgba(255,255,255,.12);max-width:90%}
+    .ctime{font-size:14px;opacity:.3;position:absolute;bottom:24px}
+    .call.fo{animation:fo 1s ease forwards}
+    @keyframes fo{to{opacity:0;transform:scale(.9)}}
+  </style>
+</head>
+<body>
+  <div class="call" id="call">
+    <div class="cbell">🔔</div>
+    <div class="cteacher" id="cT"></div>
+    <div class="cname" id="cN"></div>
+    <div class="cmsg" id="cM"></div>
+    <div class="ctime" id="cTm"></div>
+  </div>
+  <script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+
+    // URL 파라미터 읽기
+    const params = new URLSearchParams(window.location.search);
+    const teacher = params.get('teacher') || '';
+    const student = params.get('student') || '';
+    const message = params.get('message') || '';
+    const cls = params.get('class') || '';
+
+    // 화면 표시
+    document.getElementById('cT').textContent = teacher ? teacher + ' 선생님 호출' : '';
+    document.getElementById('cN').innerHTML = '<span class="hl">' + student + '</span> 학생';
+    document.getElementById('cM').textContent = message;
+    const n = new Date();
+    document.getElementById('cTm').textContent = n.getFullYear() + '년 ' + (n.getMonth()+1) + '월 ' + n.getDate() + '일 ' + String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+
+    // AudioContext
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      audioCtx.resume().catch(() => {});
+      return audioCtx;
+    }
+
+    // 호출음 재생 (딩동 기본)
+    function playC() {
+      return new Promise(rv => {
+        try {
+          const c = getAudioContext();
+          function t(f, s, d, w, v) {
+            const o = c.createOscillator(), g = c.createGain();
+            o.connect(g); g.connect(c.destination);
+            o.type = w || 'sine'; o.frequency.value = f;
+            g.gain.setValueAtTime(v * 0.8, c.currentTime + s);
+            g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + s + d);
+            o.start(c.currentTime + s); o.stop(c.currentTime + s + d);
+          }
+          t(880, 0, 0.5, 'sine', 0.4);
+          t(659, 0.4, 0.7, 'sine', 0.4);
+          setTimeout(() => { rv(); }, 2000);
+        } catch (e) { rv(); }
+      });
+    }
+
+    // TTS
+    let selV = null;
+    function ensureVoices() {
+      return new Promise(rv => {
+        const v = speechSynthesis.getVoices();
+        if (v.length > 0) { rv(v); return; }
+        let done = false;
+        speechSynthesis.onvoiceschanged = () => { if (!done) { done = true; rv(speechSynthesis.getVoices()); } };
+        let t = 0;
+        const id = setInterval(() => {
+          const v2 = speechSynthesis.getVoices();
+          if (v2.length > 0 || t++ > 20) { clearInterval(id); if (!done) { done = true; rv(v2); } }
+        }, 200);
+      });
+    }
+    function pickVoice(voices) {
+      const ko = voices.filter(x => x.lang.startsWith('ko'));
+      selV = ko.length > 0 ? ko[0] : (voices.length > 0 ? voices[0] : null);
+    }
+    function spk(text) {
+      if (!('speechSynthesis' in window)) return Promise.resolve();
+      speechSynthesis.cancel();
+      let cl = text.replace(/[^가-힣a-zA-Z0-9\s,.!?\-]/g, '').slice(0, 100);
+      function _attempt() {
+        return new Promise(r => {
+          const u = new SpeechSynthesisUtterance(cl);
+          u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.0; u.volume = 1.0;
+          if (selV) u.voice = selV;
+          let done = false;
+          u.onend = () => { if (!done) { done = true; r(true); } };
+          u.onerror = () => { if (!done) { done = true; r(false); } };
+          speechSynthesis.speak(u);
+          const ri = setInterval(() => { if (speechSynthesis.speaking && speechSynthesis.paused) speechSynthesis.resume(); }, 3000);
+          setTimeout(() => { clearInterval(ri); if (!done) { done = true; speechSynthesis.cancel(); r(false); } }, 15000);
+        });
+      }
+      return _attempt().then(ok => {
+        if (!ok) return new Promise(r => setTimeout(r, 500)).then(() => { speechSynthesis.cancel(); return _attempt(); });
+      });
+    }
+
+    // 메인 실행
+    async function run() {
+      // 오디오 준비
+      try { getAudioContext().resume(); } catch (e) {}
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+        const _wu = new SpeechSynthesisUtterance('');
+        speechSynthesis.speak(_wu); speechSynthesis.cancel();
+        await ensureVoices().then(v => { pickVoice(v); });
+      }
+
+      const sp = student + ' 학생, ' + message;
+
+      // 호출음 + TTS 2번 반복
+      for (let i = 0; i < 2; i++) {
+        if (i > 0) await new Promise(r => setTimeout(r, 2000));
+        await playC();
+        await new Promise(r => setTimeout(r, 500));
+        await spk(sp);
+      }
+
+      // 4초 대기 후 자동 닫기
+      await new Promise(r => setTimeout(r, 4000));
+      document.getElementById('call').className = 'call fo';
+      setTimeout(() => { window.close(); }, 1000);
+    }
+
+    run();
+  </script>
+</body>
+</html>

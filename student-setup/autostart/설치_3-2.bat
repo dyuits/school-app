@@ -43,7 +43,7 @@ set "VBS=%STARTUP%\교실알림_3-2.vbs"
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
 >> "%VBS%" echo     WScript.Sleep 3000
 >> "%VBS%" echo     If Not fso.FileExists(sLock) Then
->> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --kiosk --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run", 1, False
+>> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --start-minimized --disable-popup-blocking --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run", 7, False
 >> "%VBS%" echo       WScript.Sleep 15000
 >> "%VBS%" echo     End If
 >> "%VBS%" echo   Else
