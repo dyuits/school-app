@@ -39,6 +39,7 @@ set "VBS=%STARTUP%\교실알림_3-5.vbs"
 >> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
 >> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
 >> "%VBS%" echo WScript.Sleep 2000
+>> "%VBS%" echo For vv=1 To 50 : oShell.SendKeys Chr(175) : Next
 >> "%VBS%" echo Do While True
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
 >> "%VBS%" echo     WScript.Sleep 3000
