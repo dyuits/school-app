@@ -65,12 +65,12 @@
             const o = c.createOscillator(), g = c.createGain();
             o.connect(g); g.connect(c.destination);
             o.type = w || 'sine'; o.frequency.value = f;
-            g.gain.setValueAtTime(v * 0.8, c.currentTime + s);
+            g.gain.setValueAtTime(v * 1.0, c.currentTime + s);
             g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + s + d);
             o.start(c.currentTime + s); o.stop(c.currentTime + s + d);
           }
-          t(880, 0, 0.5, 'sine', 0.4);
-          t(659, 0.4, 0.7, 'sine', 0.4);
+          t(880, 0, 0.5, 'sine', 1.0);
+          t(659, 0.4, 0.7, 'sine', 1.0);
           setTimeout(() => { rv(); }, 2000);
         } catch (e) { rv(); }
       });
