@@ -54,6 +54,8 @@ set "VBS=%STARTUP%\교실알림_1-3.vbs"
 >> "%VBS%" echo     If oShell.AppActivate("[CALL]") Then
 >> "%VBS%" echo       WScript.Sleep 200
 >> "%VBS%" echo       oShell.SendKeys "%% r"
+>> "%VBS%" echo       WScript.Sleep 300
+>> "%VBS%" echo       oShell.SendKeys "%% x"
 >> "%VBS%" echo     End If
 >> "%VBS%" echo     If oShell.AppActivate("[HIDE]") Then
 >> "%VBS%" echo       WScript.Sleep 200
