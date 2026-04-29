@@ -1484,42 +1484,45 @@ function renderLabDetail(labName) {
 // 교과별 수업 탭
 // ═══════════════════════════════════════════════
 function getSubjectGroups() {
+  // 세부 과목 → 상위 교과 매핑
+  const SUBJ_ALIAS = {
+    '화법':'국어','고전':'국어','언매':'국어','실국':'국어','심국':'국어','국어1':'국어','문학':'국어','교육':'국어',
+    '수1':'수학','수2':'수학','수학1':'수학','수학2':'수학','확통':'수학','미적':'수학',
+    '영어1':'영어','영어2':'영어','영회':'영어','영독':'영어',
+    '일본어':'외국어','중어B':'외국어','중어C':'외국어','중특A':'외국어','중특B':'외국어',
+    '한국사':'사회','경제':'사회','정법':'사회','세지':'사회','한지':'사회','동아시아사':'사회','윤사':'사회','생윤':'사회',
+    '지과2':'과학','화학2':'과학','물리2':'과학','생명':'과학','지구':'과학','물리':'과학','화학':'과학',
+    '종교':'종교',
+    '체육1':'체육','운동과건강':'체육',
+  };
   const groups = {};
   // 1) SUBJECT_SUBSTITUTE_MAP 기반
   for (const [teacher, info] of Object.entries(SUBJECT_SUBSTITUTE_MAP)) {
     if (!info || !info.subject) continue;
-    const subj = info.subject;
+    const subj = SUBJ_ALIAS[info.subject] || info.subject;
     if (!groups[subj]) groups[subj] = [];
     if (!groups[subj].includes(teacher)) groups[subj].push(teacher);
   }
   // 2) TEACHER_SCHEDULE에 있지만 SUBJECT_SUBSTITUTE_MAP에 없는 교사 추가
   for (const teacher of Object.keys(TEACHER_SCHEDULE)) {
-    if (SUBJECT_SUBSTITUTE_MAP[teacher]) continue;
+    // 이미 추가된 교사 스킵
+    let alreadyAdded = false;
+    for (const arr of Object.values(groups)) { if (arr.includes(teacher)) { alreadyAdded = true; break; } }
+    if (alreadyAdded) continue;
     const sched = TEACHER_SCHEDULE[teacher];
-    // 가장 많이 가르치는 과목명 추출
     const subjCount = {};
     for (const val of Object.values(sched)) {
       const m = String(val).match(/[1-3]\d{2}\s+(.+)/);
       if (m) {
-        let s = m[1].replace(/^[A-Z]_/,''); // A_고전 → 고전
-        subjCount[s] = (subjCount[s] || 0) + 1;
+        let s = m[1].replace(/^[A-Z]_/,'');
+        const mapped = SUBJ_ALIAS[s] || s;
+        subjCount[mapped] = (subjCount[mapped] || 0) + 1;
       }
     }
     if (Object.keys(subjCount).length === 0) continue;
-    // 주 과목 찾기
     const mainSubj = Object.entries(subjCount).sort((a,b) => b[1]-a[1])[0][0];
-    // 기존 그룹에 매칭 시도 (과목명 포함 여부)
-    let matched = false;
-    for (const grpName of Object.keys(groups)) {
-      if (mainSubj.includes(grpName) || grpName.includes(mainSubj)) {
-        if (!groups[grpName].includes(teacher)) groups[grpName].push(teacher);
-        matched = true; break;
-      }
-    }
-    if (!matched) {
-      if (!groups[mainSubj]) groups[mainSubj] = [];
-      if (!groups[mainSubj].includes(teacher)) groups[mainSubj].push(teacher);
-    }
+    if (!groups[mainSubj]) groups[mainSubj] = [];
+    if (!groups[mainSubj].includes(teacher)) groups[mainSubj].push(teacher);
   }
   return groups;
 }
@@ -1528,13 +1531,14 @@ function renderSubjectClassTab() {
   const groups = getSubjectGroups();
   const listEl = qs('#subjectClassList');
   listEl.innerHTML = '';
-  const subjectOrder = ['국어','수학','영어','외국어(일본어)','사회','과학','체육','음악','미술','정보','디자인','상업'];
+  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','정보','디자인','상업','종교'];
   const subjects = Object.keys(groups).sort((a, b) => {
     const ai = subjectOrder.indexOf(a), bi = subjectOrder.indexOf(b);
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
   subjects.forEach(subj => {
-    const btn = cel('button', 'side-btn' + (STATE.subjectClassSelected === subj ? ' active' : ''), subj + ' (' + groups[subj].length + '명)');
+    const btn = cel('button', 'side-btn-item' + (STATE.subjectClassSelected === subj ? ' active' : ''));
+    btn.textContent = subj + ' (' + groups[subj].length + '명)';
     btn.onclick = () => { STATE.subjectClassSelected = subj; renderSubjectClassTab(); };
     listEl.appendChild(btn);
   });
