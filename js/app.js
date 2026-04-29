@@ -1515,43 +1515,37 @@ function renderSubjectClassTab() {
 
 function renderSubjectClassDetail(subjectName, teachers) {
   const panel = qs('#subjectClassDetail');
-  let html = `<div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과</div>`;
-  html += `<div style="padding:16px;">`;
-  html += `<table style="width:100%;border-collapse:collapse;font-size:13px;">`;
-  html += `<thead><tr>
-    <th style="background:var(--primary);color:white;padding:8px 12px;text-align:left;border-radius:6px 0 0 0;">교사</th>
-    <th style="background:var(--primary);color:white;padding:8px 12px;text-align:left;border-radius:0 6px 0 0;">담당 학년·반 (과목)</th>
-  </tr></thead><tbody>`;
+  let html = `<div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과 (${teachers.length}명)</div>`;
+  html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
 
   teachers.forEach(teacher => {
     const sched = TEACHER_SCHEDULE[teacher];
-    if (!sched) {
-      html += `<tr><td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);font-weight:600;">${teacher}</td><td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);color:var(--txt-light);">시간표 미등록</td></tr>`;
-      return;
-    }
-    // 담당 학년·반 추출 (중복 제거)
-    const classSet = new Map(); // key: "1-3 국어1", 중복 방지
-    for (const val of Object.values(sched)) {
-      const m = String(val).match(/([1-3])(\d{2})\s+(.+)/);
-      if (m) {
-        const grade = m[1], cn = parseInt(m[2]), subject = m[3];
-        const label = cn > 10 ? `${grade}학년 선택(${subject})` : `${grade}-${cn} ${subject}`;
-        classSet.set(label, true);
+    let classes = [];
+    if (sched) {
+      const classSet = new Map();
+      for (const val of Object.values(sched)) {
+        const m = String(val).match(/([1-3])(\d{2})\s+(.+)/);
+        if (m) {
+          const grade = m[1], cn = parseInt(m[2]), subject = m[3];
+          const label = cn > 10 ? `${grade}학년 선택(${subject})` : `${grade}-${cn} ${subject}`;
+          classSet.set(label, true);
+        }
       }
+      classes = [...classSet.keys()].sort();
     }
-    const classes = [...classSet.keys()].sort();
-    html += `<tr>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);font-weight:600;vertical-align:top;white-space:nowrap;">${teacher}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);line-height:1.8;">`;
-    if (classes.length === 0) {
-      html += `<span style="color:var(--txt-light);">-</span>`;
+    html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:pointer;" onclick="STATE.teacherScheduleSelected='${teacher}';switchTab('teacher');">`;
+    html += `<div style="font-weight:700;font-size:14px;color:var(--brown,#5a3e2b);margin-bottom:${classes.length?6:0}px;">${teacher} 선생님</div>`;
+    if (classes.length > 0) {
+      html += `<div style="display:flex;flex-wrap:wrap;gap:4px;">`;
+      html += classes.map(c => `<span style="display:inline-block;background:white;border:1px solid var(--border-lt);border-radius:10px;padding:2px 9px;font-size:11.5px;color:var(--txt-mid);">${c}</span>`).join('');
+      html += `</div>`;
     } else {
-      html += classes.map(c => `<span style="display:inline-block;background:var(--bg-soft);border:1px solid var(--border-lt);border-radius:4px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px;">${c}</span>`).join('');
+      html += `<span style="font-size:12px;color:var(--txt-light);">시간표 미등록</span>`;
     }
-    html += `</td></tr>`;
+    html += `</div>`;
   });
 
-  html += `</tbody></table></div>`;
+  html += `</div>`;
   panel.innerHTML = html;
 }
 
