@@ -21,6 +21,7 @@ const STATE = {
   rosterSelectedClass: null,
   rosterUnlockedClass: null,
   subjectClassSelected: null,
+  subjectClassView: 'subject',
   classScheduleSelected: null,
   labSelected: null,
   memo: '',
@@ -1528,6 +1529,24 @@ function getSubjectGroups() {
 }
 
 function renderSubjectClassTab() {
+  const view = STATE.subjectClassView || 'subject';
+  // 토글 버튼 스타일
+  const btnS = qs('#scViewSubject'), btnC = qs('#scViewClass');
+  if (btnS && btnC) {
+    btnS.className = view === 'subject' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+    btnC.className = view === 'class' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+  }
+  const header = qs('#scPanelHeader');
+  if (view === 'subject') {
+    if (header) header.innerHTML = '<i class="fas fa-book"></i> 교과 목록';
+    renderSubjectClassTab_subject();
+  } else {
+    if (header) header.innerHTML = '<i class="fas fa-school"></i> 학년-반 목록';
+    renderSubjectClassTab_class();
+  }
+}
+
+function renderSubjectClassTab_subject() {
   const groups = getSubjectGroups();
   const listEl = qs('#subjectClassList');
   listEl.innerHTML = '';
@@ -1545,6 +1564,72 @@ function renderSubjectClassTab() {
   if (STATE.subjectClassSelected && groups[STATE.subjectClassSelected]) {
     renderSubjectClassDetail(STATE.subjectClassSelected, groups[STATE.subjectClassSelected]);
   }
+}
+
+function getClassTeacherMap() {
+  const SUBJ_ALIAS = {
+    '화법':'국어','고전':'국어','언매':'국어','실국':'국어','심국':'국어','국어1':'국어','문학':'국어','교육':'국어',
+    '수1':'수학','수2':'수학','수학1':'수학','수학2':'수학','확통':'수학','미적':'수학',
+    '영어1':'영어','영어2':'영어','영회':'영어','영독':'영어',
+    '일본어':'외국어','중어B':'외국어','중어C':'외국어','중특A':'외국어','중특B':'외국어',
+    '한국사':'사회','경제':'사회','정법':'사회','세지':'사회','한지':'사회','동아시아사':'사회','윤사':'사회','생윤':'사회',
+    '지과2':'과학','화학2':'과학','물리2':'과학','생명':'과학','지구':'과학','물리':'과학','화학':'과학',
+    '종교':'종교','체육1':'체육','운동과건강':'체육',
+  };
+  const map = {}; // key: "1-1", value: [{teacher, subject, detail}]
+  for (const [teacher, sched] of Object.entries(TEACHER_SCHEDULE)) {
+    for (const val of Object.values(sched)) {
+      const m = String(val).match(/([1-3])(\d{2})\s+(.+)/);
+      if (!m) continue;
+      const grade = m[1], cn = parseInt(m[2]), rawSubj = m[3].replace(/^[A-Z]_/,'');
+      if (cn > 10) continue; // 선택과목 제외
+      const classKey = `${grade}-${cn}`;
+      const bigSubj = SUBJ_ALIAS[rawSubj] || rawSubj;
+      if (!map[classKey]) map[classKey] = [];
+      const existing = map[classKey].find(e => e.teacher === teacher && e.bigSubj === bigSubj);
+      if (!existing) map[classKey].push({ teacher, bigSubj, detail: rawSubj });
+    }
+  }
+  return map;
+}
+
+function renderSubjectClassTab_class() {
+  const map = getClassTeacherMap();
+  const listEl = qs('#subjectClassList');
+  listEl.innerHTML = '';
+  const classes = Object.keys(map).sort((a, b) => {
+    const [ag, ac] = a.split('-').map(Number), [bg, bc] = b.split('-').map(Number);
+    return (ag * 100 + ac) - (bg * 100 + bc);
+  });
+  classes.forEach(cls => {
+    const btn = cel('button', 'side-btn-item' + (STATE.subjectClassSelected === cls ? ' active' : ''));
+    btn.textContent = cls;
+    btn.onclick = () => { STATE.subjectClassSelected = cls; renderSubjectClassTab(); };
+    listEl.appendChild(btn);
+  });
+  if (STATE.subjectClassSelected && map[STATE.subjectClassSelected]) {
+    renderClassTeacherDetail(STATE.subjectClassSelected, map[STATE.subjectClassSelected]);
+  }
+}
+
+function renderClassTeacherDetail(classKey, entries) {
+  const panel = qs('#subjectClassDetail');
+  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','정보','디자인','상업','종교'];
+  entries.sort((a, b) => {
+    const ai = subjectOrder.indexOf(a.bigSubj), bi = subjectOrder.indexOf(b.bigSubj);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+  let html = `<div class="card-header"><i class="fas fa-school"></i> ${classKey} 담당 교사 (${entries.length}명)</div>`;
+  html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
+  entries.forEach(e => {
+    html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:12px;" onclick="STATE.teacherScheduleSelected='${e.teacher}';switchTab('teacher');">`;
+    html += `<span style="display:inline-block;background:var(--primary);color:white;border-radius:10px;padding:3px 10px;font-size:11.5px;font-weight:700;min-width:48px;text-align:center;">${e.bigSubj}</span>`;
+    html += `<span style="font-weight:700;font-size:14px;color:var(--brown,#5a3e2b);">${e.teacher} 선생님</span>`;
+    if (e.detail !== e.bigSubj) html += `<span style="font-size:12px;color:var(--txt-light);">(${e.detail})</span>`;
+    html += `</div>`;
+  });
+  html += `</div>`;
+  panel.innerHTML = html;
 }
 
 function renderSubjectClassDetail(subjectName, teachers) {

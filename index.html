@@ -147,16 +147,20 @@
 
     <!-- ── 2-1. 교과별 수업 ── -->
     <section id="subjectClassTab" class="tab-panel">
+      <div style="margin-bottom:10px;display:flex;gap:6px;">
+        <button class="btn btn-sm" id="scViewSubject" onclick="STATE.subjectClassView='subject';STATE.subjectClassSelected=null;renderSubjectClassTab();"><i class="fas fa-book"></i> 교과별</button>
+        <button class="btn btn-sm btn-outline" id="scViewClass" onclick="STATE.subjectClassView='class';STATE.subjectClassSelected=null;renderSubjectClassTab();"><i class="fas fa-school"></i> 학년-반별</button>
+      </div>
       <div class="side-btn-layout">
         <div class="side-btn-panel">
-          <div class="side-btn-panel-header"><i class="fas fa-book"></i> 교과 목록</div>
+          <div class="side-btn-panel-header" id="scPanelHeader"><i class="fas fa-book"></i> 교과 목록</div>
           <div class="side-btn-list" id="subjectClassList"></div>
         </div>
         <div id="subjectClassDetail" class="side-btn-content card">
           <div class="empty-state">
             <div class="empty-icon">📚</div>
-            <h3>왼쪽에서 교과를 선택해주세요</h3>
-            <p>교과 소속 교사와 담당 학년·반을 보여드립니다</p>
+            <h3>왼쪽에서 항목을 선택해주세요</h3>
+            <p>교과별 또는 학년-반별 교사 정보를 보여드립니다</p>
           </div>
         </div>
       </div>
