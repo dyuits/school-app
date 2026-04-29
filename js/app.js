@@ -1485,11 +1485,41 @@ function renderLabDetail(labName) {
 // ═══════════════════════════════════════════════
 function getSubjectGroups() {
   const groups = {};
+  // 1) SUBJECT_SUBSTITUTE_MAP 기반
   for (const [teacher, info] of Object.entries(SUBJECT_SUBSTITUTE_MAP)) {
     if (!info || !info.subject) continue;
     const subj = info.subject;
     if (!groups[subj]) groups[subj] = [];
     if (!groups[subj].includes(teacher)) groups[subj].push(teacher);
+  }
+  // 2) TEACHER_SCHEDULE에 있지만 SUBJECT_SUBSTITUTE_MAP에 없는 교사 추가
+  for (const teacher of Object.keys(TEACHER_SCHEDULE)) {
+    if (SUBJECT_SUBSTITUTE_MAP[teacher]) continue;
+    const sched = TEACHER_SCHEDULE[teacher];
+    // 가장 많이 가르치는 과목명 추출
+    const subjCount = {};
+    for (const val of Object.values(sched)) {
+      const m = String(val).match(/[1-3]\d{2}\s+(.+)/);
+      if (m) {
+        let s = m[1].replace(/^[A-Z]_/,''); // A_고전 → 고전
+        subjCount[s] = (subjCount[s] || 0) + 1;
+      }
+    }
+    if (Object.keys(subjCount).length === 0) continue;
+    // 주 과목 찾기
+    const mainSubj = Object.entries(subjCount).sort((a,b) => b[1]-a[1])[0][0];
+    // 기존 그룹에 매칭 시도 (과목명 포함 여부)
+    let matched = false;
+    for (const grpName of Object.keys(groups)) {
+      if (mainSubj.includes(grpName) || grpName.includes(mainSubj)) {
+        if (!groups[grpName].includes(teacher)) groups[grpName].push(teacher);
+        matched = true; break;
+      }
+    }
+    if (!matched) {
+      if (!groups[mainSubj]) groups[mainSubj] = [];
+      if (!groups[mainSubj].includes(teacher)) groups[mainSubj].push(teacher);
+    }
   }
   return groups;
 }
@@ -1531,7 +1561,13 @@ function renderSubjectClassDetail(subjectName, teachers) {
           classSet.set(label, true);
         }
       }
-      classes = [...classSet.keys()].sort();
+      classes = [...classSet.keys()].sort((a, b) => {
+        const pa = a.match(/(\d)-(\d+)/), pb = b.match(/(\d)-(\d+)/);
+        if (pa && pb) return (parseInt(pa[1])*100+parseInt(pa[2])) - (parseInt(pb[1])*100+parseInt(pb[2]));
+        if (pa && !pb) return -1;
+        if (!pa && pb) return 1;
+        return a.localeCompare(b);
+      });
     }
     html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:pointer;" onclick="STATE.teacherScheduleSelected='${teacher}';switchTab('teacher');">`;
     html += `<div style="font-weight:700;font-size:14px;color:var(--brown,#5a3e2b);margin-bottom:${classes.length?6:0}px;">${teacher} 선생님</div>`;
