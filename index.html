@@ -33,6 +33,9 @@
     <button class="tab-btn" data-tab="teacher" onclick="switchTab('teacher')">
       <i class="fas fa-chalkboard-teacher tab-icon"></i><span class="tab-label"> 교사별 시간표</span>
     </button>
+    <button class="tab-btn" data-tab="subjectClass" onclick="switchTab('subjectClass')">
+      <i class="fas fa-book tab-icon"></i><span class="tab-label"> 교과별 수업</span>
+    </button>
     <button class="tab-btn" data-tab="classSchedule" onclick="switchTab('classSchedule')">
       <i class="fas fa-th tab-icon"></i><span class="tab-label"> 학급별 시간표</span>
     </button>
@@ -137,6 +140,23 @@
             <div class="empty-icon">👈</div>
             <h3>왼쪽에서 선생님을 선택해주세요</h3>
             <p>선생님의 전체 시간표와 공강 현황을 보여드립니다</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2-1. 교과별 수업 ── -->
+    <section id="subjectClassTab" class="tab-panel">
+      <div class="side-btn-layout">
+        <div class="side-btn-panel">
+          <div class="side-btn-panel-header"><i class="fas fa-book"></i> 교과 목록</div>
+          <div class="side-btn-list" id="subjectClassList"></div>
+        </div>
+        <div id="subjectClassDetail" class="side-btn-content card">
+          <div class="empty-state">
+            <div class="empty-icon">📚</div>
+            <h3>왼쪽에서 교과를 선택해주세요</h3>
+            <p>교과 소속 교사와 담당 학년·반을 보여드립니다</p>
           </div>
         </div>
       </div>

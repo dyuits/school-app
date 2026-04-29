@@ -20,6 +20,7 @@ const STATE = {
   rosterUnlocked: false,
   rosterSelectedClass: null,
   rosterUnlockedClass: null,
+  subjectClassSelected: null,
   classScheduleSelected: null,
   labSelected: null,
   memo: '',
@@ -78,6 +79,7 @@ function switchTab(name) {
   qsa('.tab-panel').forEach(p => p.classList.toggle('active', p.id === name + 'Tab'));
   if (name === 'swap')          renderSwapTable();
   if (name === 'teacher')       renderTeacherScheduleTab();
+  if (name === 'subjectClass')  renderSubjectClassTab();
   if (name === 'classSchedule') renderClassScheduleTab();
   if (name === 'lab')           renderLabTab();
   if (name === 'free')          renderFreeTab();
@@ -1475,6 +1477,82 @@ function renderLabDetail(labName) {
   });
   html += `</tbody></table></div>`;
   wrap.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// 교과별 수업 탭
+// ═══════════════════════════════════════════════
+function getSubjectGroups() {
+  const groups = {};
+  for (const [teacher, info] of Object.entries(SUBJECT_SUBSTITUTE_MAP)) {
+    if (!info || !info.subject) continue;
+    const subj = info.subject;
+    if (!groups[subj]) groups[subj] = [];
+    if (!groups[subj].includes(teacher)) groups[subj].push(teacher);
+  }
+  return groups;
+}
+
+function renderSubjectClassTab() {
+  const groups = getSubjectGroups();
+  const listEl = qs('#subjectClassList');
+  listEl.innerHTML = '';
+  const subjectOrder = ['국어','수학','영어','외국어(일본어)','사회','과학','체육','음악','미술','정보','디자인','상업'];
+  const subjects = Object.keys(groups).sort((a, b) => {
+    const ai = subjectOrder.indexOf(a), bi = subjectOrder.indexOf(b);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+  subjects.forEach(subj => {
+    const btn = cel('button', 'side-btn' + (STATE.subjectClassSelected === subj ? ' active' : ''), subj + ' (' + groups[subj].length + '명)');
+    btn.onclick = () => { STATE.subjectClassSelected = subj; renderSubjectClassTab(); };
+    listEl.appendChild(btn);
+  });
+  if (STATE.subjectClassSelected && groups[STATE.subjectClassSelected]) {
+    renderSubjectClassDetail(STATE.subjectClassSelected, groups[STATE.subjectClassSelected]);
+  }
+}
+
+function renderSubjectClassDetail(subjectName, teachers) {
+  const panel = qs('#subjectClassDetail');
+  let html = `<div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과</div>`;
+  html += `<div style="padding:16px;">`;
+  html += `<table style="width:100%;border-collapse:collapse;font-size:13px;">`;
+  html += `<thead><tr>
+    <th style="background:var(--primary);color:white;padding:8px 12px;text-align:left;border-radius:6px 0 0 0;">교사</th>
+    <th style="background:var(--primary);color:white;padding:8px 12px;text-align:left;border-radius:0 6px 0 0;">담당 학년·반 (과목)</th>
+  </tr></thead><tbody>`;
+
+  teachers.forEach(teacher => {
+    const sched = TEACHER_SCHEDULE[teacher];
+    if (!sched) {
+      html += `<tr><td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);font-weight:600;">${teacher}</td><td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);color:var(--txt-light);">시간표 미등록</td></tr>`;
+      return;
+    }
+    // 담당 학년·반 추출 (중복 제거)
+    const classSet = new Map(); // key: "1-3 국어1", 중복 방지
+    for (const val of Object.values(sched)) {
+      const m = String(val).match(/([1-3])(\d{2})\s+(.+)/);
+      if (m) {
+        const grade = m[1], cn = parseInt(m[2]), subject = m[3];
+        const label = cn > 10 ? `${grade}학년 선택(${subject})` : `${grade}-${cn} ${subject}`;
+        classSet.set(label, true);
+      }
+    }
+    const classes = [...classSet.keys()].sort();
+    html += `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);font-weight:600;vertical-align:top;white-space:nowrap;">${teacher}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);line-height:1.8;">`;
+    if (classes.length === 0) {
+      html += `<span style="color:var(--txt-light);">-</span>`;
+    } else {
+      html += classes.map(c => `<span style="display:inline-block;background:var(--bg-soft);border:1px solid var(--border-lt);border-radius:4px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px;">${c}</span>`).join('');
+    }
+    html += `</td></tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  panel.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════

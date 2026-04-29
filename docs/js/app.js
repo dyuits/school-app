@@ -20,6 +20,7 @@ const STATE = {
   rosterUnlocked: false,
   rosterSelectedClass: null,
   rosterUnlockedClass: null,
+  subjectClassSelected: null,
   classScheduleSelected: null,
   labSelected: null,
   memo: '',
@@ -78,6 +79,7 @@ function switchTab(name) {
   qsa('.tab-panel').forEach(p => p.classList.toggle('active', p.id === name + 'Tab'));
   if (name === 'swap')          renderSwapTable();
   if (name === 'teacher')       renderTeacherScheduleTab();
+  if (name === 'subjectClass')  renderSubjectClassTab();
   if (name === 'classSchedule') renderClassScheduleTab();
   if (name === 'lab')           renderLabTab();
   if (name === 'free')          renderFreeTab();
@@ -232,8 +234,9 @@ function renderSwapTable() {
           cellStyle = 'style="background:var(--cell-blocked-bg);cursor:default;"';
           cellContent = `<span style="font-size:9.5px;color:#c07070;">불가</span>`;
         } else if (isChatech && !val) {
-          cellStyle = 'style="background:var(--cell-chatech-bg);cursor:default;"';
+          cellStyle = 'style="background:var(--cell-chatech-bg);"';
           cellContent = `<span class="cell-chatech">창체</span>`;
+          clickable = `onclick="onCellClick('${teacher}','${day}',${period})"`;
         } else if (val) {
           const info = parseCellValue(val, teacher, key);
           cellInfo = info;
@@ -246,8 +249,7 @@ function renderSwapTable() {
               <span style="font-size:7.5px;color:#b8860b;font-weight:700;margin-top:1px;">선택·교체불가</span>
             </div>`;
           } else if (info.isMint) {
-            cellStyle = 'style="background:var(--cell-mint-bg);border-color:var(--cell-mint-bd);cursor:default;"';
-            clickable = ''; // 민트: 클릭 불가
+            cellStyle = 'style="background:var(--cell-mint-bg);border-color:var(--cell-mint-bd);"';
             const mintLabel = teacher === '체육순회' ? '순회' : '강사';
             cellContent = `<div class="cell-inner">
               <span class="cell-subject">${info.subject}</span>
@@ -328,13 +330,6 @@ function onCellClick(teacher, day, period) {
     return;
   }
 
-  // 민트(시간강사/산학협력교사)이면 안내만
-  if (info.isMint) {
-    renderResultModal_blocked(teacher, day, period, val, '시간강사·산학협력교사 수업은 교체 및 대체가 불가합니다.');
-    openModal();
-    return;
-  }
-
   const swapResults = findSwapCandidates(teacher, day, period, val);
   const subResults  = findSubstituteCandidates(teacher, day, period);
 
@@ -352,7 +347,7 @@ function onCellClick(teacher, day, period) {
 // 그 시간에 내가 공강이며, 내 수업 시간에 상대방이 공강인 경우
 function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
   const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod);
-  if (!myVal || myInfo.isSelect || myInfo.isMint || !myInfo.grade || !myInfo.classNum) return [];
+  if (!myVal || myInfo.isSelect || !myInfo.grade || !myInfo.classNum) return [];
 
   const results = [];
   const myRow = TEACHER_SCHEDULE[myTeacher] || {};
@@ -406,6 +401,20 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
 
 // 대체 후보 (공강 선생님 중 같은 교과)
 function findSubstituteCandidates(myTeacher, day, period) {
+  // 창체 시간인 경우: 비담임 교사 명단에서 해당 시간 공강인 교사를 대체 후보로 반환
+  if (isChatcheTime(myTeacher, day, period)) {
+    const results = [];
+    const key = day + period;
+    CHANGCHE_AVAILABLE_TEACHERS.forEach(candidate => {
+      if (isBlockedTime(candidate, day, period)) return;
+      const candRow = TEACHER_SCHEDULE[candidate] || {};
+      if (!(candRow[key] || '').trim()) {
+        results.push({ teacher: candidate, subject: '창체' });
+      }
+    });
+    return results;
+  }
+
   const subMap = SUBJECT_SUBSTITUTE_MAP[myTeacher];
   if (!subMap || subMap.canSubFor.length === 0) return [];
 
@@ -479,6 +488,14 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
     </div>`;
 
   let html = '';
+
+  // ── 민트(시간강사/산학협력교사) 경고 메시지 ──
+  if (info.isMint) {
+    html += `<div style="background:#fffde7;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">⚠️</span>
+      <span style="font-weight:700;font-size:13px;color:#e65100;">시간 또는 산학강사가 수업하는 시간입니다</span>
+    </div>`;
+  }
 
   // ── 1. 교체 가능 (맞교환) ──
   html += `<div class="result-section-hd swap">
@@ -1463,6 +1480,82 @@ function renderLabDetail(labName) {
 }
 
 // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// 교과별 수업 탭
+// ═══════════════════════════════════════════════
+function getSubjectGroups() {
+  const groups = {};
+  for (const [teacher, info] of Object.entries(SUBJECT_SUBSTITUTE_MAP)) {
+    if (!info || !info.subject) continue;
+    const subj = info.subject;
+    if (!groups[subj]) groups[subj] = [];
+    if (!groups[subj].includes(teacher)) groups[subj].push(teacher);
+  }
+  return groups;
+}
+
+function renderSubjectClassTab() {
+  const groups = getSubjectGroups();
+  const listEl = qs('#subjectClassList');
+  listEl.innerHTML = '';
+  const subjectOrder = ['국어','수학','영어','외국어(일본어)','사회','과학','체육','음악','미술','정보','디자인','상업'];
+  const subjects = Object.keys(groups).sort((a, b) => {
+    const ai = subjectOrder.indexOf(a), bi = subjectOrder.indexOf(b);
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
+  subjects.forEach(subj => {
+    const btn = cel('button', 'side-btn' + (STATE.subjectClassSelected === subj ? ' active' : ''), subj + ' (' + groups[subj].length + '명)');
+    btn.onclick = () => { STATE.subjectClassSelected = subj; renderSubjectClassTab(); };
+    listEl.appendChild(btn);
+  });
+  if (STATE.subjectClassSelected && groups[STATE.subjectClassSelected]) {
+    renderSubjectClassDetail(STATE.subjectClassSelected, groups[STATE.subjectClassSelected]);
+  }
+}
+
+function renderSubjectClassDetail(subjectName, teachers) {
+  const panel = qs('#subjectClassDetail');
+  let html = `<div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과</div>`;
+  html += `<div style="padding:16px;">`;
+  html += `<table style="width:100%;border-collapse:collapse;font-size:13px;">`;
+  html += `<thead><tr>
+    <th style="background:var(--primary);color:white;padding:8px 12px;text-align:left;border-radius:6px 0 0 0;">교사</th>
+    <th style="background:var(--primary);color:white;padding:8px 12px;text-align:left;border-radius:0 6px 0 0;">담당 학년·반 (과목)</th>
+  </tr></thead><tbody>`;
+
+  teachers.forEach(teacher => {
+    const sched = TEACHER_SCHEDULE[teacher];
+    if (!sched) {
+      html += `<tr><td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);font-weight:600;">${teacher}</td><td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);color:var(--txt-light);">시간표 미등록</td></tr>`;
+      return;
+    }
+    // 담당 학년·반 추출 (중복 제거)
+    const classSet = new Map(); // key: "1-3 국어1", 중복 방지
+    for (const val of Object.values(sched)) {
+      const m = String(val).match(/([1-3])(\d{2})\s+(.+)/);
+      if (m) {
+        const grade = m[1], cn = parseInt(m[2]), subject = m[3];
+        const label = cn > 10 ? `${grade}학년 선택(${subject})` : `${grade}-${cn} ${subject}`;
+        classSet.set(label, true);
+      }
+    }
+    const classes = [...classSet.keys()].sort();
+    html += `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);font-weight:600;vertical-align:top;white-space:nowrap;">${teacher}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid var(--border-lt);line-height:1.8;">`;
+    if (classes.length === 0) {
+      html += `<span style="color:var(--txt-light);">-</span>`;
+    } else {
+      html += classes.map(c => `<span style="display:inline-block;background:var(--bg-soft);border:1px solid var(--border-lt);border-radius:4px;padding:2px 8px;margin:2px 4px 2px 0;font-size:12px;">${c}</span>`).join('');
+    }
+    html += `</td></tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  panel.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════
 // 학급별 시간표 탭
 // ═══════════════════════════════════════════════
 function renderClassScheduleTab() {
@@ -2230,22 +2323,15 @@ function toggleFilterChip(el) {
 // ═══════════════════════════════════════════════
 // 교실 연결 상태 모니터링 (하트비트)
 // ═══════════════════════════════════════════════
-const connectedClasses = {};  // { "1-1": { ts, source, audioReady }, ... }
+const connectedClasses = {};  // { "1-1": timestamp, ... }
 
 // Firebase 하트비트 수신
 function startHeartbeatListener() {
   if (!firebaseDB) return;
   firebaseDB.ref('heartbeat').on('value', (snap) => {
     const data = snap.val() || {};
-    Object.keys(connectedClasses).forEach(cls => {
-      if (!data[cls]) delete connectedClasses[cls];
-    });
     Object.keys(data).forEach(cls => {
-      connectedClasses[cls] = {
-        ts: data[cls].ts || 0,
-        source: data[cls].source || 'web',
-        audioReady: !!data[cls].audioReady
-      };
+      connectedClasses[cls] = data[cls].ts || 0;
     });
   });
 }
@@ -2255,35 +2341,14 @@ try {
   const heartbeatChannel = new BroadcastChannel('heartbeat');
   heartbeatChannel.onmessage = (e) => {
     if (e.data && e.data.type === 'alive' && e.data.cls) {
-      connectedClasses[e.data.cls] = {
-        ts: Date.now(),
-        source: e.data.source || 'web',
-        audioReady: e.data.audioReady !== false
-      };
+      connectedClasses[e.data.cls] = Date.now();
     }
   };
 } catch(e) {}
 
 function isClassConnected(cls) {
-  const info = connectedClasses[cls];
-  const last = info?.ts || 0;
-  return last && (Date.now() - last < 15000);
-}
-
-function getClassConnectionMeta(cls) {
-  const info = connectedClasses[cls] || {};
-  const source = info.source || 'web';
-  const sourceLabel = source === 'electron'
-    ? 'Windows 앱'
-    : source === 'android-webview'
-      ? 'Android 앱'
-      : '웹';
-  return {
-    source,
-    sourceLabel,
-    audioReady: !!info.audioReady,
-    ts: info.ts || 0
-  };
+  const last = connectedClasses[cls];
+  return last && (Date.now() - last < 120000); // 120초 이내 하트비트 (Chrome 타이머 throttle 대응)
 }
 
 // ═══════════════════════════════════════════════
@@ -2449,11 +2514,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (el && STATE.rosterUnlockedClass) {
       const cls = STATE.rosterUnlockedClass;
       const conn = isClassConnected(cls);
-      const meta = getClassConnectionMeta(cls);
       const dc = conn ? '#3da86a' : '#e05050';
       el.style.background = conn ? '#e8f8ee' : '#fff0f0';
       el.style.borderColor = dc;
-      el.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dc};"></span><strong style="color:${dc};">${conn ? '교실 연결됨' : '교실 미연결'}</strong><span style="color:var(--txt-light);">— ${meta.sourceLabel}${meta.audioReady ? ' · 오디오 준비됨' : ''}</span>`;
+      el.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dc};"></span><strong style="color:${dc};">${conn ? '교실 연결됨' : '교실 미연결'}</strong><span style="color:var(--txt-light);">— classroom/${cls}.html 파일을 교실 전자칠판에서 열어두세요</span>`;
     }
   }, 3000);
 
