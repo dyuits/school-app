@@ -281,7 +281,7 @@
 
     function sendHeartbeat(){
       if(!clsAvailable() || !db) return;
-      currentHeartbeatRef = db.ref('heartbeat/' + CLS);
+      currentHeartbeatRef = db.ref('heartbeat/' + CLS + '/android');
       currentHeartbeatRef.set({
         ts: Date.now(),
         source: getRuntimeSource(),
@@ -293,7 +293,7 @@
       clearInterval(heartbeatTimer);
       sendHeartbeat();
       heartbeatTimer = setInterval(sendHeartbeat, 5000);
-      currentHeartbeatRef = db.ref('heartbeat/' + CLS);
+      currentHeartbeatRef = db.ref('heartbeat/' + CLS + '/android');
       currentHeartbeatRef.onDisconnect().remove();
     }
 

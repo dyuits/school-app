@@ -2001,14 +2001,7 @@ function renderRosterBody(cls) {
   </div>`;
 
   // 연결 상태
-  const connected = isClassConnected(cls);
-  const dotColor = connected ? '#3da86a' : '#e05050';
-  const dotLabel = connected ? '교실 연결됨' : '교실 미연결';
-  html += `<div id="classConnectionStatus" style="margin-top:14px;padding:10px 14px;background:${connected ? '#e8f8ee' : '#fff0f0'};border:1.5px solid ${dotColor};border-radius:var(--r-md);display:flex;align-items:center;gap:8px;font-size:12px;">
-    <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dotColor};"></span>
-    <strong style="color:${dotColor};">${dotLabel}</strong>
-    <span style="color:var(--txt-light);">— classroom/${cls}.html 파일을 교실 전자칠판에서 열어두세요</span>
-  </div>`;
+  html += renderConnectionStatus(cls);
 
   // 전송 로그
   html += `<div id="rosterCallLog" style="margin-top:10px;max-height:150px;overflow-y:auto;"></div>`;
@@ -2440,9 +2433,9 @@ function toggleFilterChip(el) {
 
 
 // ═══════════════════════════════════════════════
-// 교실 연결 상태 모니터링 (하트비트)
+// 교실 연결 상태 모니터링 (하트비트) - Android/Windows 분리
 // ═══════════════════════════════════════════════
-const connectedClasses = {};  // { "1-1": timestamp, ... }
+const connectedClasses = {};  // { "1-1": { android: timestamp, windows: timestamp } }
 
 // Firebase 하트비트 수신
 function startHeartbeatListener() {
@@ -2450,7 +2443,15 @@ function startHeartbeatListener() {
   firebaseDB.ref('heartbeat').on('value', (snap) => {
     const data = snap.val() || {};
     Object.keys(data).forEach(cls => {
-      connectedClasses[cls] = data[cls].ts || 0;
+      const entry = data[cls];
+      if (!connectedClasses[cls]) connectedClasses[cls] = {};
+      // 새 형식: heartbeat/CLS/android, heartbeat/CLS/windows
+      if (entry.android && entry.android.ts) connectedClasses[cls].android = entry.android.ts;
+      if (entry.windows && entry.windows.ts) connectedClasses[cls].windows = entry.windows.ts;
+      // 하위 호환: 이전 형식 (heartbeat/CLS = {ts:...})
+      if (entry.ts && !entry.android && !entry.windows) {
+        connectedClasses[cls].windows = entry.ts;
+      }
     });
   });
 }
@@ -2466,8 +2467,31 @@ try {
 } catch(e) {}
 
 function isClassConnected(cls) {
-  const last = connectedClasses[cls];
-  return last && (Date.now() - last < 120000); // 120초 이내 하트비트 (Chrome 타이머 throttle 대응)
+  const entry = connectedClasses[cls];
+  if (!entry) return false;
+  const now = Date.now();
+  return (entry.android && now - entry.android < 120000) || (entry.windows && now - entry.windows < 120000);
+}
+
+function getClassConnectionDetail(cls) {
+  const entry = connectedClasses[cls] || {};
+  const now = Date.now();
+  const android = entry.android && (now - entry.android < 120000);
+  const windows = entry.windows && (now - entry.windows < 120000);
+  return { android: !!android, windows: !!windows, any: !!android || !!windows };
+}
+
+function renderConnectionStatus(cls) {
+  const d = getClassConnectionDetail(cls);
+  const ac = d.android ? '#3da86a' : '#e05050';
+  const wc = d.windows ? '#3da86a' : '#e05050';
+  const bg = d.any ? '#e8f8ee' : '#fff0f0';
+  const bd = d.any ? '#3da86a' : '#e05050';
+  return `<div id="classConnectionStatus" style="margin-top:14px;padding:10px 14px;background:${bg};border:1.5px solid ${bd};border-radius:var(--r-md);display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;">
+    <span style="display:inline-flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${ac};"></span><strong style="color:${ac};">안드로이드 ${d.android ? '연결됨' : '미연결'}</strong></span>
+    <span style="color:var(--txt-light);">|</span>
+    <span style="display:inline-flex;align-items:center;gap:4px;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${wc};"></span><strong style="color:${wc};">윈도우 ${d.windows ? '연결됨' : '미연결'}</strong></span>
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -2632,11 +2656,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const el = qs('#classConnectionStatus');
     if (el && STATE.rosterUnlockedClass) {
       const cls = STATE.rosterUnlockedClass;
-      const conn = isClassConnected(cls);
-      const dc = conn ? '#3da86a' : '#e05050';
-      el.style.background = conn ? '#e8f8ee' : '#fff0f0';
-      el.style.borderColor = dc;
-      el.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${dc};"></span><strong style="color:${dc};">${conn ? '교실 연결됨' : '교실 미연결'}</strong><span style="color:var(--txt-light);">— classroom/${cls}.html 파일을 교실 전자칠판에서 열어두세요</span>`;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = renderConnectionStatus(cls);
+      const newEl = tmp.firstElementChild;
+      el.replaceWith(newEl);
     }
   }, 3000);
 
