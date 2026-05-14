@@ -251,6 +251,7 @@
       url.searchParams.set('class', cls);
       history.replaceState({}, '', url);
       CLS = cls;
+      localStorage.setItem('cr_last_class', cls);
       initForClass();
     }
 
@@ -587,6 +588,25 @@
       consumeCallQueue();
     }
 
+    // ── Keep-Alive: 무음 오디오 루프로 브라우저 탭 유지 ──
+    var keepAliveInterval = null;
+    function startKeepAlive(){
+      if(keepAliveInterval) return;
+      keepAliveInterval = setInterval(function(){
+        try{
+          var ac = getAudioContext();
+          if(ac.state === 'suspended') ac.resume();
+          var osc = ac.createOscillator();
+          var g = ac.createGain();
+          g.gain.value = 0.001; // 거의 무음
+          osc.connect(g); g.connect(ac.destination);
+          osc.start(); osc.stop(ac.currentTime + 0.05);
+        }catch(e){}
+        // Wake Lock 해제됐으면 재획득
+        if(!wakeLock || wakeLock.released) requestWakeLock();
+      }, 20000); // 20초마다
+    }
+
     async function requestWakeLock(){
       var badge = document.getElementById('wakeBadge');
       if(!('wakeLock' in navigator)){
@@ -597,10 +617,14 @@
         wakeLock = await navigator.wakeLock.request('screen');
         badge.textContent = '🔆 화면 꺼짐 방지 활성화';
         wakeLock.addEventListener('release', function(){
-          badge.textContent = '🔅 화면 유지 재시도 대기';
+          badge.textContent = '🔅 화면 유지 재시도 중...';
+          // 자동 재획득 시도
+          setTimeout(function(){ requestWakeLock(); }, 3000);
         });
       }catch(error){
         badge.textContent = '🔅 화면 유지 권한 필요';
+        // 재시도
+        setTimeout(function(){ requestWakeLock(); }, 10000);
       }
     }
 
@@ -645,6 +669,10 @@
         await primeAudio();
         requestWakeLock();
         requestFullscreen();
+        startKeepAlive();
+        // 마지막 선택 반 저장 (다음 실행 시 자동 복원용)
+        if(CLS) localStorage.setItem('cr_last_class', CLS);
+        localStorage.setItem('cr_audio_primed', 'true');
         ss.classList.add('hidden');
         showIdle();
       }catch(error){
@@ -682,14 +710,32 @@
     document.addEventListener('visibilitychange', function(){
       if(document.visibilityState === 'visible'){
         requestWakeLock();
-        // 탭이 다시 보일 때 AudioContext resume 시도
+        startKeepAlive();
+        // 탭이 다시 보일 때 AudioContext resume + Firebase 재연결
         if(audioCtx && audioCtx.state === 'suspended'){
           audioCtx.resume().catch(function(){});
+        }
+        // Firebase 연결 끊겼으면 재연결
+        if(clsAvailable() && db){
+          db.ref('.info/connected').once('value', function(snap){
+            if(!snap.val()) bindRealtime();
+          });
         }
       }
     });
     document.addEventListener('click', handleUserActivation, {once: true});
     document.addEventListener('touchstart', handleUserActivation, {once: true});
+
+    // ── 초기화: URL 파라미터 없으면 마지막 선택 반 자동 복원 ──
+    if(!CLS){
+      var savedClass = localStorage.getItem('cr_last_class');
+      if(savedClass && CLASS_LIST.includes(savedClass)){
+        CLS = savedClass;
+        var url = new URL(location.href);
+        url.searchParams.set('class', savedClass);
+        history.replaceState({}, '', url);
+      }
+    }
 
     if('speechSynthesis' in window){
       ldV();

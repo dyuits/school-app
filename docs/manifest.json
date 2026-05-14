@@ -1,14 +1,17 @@
 {
   "name": "교실 알림",
-  "short_name": "교실 알림",
+  "short_name": "교실알림",
   "description": "안드로이드 전자칠판에서 반별 호출을 수신하는 교실 알림 시스템",
   "start_url": "./classroom.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "fullscreen"],
   "background_color": "#111827",
   "theme_color": "#667eea",
   "orientation": "any",
   "lang": "ko",
+  "categories": ["education"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "./icons/icon-192.png",
