@@ -2448,8 +2448,8 @@ function startHeartbeatListener() {
       // 새 형식: heartbeat/CLS/android, heartbeat/CLS/windows
       if (entry.android && entry.android.ts) connectedClasses[cls].android = entry.android.ts;
       if (entry.windows && entry.windows.ts) connectedClasses[cls].windows = entry.windows.ts;
-      // 하위 호환: 이전 형식 (heartbeat/CLS = {ts:...})
-      if (entry.ts && !entry.android && !entry.windows) {
+      // 하위 호환: 이전 형식 (heartbeat/CLS = {ts:...}) → windows로 간주
+      if (entry.ts && typeof entry.ts === 'number') {
         connectedClasses[cls].windows = entry.ts;
       }
     });
@@ -2461,7 +2461,8 @@ try {
   const heartbeatChannel = new BroadcastChannel('heartbeat');
   heartbeatChannel.onmessage = (e) => {
     if (e.data && e.data.type === 'alive' && e.data.cls) {
-      connectedClasses[e.data.cls] = Date.now();
+      if (!connectedClasses[e.data.cls]) connectedClasses[e.data.cls] = {};
+      connectedClasses[e.data.cls].windows = Date.now();
     }
   };
 } catch(e) {}
