@@ -1,65 +1,39 @@
 @echo off
-title 1ÇÐ³â 2¹Ý ±³½Ç ¾Ë¸² ¼³Ä¡
-echo 1ÇÐ³â 2¹Ý ±³½Ç ¾Ë¸² ¼³Ä¡
+chcp 65001 >nul
+title 1í•™ë…„ 2ë°˜ êµì‹¤ ì•Œë¦¼ ì„¤ì¹˜
+echo 1í•™ë…„ 2ë°˜ êµì‹¤ ì•Œë¦¼ ì„¤ì¹˜
 echo.
 
-set "CHROME="
-for %%p in ("%ProgramFiles%\Google\Chrome\Application\chrome.exe" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" "%LocalAppData%\Google\Chrome\Application\chrome.exe") do if exist %%p set "CHROME=%%~p"
-if "%CHROME%"=="" (echo ChromeÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù. ^& pause ^& exit /b 1)
-
-set "URL=https://dyuits.github.io/school-app/classroom/1-2.html"
-
-set "USERDATA=%LOCALAPPDATA%\±³½Ç¾Ë¸²\1-2"
-if not exist "%USERDATA%" mkdir "%USERDATA%"
-
-:: ±âÁ¸ °¨½Ã ÇÁ·Î¼¼½º(wscript.exe) Á¾·á
+:: ê¸°ì¡´ í”„ë¡œì„¸ìŠ¤ ì¢…ë£Œ
+echo ê¸°ì¡´ í”„ë¡œì„¸ìŠ¤ ì •ë¦¬ ì¤‘...
 taskkill /f /im wscript.exe >nul 2>&1
+powershell -Command "Get-Process powershell | Where-Object {$_.CommandLine -like '*êµì‹¤ì•Œë¦¼*'} | Stop-Process -Force" >nul 2>&1
 timeout /t 2 /nobreak >nul
 
-:: ½ÃÀÛ ÇÁ·Î±×·¥ Æú´õ
+:: ì‹œìž‘ í”„ë¡œê·¸ëž¨ í´ë”
 set "STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
-del "%STARTUP%\±³½Ç¾Ë¸²_*.vbs" >nul 2>&1
-set "VBS=%STARTUP%\±³½Ç¾Ë¸²_1-2.vbs"
+del "%STARTUP%\êµì‹¤ì•Œë¦¼_*.vbs" >nul 2>&1
+del "%STARTUP%\êµì‹¤ì•Œë¦¼_*.bat" >nul 2>&1
 
-:: ======================================================
-:: VBS °¨½Ã ½ºÅ©¸³Æ® »ý¼º
-:: ·ÎÁ÷: 10ÃÊ¸¶´Ù lockfile Á¸Àç È®ÀÎ (ChromeÀÌ user-data-dir¿¡ »ý¼º)
-::   lockfile ÀÖÀ½ = Chrome ½ÇÇà Áß ¡æ ´ë±â
-::   lockfile ¾øÀ½ ¡æ 3ÃÊ ÈÄ ÀçÈ®ÀÎ ¡æ ¿©ÀüÈ÷ ¾øÀ¸¸é Àç½ÇÇà ¡æ 15ÃÊ ´ë±â
-:: Áßº¹ ½ÇÇà ¹æÁö: lockfile ´õºíÃ¼Å© + 15ÃÊ ´ë±â·Î Àý´ë Áßº¹ ¾øÀ½
-:: ======================================================
-> "%VBS%" echo Set oShell = CreateObject("WScript.Shell")
->> "%VBS%" echo Set fso = CreateObject("Scripting.FileSystemObject")
->> "%VBS%" echo Dim sChrome, sURL, sUserData, sLock, sParent
->> "%VBS%" echo sChrome = "%CHROME%"
->> "%VBS%" echo sURL = "%URL%"
->> "%VBS%" echo sParent = oShell.ExpandEnvironmentStrings("%%LOCALAPPDATA%%") ^& "\±³½Ç¾Ë¸²"
->> "%VBS%" echo sUserData = sParent ^& "\1-2"
->> "%VBS%" echo sLock = sUserData ^& "\lockfile"
->> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
->> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
->> "%VBS%" echo WScript.Sleep 2000
->> "%VBS%" echo For vv=1 To 50 : oShell.SendKeys Chr(175) : Next
->> "%VBS%" echo Do While True
->> "%VBS%" echo   If Not fso.FileExists(sLock) Then
->> "%VBS%" echo     WScript.Sleep 3000
->> "%VBS%" echo     If Not fso.FileExists(sLock) Then
->> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --disable-popup-blocking --window-position=32000,32000 --window-size=800,600 --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34) ^& " --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run", 1, False
->> "%VBS%" echo       WScript.Sleep 15000
->> "%VBS%" echo     End If
->> "%VBS%" echo   Else
->> "%VBS%" echo     On Error Resume Next
->> "%VBS%" echo     On Error GoTo 0
->> "%VBS%" echo   End If
->> "%VBS%" echo   WScript.Sleep 3000
->> "%VBS%" echo Loop
+:: PS1 ìŠ¤í¬ë¦½íŠ¸ë¥¼ ë¡œì»¬ì— ë³µì‚¬
+set "INSTALL_DIR=%LOCALAPPDATA%\êµì‹¤ì•Œë¦¼"
+if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+copy /y "%~dp0êµì‹¤ì•Œë¦¼.ps1" "%INSTALL_DIR%\êµì‹¤ì•Œë¦¼.ps1" >nul
 
+:: ì‹œìž‘ í”„ë¡œê·¸ëž¨ ë“±ë¡ (BAT â†’ PowerShell ì‹¤í–‰)
+set "STARTUP_BAT=%STARTUP%\êµì‹¤ì•Œë¦¼_1-2.bat"
+> "%STARTUP_BAT%" echo @echo off
+>> "%STARTUP_BAT%" echo start "" /min powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "%INSTALL_DIR%\êµì‹¤ì•Œë¦¼.ps1" -CLS "1-2"
 
-:: VBS °¨½Ã ½ºÅ©¸³Æ® Áï½Ã ½ÇÇà (¼û±è/¹é±×¶ó¿îµå)
-start "" wscript.exe //nologo "%VBS%"
+:: ì¦‰ì‹œ ì‹¤í–‰
+start "" /min powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "%INSTALL_DIR%\êµì‹¤ì•Œë¦¼.ps1" -CLS "1-2"
 
 echo.
-echo ¼³Ä¡ ¿Ï·á!
-echo - PC Àç½ÃÀÛ ½Ã VBS°¡ ÀÚµ¿ ½ÇÇàµÇ¾î ChromeÀ» °¨½ÃÇÕ´Ï´Ù
-echo - Á¦°Å: Á¦°Å_1-2.bat
-timeout /t 3
+echo ì„¤ì¹˜ ì™„ë£Œ!
+echo - ì‹œìŠ¤í…œ íŠ¸ë ˆì´(ì‹œê³„ ì˜†)ì— êµì‹¤ì•Œë¦¼ ì•„ì´ì½˜ì´ í‘œì‹œë©ë‹ˆë‹¤.
+echo - íŠ¸ë ˆì´ ì•„ì´ì½˜ ë”ë¸”í´ë¦­: ì°½ ë³´ê¸°
+echo - íŠ¸ë ˆì´ ì•„ì´ì½˜ ìš°í´ë¦­: ë©”ë‰´ (ì°½ ë³´ê¸°/ìˆ¨ê¸°ê¸°/ì¢…ë£Œ)
+echo - Chromeì„ ë‹«ì•„ë„ ìžë™ìœ¼ë¡œ ìž¬ì‹¤í–‰ë©ë‹ˆë‹¤.
+echo - PC ìž¬ì‹œìž‘ ì‹œ ìžë™ìœ¼ë¡œ ì‹œìž‘ë©ë‹ˆë‹¤.
+echo - ì œê±°: ì œê±°_1-2.bat
+timeout /t 5
