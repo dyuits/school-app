@@ -1,4 +1,5 @@
 @echo off
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarGlomLevel /t REG_DWORD /d 0 /f >nul 2>&1
 title Classroom 3-9 Install
 echo Installing Classroom 3-9...
 
