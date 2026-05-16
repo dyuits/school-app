@@ -144,6 +144,14 @@
     <div class="ctime" id="cTm"></div>
   </div>
 
+  <!-- 검은 대기 화면 (슬립 모드) -->
+  <div class="hidden" id="sleepScreen" style="position:fixed;inset:0;background:#000;z-index:40;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="wakeUpManual()">
+    <div style="text-align:center;color:rgba(255,255,255,0.08);user-select:none;">
+      <div style="font-size:48px;">📢</div>
+      <div style="font-size:14px;margin-top:8px;">호출 대기 중</div>
+    </div>
+  </div>
+
   <script>
     document.addEventListener('contextmenu', e => e.preventDefault());
     var CLASS_LIST = Array.from({length: 3}, function(_, grade){ return Array.from({length: 10}, function(_, number){ return (grade + 1) + '-' + (number + 1); }); }).flat();
@@ -552,6 +560,8 @@
       isHandlingCall = true;
       var data = callQueue.shift();
       closeS();
+      // 검은 화면 해제 → 호출 화면 표시
+      wakeUp();
       if('speechSynthesis' in window && !selV){
         await new Promise(function(resolve){ ensureVoices().then(function(v){ updV(v); resolve(); }); });
       }
@@ -581,6 +591,8 @@
         call.style.display = 'none';
         idle.style.display = 'flex';
         isHandlingCall = false;
+        // 다시 검은 대기 화면으로
+        goSleep();
         consumeCallQueue();
       }, 600);
     }
@@ -672,15 +684,34 @@
         requestWakeLock();
         requestFullscreen();
         startKeepAlive();
-        // 마지막 선택 반 저장 (다음 실행 시 자동 복원용)
         if(CLS) localStorage.setItem('cr_last_class', CLS);
         localStorage.setItem('cr_audio_primed', 'true');
         ss.classList.add('hidden');
         showIdle();
+        // 초기 시작 후 검은 대기 화면으로 전환
+        setTimeout(function(){ goSleep(); }, 2000);
       }catch(error){
         errEl.textContent = '오디오 활성화에 실패했습니다. 다시 터치해 보세요.';
         errEl.style.display = 'block';
       }
+    }
+
+    // ── 검은 대기 화면 (슬립 모드) ──
+    function goSleep(){
+      var sleepEl = document.getElementById('sleepScreen');
+      if(sleepEl) sleepEl.classList.remove('hidden');
+      document.getElementById('idle').classList.add('hidden');
+    }
+    function wakeUp(){
+      var sleepEl = document.getElementById('sleepScreen');
+      if(sleepEl) sleepEl.classList.add('hidden');
+    }
+
+    // 수동으로 화면 터치 시 잠깐 대기화면 보여주기
+    function wakeUpManual(){
+      wakeUp();
+      document.getElementById('idle').classList.remove('hidden');
+      setTimeout(function(){ goSleep(); }, 10000);
     }
 
     async function registerServiceWorker(){
