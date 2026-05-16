@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v3';
+var CACHE_NAME = 'school-app-v4';
 var ASSETS = [
   './',
   './index.html',
@@ -31,19 +31,16 @@ self.addEventListener('fetch', function(event){
   if(event.request.method !== 'GET') return;
   // Firebase 등 외부 API는 캐시하지 않음
   if(event.request.url.includes('firebasedatabase') || event.request.url.includes('gstatic.com')) return;
+  // 네트워크 우선, 실패 시 캐시 (항상 최신 버전 사용)
   event.respondWith(
-    caches.match(event.request).then(function(cached){
-      // 네트워크 우선, 실패 시 캐시
-      var fetchPromise = fetch(event.request).then(function(response){
-        if(response && response.status === 200){
-          var copy = response.clone();
-          caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
-        }
-        return response;
-      }).catch(function(){
-        return cached;
-      });
-      return cached || fetchPromise;
+    fetch(event.request).then(function(response){
+      if(response && response.status === 200){
+        var copy = response.clone();
+        caches.open(CACHE_NAME).then(function(cache){ cache.put(event.request, copy); });
+      }
+      return response;
+    }).catch(function(){
+      return caches.match(event.request);
     })
   );
 });
