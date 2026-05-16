@@ -158,12 +158,10 @@
         speechSynthesis.speak(u);speechSynthesis.cancel();
       }
     },1500);
-    // 페이지 로드 시 즉시 창 숨기기 (화면 밖으로)
-    try{window.resizeTo(1,1);window.moveTo(-32000,-32000);}catch(e){}
     document.title=' ';
     // Prevent accidental close
     window.onbeforeunload=()=>'교실 알림이 종료됩니다.';
-    async function showCall(d){document.title=' ';try{window.moveTo(0,0);window.resizeTo(screen.availWidth,screen.availHeight);window.focus();}catch(e){}try{if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}}catch(e){}closeS();const idle=document.getElementById('idle'),call=document.getElementById('call');idle.style.display='none';call.style.display='flex';call.className='call show';document.getElementById('cT').textContent=d.callerTeacher?d.callerTeacher+' 선생님 호출':'';document.getElementById('cN').innerHTML='<span class="hl">'+d.studentName+'</span> 학생';document.getElementById('cM').textContent=d.message;const n=new Date();document.getElementById('cTm').textContent=n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');const sp=d.studentName+' 학생, '+d.message;const rp=parseInt(document.getElementById('rSel').value)||2;for(let i=0;i<rp;i++){if(i>0)await new Promise(r=>setTimeout(r,500));await playC();await new Promise(r=>setTimeout(r,150));await spk(sp);}await new Promise(r=>setTimeout(r,800));call.className='call fo';setTimeout(()=>{call.style.display='none';idle.style.display='flex';document.title=' ';try{window.resizeTo(1,1);window.moveTo(-32000,-32000);}catch(e){}},600);}
+    async function showCall(d){if(window._callBusy)return;window._callBusy=true;var p=new URLSearchParams({teacher:d.callerTeacher||'',student:d.studentName||'',message:d.message||'','class':CLS});var popup=window.open('https://dyuits.github.io/school-app/call.html?'+p.toString(),'callPopup','width='+screen.availWidth+',height='+screen.availHeight+',left=0,top=0,menubar=no,toolbar=no,scrollbars=no');if(popup){var ck=setInterval(function(){if(popup.closed){clearInterval(ck);window._callBusy=false;}},500);setTimeout(function(){clearInterval(ck);window._callBusy=false;},30000);}else{window._callBusy=false;}}
   
   </script>
 </body>
