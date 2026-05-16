@@ -4,24 +4,21 @@ title 3학년 1반 교실 알림 제거
 echo 3학년 1반 교실 알림 제거
 echo.
 
+set "CLS=3-1"
+
 echo 프로세스 종료 중...
-:: PowerShell 트레이 프로세스 종료
-powershell -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like '*교실알림*3-1*'} | Stop-Process -Force" >nul 2>&1
-:: 기존 VBS 프로세스 종료
+powershell -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {{$_.CommandLine -like '*ClassroomAlert*'}} | Stop-Process -Force" >nul 2>&1
 taskkill /f /im wscript.exe >nul 2>&1
-:: Chrome 종료 (해당 반)
-taskkill /f /fi "WINDOWTITLE eq *3-1*" >nul 2>&1
 timeout /t 2 /nobreak >nul
 
 echo 시작 프로그램에서 제거 중...
 set "STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
-del "%STARTUP%\교실알림_3-1.bat" >nul 2>&1
-del "%STARTUP%\교실알림_3-1.vbs" >nul 2>&1
-del "%STARTUP%\교실알림_*.vbs" >nul 2>&1
+del "%STARTUP%\ClassroomAlert_3-1.bat" >nul 2>&1
+del "%STARTUP%\ClassroomAlert_*.vbs" >nul 2>&1
 
-echo 데이터 폴더 정리 중...
-rmdir /s /q "%LOCALAPPDATA%\교실알림\3-1" >nul 2>&1
+echo 데이터 정리 중...
+rmdir /s /q "%LOCALAPPDATA%\ClassroomAlert\3-1" >nul 2>&1
 
 echo.
-echo 3학년 1반 교실 알림이 제거되었습니다.
+echo 제거 완료!
 timeout /t 3
