@@ -8,7 +8,7 @@ set "CLS=3-7"
 
 :: 기존 프로세스 종료
 taskkill /f /im wscript.exe >nul 2>&1
-powershell -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {{$_.CommandLine -like '*ClassroomAlert*'}} | Stop-Process -Force" >nul 2>&1
+powershell -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like '*ClassroomAlert*'} | Stop-Process -Force" >nul 2>&1
 timeout /t 2 /nobreak >nul
 
 :: 시작 프로그램 폴더 정리
