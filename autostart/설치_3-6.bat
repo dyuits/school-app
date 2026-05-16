@@ -1,6 +1,6 @@
 @echo off
-title 3-6 Install
-echo 3-6 Install
+title Classroom 3-6 Install
+echo Installing Classroom 3-6...
 
 set "CHROME="
 for %%p in ("%ProgramFiles%\Google\Chrome\Application\chrome.exe" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" "%LocalAppData%\Google\Chrome\Application\chrome.exe") do if exist %%p set "CHROME=%%~p"
@@ -9,20 +9,16 @@ if "%CHROME%"=="" (echo Chrome not found & pause & exit /b 1)
 set "URL=https://dyuits.github.io/school-app/classroom/3-6.html"
 set "USERDATA=%LOCALAPPDATA%\ClassroomAlert\3-6"
 
-:: Kill existing
 taskkill /f /im wscript.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
 
-:: Delete old Chrome data (forces fresh window position)
 rmdir /s /q "%USERDATA%" >nul 2>&1
 mkdir "%USERDATA%"
 
-:: Startup folder
 set "STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
 del "%STARTUP%\ClassroomAlert_*.*" >nul 2>&1
 set "VBS=%STARTUP%\ClassroomAlert_3-6.vbs"
 
-:: Write VBS watchdog
 > "%VBS%" echo Set oShell = CreateObject("WScript.Shell")
 >> "%VBS%" echo Set fso = CreateObject("Scripting.FileSystemObject")
 >> "%VBS%" echo sChrome = "%CHROME%"
@@ -50,8 +46,11 @@ set "VBS=%STARTUP%\ClassroomAlert_3-6.vbs"
 >> "%VBS%" echo   WScript.Sleep 3000
 >> "%VBS%" echo Loop
 
-:: Launch now
 start "" wscript.exe //nologo "%VBS%"
 
-echo OK!
+echo.
+echo [OK] Classroom 3-6 installed.
+echo - Auto-start on boot: YES
+echo - Auto-restart Chrome: YES
+echo - Remove: run remove_3-6.bat
 timeout /t 3

@@ -1,6 +1,6 @@
 @echo off
-title 3-2 Remove
-echo 3학년 2반 제거 중...
+title Classroom 3-2 Remove
+echo Removing Classroom 3-2...
 
 taskkill /f /im wscript.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
@@ -11,5 +11,6 @@ del "%STARTUP%\ClassroomAlert_*.*" >nul 2>&1
 
 rmdir /s /q "%LOCALAPPDATA%\ClassroomAlert\3-2" >nul 2>&1
 
-echo 제거 완료!
+echo.
+echo [OK] Classroom 3-2 removed.
 timeout /t 3
