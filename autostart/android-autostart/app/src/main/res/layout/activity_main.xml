@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="32dp"
+    android:gravity="center_horizontal"
+    android:background="#f0f4ff">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🔔 교실알림 자동실행"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#1e3a8a"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="부팅 시 자동으로 Chrome 교실 알림을 실행합니다"
+        android:textSize="14sp"
+        android:textColor="#64748b"
+        android:layout_marginBottom="32dp" />
+
+    <!-- 학년 선택 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="학년 선택"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#334155"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/gradeSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@android:drawable/btn_dropdown"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 반 선택 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="반 선택"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="#334155"
+        android:layout_marginBottom="8dp" />
+
+    <Spinner
+        android:id="@+id/classSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@android:drawable/btn_dropdown"
+        android:padding="12dp"
+        android:layout_marginBottom="24dp" />
+
+    <!-- 저장 버튼 -->
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="💾 저장 + 실행"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#ffffff"
+        android:background="#3b82f6"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Chrome 실행 버튼 -->
+    <Button
+        android:id="@+id/launchButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="🌐 Chrome 실행"
+        android:textSize="15sp"
+        android:textColor="#3b82f6"
+        android:background="#e0e7ff"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 서비스 중지 버튼 -->
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="⏹ 감시 서비스 중지"
+        android:textSize="15sp"
+        android:textColor="#dc2626"
+        android:background="#fee2e2"
+        android:layout_marginBottom="24dp" />
+
+    <!-- 상태 표시 -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="⚠️ 반을 선택하고 저장해주세요"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:textColor="#1e3a8a"
+        android:padding="16dp"
+        android:background="#dbeafe"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/urlText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textColor="#64748b"
+        android:padding="8dp" />
+
+    <!-- 안내 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📌 사용법\n1. 학년/반 선택 후 [저장+실행] 터치\n2. Chrome에서 '화면을 터치하여 시작' 터치\n3. 이후 전자칠판 재부팅 시 자동 실행됩니다\n4. Chrome이 종료되면 15초 내 자동 재실행됩니다"
+        android:textSize="13sp"
+        android:textColor="#475569"
+        android:lineSpacingMultiplier="1.5"
+        android:padding="16dp"
+        android:background="#f8fafc"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout>
