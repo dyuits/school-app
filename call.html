@@ -69,9 +69,9 @@
             g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + s + d);
             o.start(c.currentTime + s); o.stop(c.currentTime + s + d);
           }
-          t(880, 0, 0.5, 'sine', 1.0);
-          t(659, 0.4, 0.7, 'sine', 1.0);
-          setTimeout(() => { rv(); }, 2000);
+          t(880, 0, 0.4, 'sine', 1.0);
+          t(659, 0.35, 0.5, 'sine', 1.0);
+          setTimeout(() => { rv(); }, 900);
         } catch (e) { rv(); }
       });
     }
@@ -102,27 +102,41 @@
       function _attempt() {
         return new Promise(r => {
           const u = new SpeechSynthesisUtterance(cl);
-          u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.0; u.volume = 1.0;
+          u.lang = 'ko-KR'; u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
           if (selV) u.voice = selV;
           let done = false;
           u.onend = () => { if (!done) { done = true; r(true); } };
           u.onerror = () => { if (!done) { done = true; r(false); } };
           speechSynthesis.speak(u);
-          const ri = setInterval(() => { if (speechSynthesis.speaking && speechSynthesis.paused) speechSynthesis.resume(); }, 3000);
-          setTimeout(() => { clearInterval(ri); if (!done) { done = true; speechSynthesis.cancel(); r(false); } }, 15000);
+          const ri = setInterval(() => { if (speechSynthesis.speaking && speechSynthesis.paused) speechSynthesis.resume(); }, 2000);
+          setTimeout(() => { clearInterval(ri); if (!done) { done = true; speechSynthesis.cancel(); r(true); } }, 6000);
         });
       }
-      return _attempt().then(ok => {
-        if (!ok) return new Promise(r => setTimeout(r, 500)).then(() => { speechSynthesis.cancel(); return _attempt(); });
-      });
+      return _attempt();
+    }
+
+    // 강제 닫기 (여러 전략으로 시도)
+    function forceClose() {
+      try { document.body.innerHTML = ''; } catch (e) {}
+      try { speechSynthesis.cancel(); } catch (e) {}
+      try { if (audioCtx) audioCtx.close(); } catch (e) {}
+      try { if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch (e) {}
+      try { window.close(); } catch (e) {}
+      try { self.close(); } catch (e) {}
+      try { window.open('', '_self', ''); window.close(); } catch (e) {}
+      setTimeout(() => {
+        try { window.close(); } catch (e) {}
+        try { location.replace('about:blank'); } catch (e) {}
+      }, 200);
+      setTimeout(() => {
+        try { window.close(); } catch (e) {}
+      }, 800);
     }
 
     // 메인 실행
     async function run() {
-      // 창을 화면 앞으로 + 최대화
       try { window.moveTo(0, 0); window.resizeTo(screen.availWidth, screen.availHeight); } catch(e) {}
       try { window.focus(); } catch(e) {}
-      try { if (document.documentElement.requestFullscreen && !document.fullscreenElement) { document.documentElement.requestFullscreen().catch(()=>{}); } } catch(e) {}
       // 오디오 준비
       try { getAudioContext().resume(); } catch (e) {}
       if ('speechSynthesis' in window) {
@@ -134,19 +148,19 @@
 
       const sp = student + ' 학생, ' + message;
 
-      // 호출음 + TTS 2번 반복
-      for (let i = 0; i < 2; i++) {
-        if (i > 0) await new Promise(r => setTimeout(r, 2000));
-        await playC();
-        await new Promise(r => setTimeout(r, 500));
-        await spk(sp);
-      }
+      // 호출음 + TTS 1회
+      await playC();
+      await new Promise(r => setTimeout(r, 150));
+      await spk(sp);
 
-      // 4초 대기 후 자동 닫기
-      await new Promise(r => setTimeout(r, 4000));
-      document.getElementById('call').className = 'call fo';
-      setTimeout(() => { window.close(); }, 1000);
+      // 짧은 대기 후 자동 닫기
+      await new Promise(r => setTimeout(r, 600));
+      try { document.getElementById('call').className = 'call fo'; } catch(e) {}
+      setTimeout(forceClose, 400);
     }
+
+    // 안전장치: 최대 12초 후 무조건 닫기
+    setTimeout(forceClose, 12000);
 
     run();
   </script>

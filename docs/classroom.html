@@ -501,7 +501,7 @@
             alarm: function(){ for(var i = 0; i < 6; i++) playTone(context, 800 + (i % 2) * 400, i * .25, .2, 'sawtooth', .25); }
           };
           (sounds[type] || sounds.dingdong)();
-          setTimeout(resolve, 2000);
+          setTimeout(resolve, 1000);
         }catch(error){
           resolve();
         }
@@ -530,15 +530,17 @@
       var clean = text.replace(/[^가-힣a-zA-Z0-9\s,.!?\-]/g,'').slice(0, 100);
       var utterance = new SpeechSynthesisUtterance(clean);
       utterance.lang = 'ko-KR';
-      utterance.rate = 0.9;
+      utterance.rate = 1.0;
       utterance.pitch = 1;
       utterance.volume = gSV();
       if(selV) utterance.voice = selV;
       return new Promise(function(resolve){
-        utterance.onend = resolve;
-        utterance.onerror = resolve;
+        var done = false;
+        var finish = function(){ if(done) return; done = true; try{ speechSynthesis.cancel(); }catch(e){} resolve(); };
+        utterance.onend = finish;
+        utterance.onerror = finish;
         speechSynthesis.speak(utterance);
-        setTimeout(resolve, 30000);
+        setTimeout(finish, 6000);
       });
     }
 
@@ -566,21 +568,21 @@
       var speech = (data.studentName || '학생') + ' 학생, ' + (data.message || '교무실로 와주세요');
       var repeat = parseInt(document.getElementById('rSel').value, 10) || 2;
       for(var index = 0; index < repeat; index++){
-        if(index > 0) await new Promise(function(resolve){ setTimeout(resolve, 2000); });
+        if(index > 0) await new Promise(function(resolve){ setTimeout(resolve, 500); });
         var playedNatively = await playNativeAlert(document.getElementById('cSel').value);
         if(!playedNatively) await playC();
-        await new Promise(function(resolve){ setTimeout(resolve, 500); });
+        await new Promise(function(resolve){ setTimeout(resolve, 150); });
         var spokenNatively = await speakNative(speech);
         if(!spokenNatively) await spk(speech);
       }
-      await new Promise(function(resolve){ setTimeout(resolve, 4000); });
+      await new Promise(function(resolve){ setTimeout(resolve, 800); });
       call.className = 'call fo';
       setTimeout(function(){
         call.style.display = 'none';
         idle.style.display = 'flex';
         isHandlingCall = false;
         consumeCallQueue();
-      }, 1000);
+      }, 600);
     }
 
     function showCall(data){
