@@ -4,35 +4,55 @@ title 3학년 10반 교실 알림 설치
 echo 3학년 10반 교실 알림 설치
 echo.
 
+set "CHROME="
+for %%p in ("%ProgramFiles%\Google\Chrome\Application\chrome.exe" "%ProgramFiles(x86)%\Google\Chrome\Application\chrome.exe" "%LocalAppData%\Google\Chrome\Application\chrome.exe") do if exist %%p set "CHROME=%%~p"
+if "%CHROME%"=="" (echo Chrome을 찾을 수 없습니다. & pause & exit /b 1)
+
+set "URL=https://dyuits.github.io/school-app/classroom/3-10.html"
 set "CLS=3-10"
+
+set "USERDATA=%LOCALAPPDATA%\ClassroomAlert\%CLS%"
+if not exist "%USERDATA%" mkdir "%USERDATA%"
 
 :: 기존 프로세스 종료
 taskkill /f /im wscript.exe >nul 2>&1
-powershell -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like '*ClassroomAlert*'} | Stop-Process -Force" >nul 2>&1
 timeout /t 2 /nobreak >nul
 
-:: 시작 프로그램 폴더 정리
+:: 시작 프로그램 폴더
 set "STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
-del "%STARTUP%\ClassroomAlert_*.bat" >nul 2>&1
 del "%STARTUP%\ClassroomAlert_*.vbs" >nul 2>&1
+set "VBS=%STARTUP%\ClassroomAlert_%CLS%.vbs"
 
-:: PS1 스크립트 복사
-set "INSTALL_DIR=%LOCALAPPDATA%\ClassroomAlert"
-if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
-copy /y "%~dp0ClassroomAlert.ps1" "%INSTALL_DIR%\ClassroomAlert.ps1" >nul
+:: VBS 감시 스크립트 생성
+> "%VBS%" echo Set oShell = CreateObject("WScript.Shell")
+>> "%VBS%" echo Set fso = CreateObject("Scripting.FileSystemObject")
+>> "%VBS%" echo Dim sChrome, sURL, sUserData, sLock, sParent
+>> "%VBS%" echo sChrome = "%CHROME%"
+>> "%VBS%" echo sURL = "%URL%"
+>> "%VBS%" echo sParent = oShell.ExpandEnvironmentStrings("%%LOCALAPPDATA%%") ^& "\ClassroomAlert"
+>> "%VBS%" echo sUserData = sParent ^& "\3-10"
+>> "%VBS%" echo sLock = sUserData ^& "\lockfile"
+>> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
+>> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
+>> "%VBS%" echo WScript.Sleep 2000
+>> "%VBS%" echo For vv=1 To 50 : oShell.SendKeys Chr(175) : Next
+>> "%VBS%" echo Do While True
+>> "%VBS%" echo   If Not fso.FileExists(sLock) Then
+>> "%VBS%" echo     WScript.Sleep 3000
+>> "%VBS%" echo     If Not fso.FileExists(sLock) Then
+>> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --disable-popup-blocking --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34), 1, False
+>> "%VBS%" echo       WScript.Sleep 15000
+>> "%VBS%" echo     End If
+>> "%VBS%" echo   End If
+>> "%VBS%" echo   WScript.Sleep 3000
+>> "%VBS%" echo Loop
 
-:: 시작 프로그램 등록
-set "STARTUP_BAT=%STARTUP%\ClassroomAlert_3-10.bat"
-> "%STARTUP_BAT%" echo @echo off
->> "%STARTUP_BAT%" echo start "" /min powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "%INSTALL_DIR%\ClassroomAlert.ps1" -CLS "3-10"
-
-:: 즉시 실행
-start "" /min powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "%INSTALL_DIR%\ClassroomAlert.ps1" -CLS "3-10"
+:: VBS 즉시 실행
+start "" wscript.exe //nologo "%VBS%"
 
 echo.
 echo 설치 완료!
-echo - 트레이 아이콘 더블클릭: 창 보기
-echo - 트레이 아이콘 우클릭: 메뉴
-echo - Chrome 닫아도 자동 재실행
-echo - PC 재시작 시 자동 실행
-timeout /t 5
+echo - PC 재시작 시 자동 실행됩니다.
+echo - Chrome을 닫아도 자동으로 다시 실행됩니다.
+echo - 제거: 제거_3-10.bat
+timeout /t 3

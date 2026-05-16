@@ -7,17 +7,15 @@ echo.
 set "CLS=2-5"
 
 echo 프로세스 종료 중...
-powershell -Command "Get-Process powershell -ErrorAction SilentlyContinue | Where-Object {$_.CommandLine -like '*ClassroomAlert*'} | Stop-Process -Force" >nul 2>&1
 taskkill /f /im wscript.exe >nul 2>&1
 timeout /t 2 /nobreak >nul
 
 echo 시작 프로그램에서 제거 중...
 set "STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup"
-del "%STARTUP%\ClassroomAlert_2-5.bat" >nul 2>&1
-del "%STARTUP%\ClassroomAlert_*.vbs" >nul 2>&1
+del "%STARTUP%\ClassroomAlert_%CLS%.vbs" >nul 2>&1
 
 echo 데이터 정리 중...
-rmdir /s /q "%LOCALAPPDATA%\ClassroomAlert\2-5" >nul 2>&1
+rmdir /s /q "%LOCALAPPDATA%\ClassroomAlert\%CLS%" >nul 2>&1
 
 echo.
 echo 제거 완료!
