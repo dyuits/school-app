@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3학년 1반 교실 알림</title>
+  <title> </title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800;900&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -160,10 +160,10 @@
     },1500);
     // 페이지 로드 시 즉시 창 숨기기 (화면 밖으로)
     try{window.resizeTo(1,1);window.moveTo(-32000,-32000);}catch(e){}
-    document.title='[HIDE]'+ORIG_TITLE;
+    document.title=' ';
     // Prevent accidental close
     window.onbeforeunload=()=>'교실 알림이 종료됩니다.';
-    async function showCall(d){document.title='[CALL] '+ORIG_TITLE;try{window.moveTo(0,0);window.resizeTo(screen.availWidth,screen.availHeight);window.focus();}catch(e){}try{if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}}catch(e){}closeS();const idle=document.getElementById('idle'),call=document.getElementById('call');idle.style.display='none';call.style.display='flex';call.className='call show';document.getElementById('cT').textContent=d.callerTeacher?d.callerTeacher+' 선생님 호출':'';document.getElementById('cN').innerHTML='<span class="hl">'+d.studentName+'</span> 학생';document.getElementById('cM').textContent=d.message;const n=new Date();document.getElementById('cTm').textContent=n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');const sp=d.studentName+' 학생, '+d.message;const rp=parseInt(document.getElementById('rSel').value)||2;for(let i=0;i<rp;i++){if(i>0)await new Promise(r=>setTimeout(r,500));await playC();await new Promise(r=>setTimeout(r,150));await spk(sp);}await new Promise(r=>setTimeout(r,800));call.className='call fo';setTimeout(()=>{call.style.display='none';idle.style.display='flex';document.title=ORIG_TITLE;try{window.resizeTo(1,1);window.moveTo(-32000,-32000);}catch(e){}},600);}
+    async function showCall(d){document.title=' ';try{window.moveTo(0,0);window.resizeTo(screen.availWidth,screen.availHeight);window.focus();}catch(e){}try{if(document.documentElement.requestFullscreen&&!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});}}catch(e){}closeS();const idle=document.getElementById('idle'),call=document.getElementById('call');idle.style.display='none';call.style.display='flex';call.className='call show';document.getElementById('cT').textContent=d.callerTeacher?d.callerTeacher+' 선생님 호출':'';document.getElementById('cN').innerHTML='<span class="hl">'+d.studentName+'</span> 학생';document.getElementById('cM').textContent=d.message;const n=new Date();document.getElementById('cTm').textContent=n.getFullYear()+'년 '+(n.getMonth()+1)+'월 '+n.getDate()+'일 '+String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');const sp=d.studentName+' 학생, '+d.message;const rp=parseInt(document.getElementById('rSel').value)||2;for(let i=0;i<rp;i++){if(i>0)await new Promise(r=>setTimeout(r,500));await playC();await new Promise(r=>setTimeout(r,150));await spk(sp);}await new Promise(r=>setTimeout(r,800));call.className='call fo';setTimeout(()=>{call.style.display='none';idle.style.display='flex';document.title=' ';try{window.resizeTo(1,1);window.moveTo(-32000,-32000);}catch(e){}},600);}
   
   </script>
 </body>
