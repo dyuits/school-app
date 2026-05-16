@@ -40,7 +40,7 @@ set "VBS=%STARTUP%\ClassroomAlert_%CLS%.vbs"
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
 >> "%VBS%" echo     WScript.Sleep 3000
 >> "%VBS%" echo     If Not fso.FileExists(sLock) Then
->> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --disable-popup-blocking --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34), 1, False
+>> "%VBS%" echo       oShell.Run Chr(34) ^& sChrome ^& Chr(34) ^& " --disable-popup-blocking --window-position=32000,32000 --window-size=800,600 --autoplay-policy=no-user-gesture-required --disable-background-timer-throttling --no-first-run --app=" ^& Chr(34) ^& sURL ^& Chr(34) ^& " --user-data-dir=" ^& Chr(34) ^& sUserData ^& Chr(34), 1, False
 >> "%VBS%" echo       WScript.Sleep 15000
 >> "%VBS%" echo     End If
 >> "%VBS%" echo   End If
