@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교실 알림 시스템 — Windows 설치 설명서</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #3b82f6;
+      --blue-dark:   #1d4ed8;
+      --purple:      #7c3aed;
+      --purple-light:#a78bfa;
+      --indigo:      #4f46e5;
+      --green:       #10b981;
+      --green-light: #d1fae5;
+      --orange:      #f59e0b;
+      --orange-light:#fef3c7;
+      --red:         #ef4444;
+      --red-light:   #fee2e2;
+      --sky:         #0ea5e9;
+      --sky-light:   #e0f2fe;
+      --gray-50:     #f8fafc;
+      --gray-100:    #f1f5f9;
+      --gray-200:    #e2e8f0;
+      --gray-300:    #cbd5e1;
+      --gray-500:    #64748b;
+      --gray-700:    #334155;
+      --gray-900:    #0f172a;
+      --radius:      12px;
+      --radius-lg:   18px;
+      --shadow-sm:   0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow:      0 4px 12px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06);
+      --shadow-lg:   0 10px 30px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', '맑은 고딕', sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--gray-700);
+      background: var(--gray-50);
+    }
+
+    /* ── Header ───────────────────────────────────────────────── */
+    .site-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 40%, #7c3aed 80%, #a855f7 100%);
+      color: #fff;
+      padding: 56px 24px 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 50%, rgba(99,102,241,.35) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 80% at 80% 30%, rgba(168,85,247,.3) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .site-header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px;
+      padding: 5px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .site-header h1 {
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 900;
+      letter-spacing: -.02em;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .site-header h1 .icon { font-size: 1em; margin-right: 8px; }
+    .site-header .subtitle {
+      font-size: clamp(14px, 2.5vw, 17px);
+      font-weight: 400;
+      opacity: .88;
+      max-width: 520px;
+      margin: 0 auto 28px;
+      position: relative;
+    }
+    .header-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    .header-meta span {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      backdrop-filter: blur(6px);
+    }
+
+    /* ── Table of Contents ───────────────────────────────────── */
+    .toc-wrap {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .toc {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .toc::-webkit-scrollbar { display: none; }
+    .toc a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 13px 14px;
+      color: var(--gray-500);
+      text-decoration: none;
+      font-size: 12.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+    }
+    .toc a:hover { color: var(--indigo); border-bottom-color: var(--indigo); }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* ── Section ──────────────────────────────────────────────── */
+    .section {
+      margin-top: 52px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+    .section-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: 900;
+      flex-shrink: 0;
+      color: #fff;
+    }
+    .num-blue   { background: linear-gradient(135deg, var(--blue), var(--indigo)); }
+    .num-green  { background: linear-gradient(135deg, var(--green), var(--sky)); }
+    .num-purple { background: linear-gradient(135deg, var(--purple), var(--blue)); }
+    .num-orange { background: linear-gradient(135deg, var(--orange), #f97316); }
+    .num-sky    { background: linear-gradient(135deg, var(--sky), var(--blue)); }
+    .num-red    { background: linear-gradient(135deg, var(--red), #f97316); }
+    .num-gray   { background: linear-gradient(135deg, var(--gray-500), var(--gray-700)); }
+    .num-teal   { background: linear-gradient(135deg, #0d9488, var(--green)); }
+
+    .section-header h2 {
+      font-size: clamp(18px, 3vw, 22px);
+      font-weight: 800;
+      color: var(--gray-900);
+      letter-spacing: -.01em;
+    }
+
+    /* ── Card ─────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-200);
+      padding: 28px;
+      box-shadow: var(--shadow-sm);
+    }
+    .card + .card { margin-top: 16px; }
+
+    /* ── Overview ─────────────────────────────────────────────── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .overview-item {
+      background: linear-gradient(135deg, #eff6ff, #f5f3ff);
+      border: 1px solid #e0e7ff;
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      text-align: center;
+    }
+    .overview-item .oi-icon { font-size: 32px; margin-bottom: 10px; }
+    .overview-item .oi-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 6px;
+    }
+    .overview-item .oi-desc {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+
+    /* ── Requirements ─────────────────────────────────────────── */
+    .req-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .req-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid var(--gray-200);
+    }
+    .req-item.ok  { background: var(--green-light); border-color: #6ee7b7; }
+    .req-item.info{ background: var(--sky-light);   border-color: #7dd3fc; }
+    .req-item .req-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .req-item .req-body strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 2px;
+    }
+    .req-item .req-body span { font-size: 13px; color: var(--gray-500); }
+
+    /* ── Step Cards ───────────────────────────────────────────── */
+    .steps { display: flex; flex-direction: column; gap: 20px; }
+    .step-card {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      display: flex;
+    }
+    .step-stripe {
+      width: 6px;
+      flex-shrink: 0;
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
+    .stripe-blue   { background: linear-gradient(180deg, var(--blue), var(--indigo)); }
+    .stripe-purple { background: linear-gradient(180deg, var(--purple), var(--blue)); }
+    .stripe-green  { background: linear-gradient(180deg, var(--green), var(--sky)); }
+    .step-body { padding: 22px 24px; flex: 1; }
+    .step-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .step-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .bg-blue   { background: var(--blue); }
+    .bg-purple { background: var(--purple); }
+    .bg-green  { background: var(--green); }
+    .bg-orange { background: var(--orange); }
+    .bg-sky    { background: var(--sky); }
+    .step-title h3 { font-size: 15px; font-weight: 700; color: var(--gray-900); }
+    .step-body p  { font-size: 14px; color: var(--gray-700); margin-bottom: 10px; }
+    .step-body p:last-child { margin-bottom: 0; }
+
+    /* ── File pill ────────────────────────────────────────────── */
+    .file-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, #eff6ff, #f0fdf4);
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 4px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--blue-dark);
+      font-family: 'Consolas', 'Courier New', monospace;
+    }
+    .file-pill.remove {
+      background: linear-gradient(135deg, #fff7ed, #fef2f2);
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+
+    /* ── Code block ───────────────────────────────────────────── */
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .code-block .cm  { color: #94a3b8; }   /* comment */
+    .code-block .kw  { color: #93c5fd; }   /* keyword */
+    .code-block .val { color: #86efac; }   /* value */
+    .code-block .path{ color: #fde68a; }   /* path */
+
+    /* ── Tray Guide ───────────────────────────────────────────── */
+    .tray-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .tray-card {
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      text-align: center;
+      border: 1px solid transparent;
+    }
+    .tray-card.t-primary  { background: #eff6ff; border-color: #bfdbfe; }
+    .tray-card.t-indigo   { background: #eef2ff; border-color: #c7d2fe; }
+    .tray-card.t-violet   { background: #f5f3ff; border-color: #ddd6fe; }
+    .tray-card.t-rose     { background: #fff1f2; border-color: #fecdd3; }
+    .tray-card .tc-icon { font-size: 28px; margin-bottom: 8px; }
+    .tray-card .tc-action {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--gray-500);
+      margin-bottom: 4px;
+    }
+    .tray-card .tc-desc {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    /* ── Feature list ─────────────────────────────────────────── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .feature-item .fi-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .fi-blue   { background: #dbeafe; }
+    .fi-green  { background: #d1fae5; }
+    .fi-purple { background: #ede9fe; }
+    .fi-orange { background: #fef3c7; }
+    .fi-sky    { background: #e0f2fe; }
+    .fi-pink   { background: #fce7f3; }
+    .feature-item .fi-body strong {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 3px;
+    }
+    .feature-item .fi-body span {
+      font-size: 12.5px;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+
+    /* ── Trouble shooting ─────────────────────────────────────── */
+    .trouble-list { display: flex; flex-direction: column; gap: 14px; }
+    .trouble-item {
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .trouble-q {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: linear-gradient(90deg, #fef9c3, #fffbeb);
+      border-bottom: 1px solid #fde68a;
+    }
+    .trouble-q .tq-badge {
+      width: 26px;
+      height: 26px;
+      background: var(--orange);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+    .trouble-q strong { font-size: 14px; font-weight: 700; color: #78350f; }
+    .trouble-a {
+      padding: 14px 18px 14px 56px;
+    }
+    .trouble-a p { font-size: 13.5px; color: var(--gray-700); margin-bottom: 4px; }
+    .trouble-a p:last-child { margin-bottom: 0; }
+    .trouble-a .a-step {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .trouble-a .a-step::before {
+      content: '→';
+      color: var(--green);
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── File Structure ───────────────────────────────────────── */
+    .file-tree {
+      background: #1e293b;
+      color: #e2e8f0;
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 2;
+    }
+    .ft-dir   { color: #93c5fd; font-weight: 700; }
+    .ft-file  { color: #e2e8f0; }
+    .ft-comment { color: #64748b; }
+    .ft-install { color: #86efac; }
+    .ft-remove  { color: #fca5a5; }
+    .ft-ps      { color: #c084fc; }
+
+    /* ── Warning / Notice ─────────────────────────────────────── */
+    .notice {
+      display: flex;
+      gap: 14px;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: 1px solid;
+      margin-top: 16px;
+    }
+    .notice-warn {
+      background: var(--orange-light);
+      border-color: #fcd34d;
+    }
+    .notice-info {
+      background: var(--sky-light);
+      border-color: #7dd3fc;
+    }
+    .notice-danger {
+      background: var(--red-light);
+      border-color: #fca5a5;
+    }
+    .notice .n-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .notice .n-body strong {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+    .notice .n-body p,
+    .notice .n-body li { font-size: 13.5px; color: var(--gray-700); }
+    .notice .n-body ul { padding-left: 18px; }
+    .notice .n-body li { margin-bottom: 2px; }
+
+    /* ── Caution list ─────────────────────────────────────────── */
+    .caution-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .caution-card {
+      display: flex;
+      gap: 12px;
+      background: #fff;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .caution-card .cc-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .caution-card strong {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 3px;
+    }
+    .caution-card p { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+    /* ── Divider ──────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--gray-200);
+      margin: 44px 0 0;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .site-footer {
+      background: var(--gray-900);
+      color: #94a3b8;
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 13px;
+    }
+    .site-footer strong { color: #e2e8f0; }
+
+    /* ── Print styles ─────────────────────────────────────────── */
+    @media print {
+      .toc-wrap { display: none; }
+      .site-header { background: #1d4ed8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .section { break-inside: avoid; }
+      .step-card, .trouble-item, .feature-item { break-inside: avoid; }
+      body { font-size: 13px; background: #fff; }
+      .container { padding: 0 12px; }
+    }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .site-header { padding: 40px 16px 48px; }
+      .container { padding: 0 16px 60px; }
+      .tray-grid { grid-template-columns: 1fr 1fr; }
+      .step-card { flex-direction: column; }
+      .step-stripe { width: 100%; height: 6px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="badge">📋 Windows 설치 설명서</div>
+  <h1><span class="icon">🔔</span>교실 알림 시스템</h1>
+  <p class="subtitle">교무실에서 학생을 호출하면 교실 전자칠판에 즉시 알림이 표시되는 실시간 교실 알림 시스템입니다.</p>
+  <div class="header-meta">
+    <span>🪟 Windows 7 이상</span>
+    <span>🌐 Chrome 필요</span>
+    <span>📶 인터넷 연결 필요</span>
+    <span>⚡ 설치 시간: 1분 이내</span>
+  </div>
+</header>
+
+<!-- ── TOC ────────────────────────────────────────────────────── -->
+<nav class="toc-wrap" aria-label="목차">
+  <div class="toc">
+    <a href="#overview">🏠 개요</a>
+    <a href="#requirements">✅ 요구사항</a>
+    <a href="#install">🚀 설치 방법</a>
+    <a href="#tray">🔔 트레이 아이콘</a>
+    <a href="#features">⭐ 주요 기능</a>
+    <a href="#remove">🗑️ 제거 방법</a>
+    <a href="#troubleshoot">🔧 문제 해결</a>
+    <a href="#files">📁 파일 구조</a>
+    <a href="#caution">⚠️ 주의사항</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ────────────────────────────────────────────────────── -->
+<main class="container">
+
+  <!-- 1. 개요 -->
+  <section class="section" id="overview">
+    <div class="section-header">
+      <div class="section-num num-blue">1</div>
+      <h2>개요 — 교실 알림 시스템이란?</h2>
+    </div>
+
+    <div class="card">
+      <p style="font-size:15px; color:var(--gray-700); margin-bottom:20px;">
+        교무실에서 특정 학생을 호출하면 해당 학생의 교실 전자칠판 화면에
+        <strong>큰 알림과 호출음·음성 안내</strong>가 즉시 표시됩니다.
+        수업 중단 없이 조용하고 빠르게 학생을 호출할 수 있습니다.
+      </p>
+      <div class="overview-grid">
+        <div class="overview-item">
+          <div class="oi-icon">🏫</div>
+          <div class="oi-title">교무실 → 교실</div>
+          <div class="oi-desc">교무실 시스템에서 학생을 호출하면 해당 교실 PC로 실시간 전송</div>
+        </div>
+        <div class="overview-item">
+          <div class="oi-icon">📺</div>
+          <div class="oi-title">전자칠판 전체 알림</div>
+          <div class="oi-desc">화면에 큰 알림 창이 표시되어 수업 중에도 쉽게 확인 가능</div>
+        </div>
+        <div class="overview-item">
+          <div class="oi-icon">🔊</div>
+          <div class="oi-title">호출음 + 음성 안내</div>
+          <div class="oi-desc">알림음과 함께 학생 이름을 음성으로 안내하여 즉시 인지 가능</div>
+        </div>
+        <div class="overview-item">
+          <div class="oi-icon">⚙️</div>
+          <div class="oi-title">자동 상주 실행</div>
+          <div class="oi-desc">PC 켜면 자동 시작, 시스템 트레이에 조용히 상주하며 대기</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 요구사항 -->
+  <section class="section" id="requirements">
+    <div class="section-header">
+      <div class="section-num num-green">2</div>
+      <h2>요구사항</h2>
+    </div>
+
+    <div class="card">
+      <div class="req-list">
+        <div class="req-item ok">
+          <div class="req-icon">🪟</div>
+          <div class="req-body">
+            <strong>Windows 7 이상</strong>
+            <span>Windows 7 / 8 / 10 / 11 모두 지원. PowerShell이 기본 포함되어 있어 별도 설치 불필요.</span>
+          </div>
+        </div>
+        <div class="req-item ok">
+          <div class="req-icon">🌐</div>
+          <div class="req-body">
+            <strong>Google Chrome 브라우저</strong>
+            <span>Chrome이 설치되어 있어야 합니다. 설치되어 있지 않으면 <a href="https://www.google.com/chrome" target="_blank" style="color:var(--blue);">google.com/chrome</a> 에서 무료로 설치하세요.</span>
+          </div>
+        </div>
+        <div class="req-item info">
+          <div class="req-icon">📶</div>
+          <div class="req-body">
+            <strong>인터넷 연결</strong>
+            <span>Firebase 실시간 통신을 사용합니다. 교내 네트워크(유선/무선)에 연결되어 있어야 합니다.</span>
+          </div>
+        </div>
+        <div class="req-item info">
+          <div class="req-icon">🔑</div>
+          <div class="req-body">
+            <strong>관리자 권한 불필요</strong>
+            <span>일반 사용자 권한으로 설치 가능합니다. 시작 프로그램은 현재 사용자 계정에만 등록됩니다.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 설치 방법 -->
+  <section class="section" id="install">
+    <div class="section-header">
+      <div class="section-num num-purple">3</div>
+      <h2>설치 방법</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-stripe stripe-blue"></div>
+        <div class="step-body">
+          <div class="step-title">
+            <div class="step-circle bg-blue">1</div>
+            <h3>autostart 폴더 열기</h3>
+          </div>
+          <p>교실 알림 시스템 파일이 담긴 <strong>autostart</strong> 폴더를 탐색기로 엽니다. 이 설명서 파일(<code>윈도우_설명서.html</code>)이 있는 폴더입니다.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-stripe stripe-purple"></div>
+        <div class="step-body">
+          <div class="step-title">
+            <div class="step-circle bg-purple">2</div>
+            <h3>해당 반의 설치 파일 더블클릭</h3>
+          </div>
+          <p>학년과 반에 맞는 <span class="file-pill">📄 설치_X-Y.bat</span> 파일을 더블클릭합니다.</p>
+          <p style="margin-top:8px; font-size:14px; color:var(--gray-500);">예시:</p>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:4px;">
+            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:8px 14px; font-size:13px;">
+              <strong>1학년 3반</strong> → <span class="file-pill">설치_1-3.bat</span>
+            </div>
+            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:8px 14px; font-size:13px;">
+              <strong>2학년 7반</strong> → <span class="file-pill">설치_2-7.bat</span>
+            </div>
+            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:8px 14px; font-size:13px;">
+              <strong>3학년 10반</strong> → <span class="file-pill">설치_3-10.bat</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-stripe stripe-green"></div>
+        <div class="step-body">
+          <div class="step-title">
+            <div class="step-circle bg-green">3</div>
+            <h3>설치 완료 확인</h3>
+          </div>
+          <p>검은 명령 창이 잠깐 나타났다가 닫히고, 잠시 후 <strong>시스템 트레이(화면 우측 하단 시계 옆)</strong>에 교실알림 아이콘이 표시되면 설치가 완료된 것입니다.</p>
+          <div class="notice notice-info" style="margin-top:12px; padding:12px 16px;">
+            <div class="n-icon">💡</div>
+            <div class="n-body">
+              <strong>트레이 아이콘이 보이지 않을 때</strong>
+              <p>작업표시줄 우측의 <strong>^ (숨겨진 아이콘 표시)</strong> 버튼을 클릭하면 아이콘을 확인할 수 있습니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-stripe stripe-blue"></div>
+        <div class="step-body">
+          <div class="step-title">
+            <div class="step-circle bg-sky">4</div>
+            <h3>자동으로 수행되는 작업</h3>
+          </div>
+          <p>설치 bat 파일 실행 시 아래 작업이 자동으로 이루어집니다:</p>
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:10px; font-size:13.5px;">
+              <span style="color:var(--green); font-weight:700;">✔</span>
+              <span><strong>Chrome 앱 모드</strong>로 교실 알림 페이지 실행 (작업표시줄에 보이지 않음)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; font-size:13.5px;">
+              <span style="color:var(--green); font-weight:700;">✔</span>
+              <span><strong>시스템 트레이 아이콘</strong> 등록 (PowerShell 상주 스크립트)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; font-size:13.5px;">
+              <span style="color:var(--green); font-weight:700;">✔</span>
+              <span>Windows <strong>시작 프로그램</strong>에 자동 실행 등록</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; font-size:13.5px;">
+              <span style="color:var(--green); font-weight:700;">✔</span>
+              <span>스크립트를 <code>%LOCALAPPDATA%\교실알림\</code> 폴더에 복사하여 보존</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 트레이 아이콘 사용법 -->
+  <section class="section" id="tray">
+    <div class="section-header">
+      <div class="section-num num-sky">4</div>
+      <h2>트레이 아이콘 사용법</h2>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px; color:var(--gray-500); margin-bottom:20px;">
+        화면 우측 하단 <strong>시계 옆 알림 영역(트레이)</strong>에 교실알림 아이콘이 상주합니다.
+        이 아이콘을 통해 알림 창을 제어할 수 있습니다.
+      </p>
+      <div class="tray-grid">
+        <div class="tray-card t-primary">
+          <div class="tc-icon">🖱️</div>
+          <div class="tc-action">더블클릭</div>
+          <div class="tc-desc">교실 알림 창 보기</div>
+        </div>
+        <div class="tray-card t-indigo">
+          <div class="tc-icon">👁️</div>
+          <div class="tc-action">우클릭 → 창 보기</div>
+          <div class="tc-desc">교실 알림 창 표시</div>
+        </div>
+        <div class="tray-card t-violet">
+          <div class="tc-icon">🙈</div>
+          <div class="tc-action">우클릭 → 창 숨기기</div>
+          <div class="tc-desc">교실 알림 창 숨김</div>
+        </div>
+        <div class="tray-card t-rose">
+          <div class="tc-icon">❌</div>
+          <div class="tc-action">우클릭 → 종료</div>
+          <div class="tc-desc">교실 알림 완전 종료</div>
+        </div>
+      </div>
+
+      <div class="notice notice-warn" style="margin-top:20px;">
+        <div class="n-icon">⚠️</div>
+        <div class="n-body">
+          <strong>Chrome 창의 ✕ 버튼으로 닫아도 자동 재실행됩니다</strong>
+          <p>Chrome 창을 닫아도 트레이 스크립트가 10초 이내에 자동으로 다시 실행합니다.
+          완전히 종료하려면 트레이 아이콘 우클릭 → <strong>종료</strong>를 사용하거나 <span class="file-pill remove">제거_X-Y.bat</span> 을 실행하세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 주요 기능 -->
+  <section class="section" id="features">
+    <div class="section-header">
+      <div class="section-num num-teal">5</div>
+      <h2>주요 기능</h2>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="fi-icon fi-green">🔄</div>
+        <div class="fi-body">
+          <strong>PC 재시작 시 자동 실행</strong>
+          <span>Windows 시작 프로그램에 등록되어 PC를 켜면 자동으로 교실 알림이 시작됩니다.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon fi-blue">🔁</div>
+        <div class="fi-body">
+          <strong>Chrome 자동 재실행</strong>
+          <span>Chrome을 닫아도 10초 이내에 트레이 스크립트가 자동으로 재실행합니다.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon fi-purple">🔔</div>
+        <div class="fi-body">
+          <strong>시스템 트레이 상주</strong>
+          <span>작업표시줄에 표시되지 않고 트레이에 조용히 상주하여 수업을 방해하지 않습니다.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon fi-orange">📢</div>
+        <div class="fi-body">
+          <strong>화면 전체 알림 표시</strong>
+          <span>호출 시 화면 중앙에 큰 알림 창이 팝업되어 수업 중에도 즉시 확인 가능합니다.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon fi-sky">🔊</div>
+        <div class="fi-body">
+          <strong>호출음 + 음성 안내</strong>
+          <span>알림음과 학생 이름 음성 안내로 교사와 학생 모두 즉시 인지할 수 있습니다.</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="fi-icon fi-pink">⚡</div>
+        <div class="fi-body">
+          <strong>실시간 Firebase 통신</strong>
+          <span>Firebase 실시간 데이터베이스를 통해 교무실 호출이 즉시 교실로 전달됩니다.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 제거 방법 -->
+  <section class="section" id="remove">
+    <div class="section-header">
+      <div class="section-num num-orange">6</div>
+      <h2>제거 방법</h2>
+    </div>
+
+    <div class="card">
+      <div class="steps">
+        <div class="step-card">
+          <div class="step-stripe" style="background: linear-gradient(180deg, var(--red), #f97316);"></div>
+          <div class="step-body">
+            <div class="step-title">
+              <div class="step-circle" style="background:var(--red);">1</div>
+              <h3>해당 반의 제거 파일 더블클릭</h3>
+            </div>
+            <p>설치한 반에 맞는 <span class="file-pill remove">🗑️ 제거_X-Y.bat</span> 파일을 더블클릭합니다.</p>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:8px;">
+              <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:8px 14px; font-size:13px;">
+                <strong>1학년 3반</strong> → <span class="file-pill remove">제거_1-3.bat</span>
+              </div>
+              <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:8px; padding:8px 14px; font-size:13px;">
+                <strong>2학년 7반</strong> → <span class="file-pill remove">제거_2-7.bat</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-stripe" style="background: linear-gradient(180deg, #f97316, var(--orange));"></div>
+          <div class="step-body">
+            <div class="step-title">
+              <div class="step-circle bg-orange">2</div>
+              <h3>자동으로 수행되는 작업</h3>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:13.5px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--red); font-weight:700;">✖</span>
+                <span>트레이 PowerShell 스크립트 프로세스 종료</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--red); font-weight:700;">✖</span>
+                <span>실행 중인 교실 알림 Chrome 창 종료</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--red); font-weight:700;">✖</span>
+                <span>Windows 시작 프로그램에서 등록 해제</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="color:var(--red); font-weight:700;">✖</span>
+                <span>로컬 데이터 폴더 정리</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notice notice-info" style="margin-top:16px;">
+        <div class="n-icon">ℹ️</div>
+        <div class="n-body">
+          <strong>재설치 시</strong>
+          <p>문제가 생겼을 경우 제거 bat → 설치 bat 순서로 재설치하면 대부분의 문제가 해결됩니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 문제 해결 -->
+  <section class="section" id="troubleshoot">
+    <div class="section-header">
+      <div class="section-num num-red">7</div>
+      <h2>문제 해결</h2>
+    </div>
+
+    <div class="trouble-list">
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>Chrome이 없다고 나오거나 창이 열리지 않아요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>Google Chrome이 설치되어 있지 않습니다.</span></div>
+          <div class="a-step"><span><a href="https://www.google.com/chrome" target="_blank" style="color:var(--blue); font-weight:600;">google.com/chrome</a> 에서 Chrome을 설치한 뒤 설치 bat 파일을 다시 실행하세요.</span></div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>트레이 아이콘이 보이지 않아요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>작업표시줄 우측의 <strong>^ (숨겨진 아이콘 표시)</strong> 버튼을 클릭해서 확인하세요.</span></div>
+          <div class="a-step"><span>그래도 없으면 설치 bat를 다시 실행하면 자동으로 트레이 스크립트가 시작됩니다.</span></div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>소리가 나지 않아요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>브라우저의 자동 재생 정책으로 인해 <strong>화면을 한 번 클릭</strong>해야 소리가 활성화됩니다.</span></div>
+          <div class="a-step"><span>PC 볼륨이 음소거되어 있지 않은지 확인하세요. (작업표시줄 스피커 아이콘)</span></div>
+          <div class="a-step"><span>Chrome 탭의 주소창 옆 🔊 아이콘이 음소거로 표시되어 있으면 클릭하여 해제하세요.</span></div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>알림 창에 연결 끊김 또는 오프라인 표시가 나와요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>인터넷 연결 상태를 확인하세요. 교내 Wi-Fi 또는 유선 LAN에 연결되어 있어야 합니다.</span></div>
+          <div class="a-step"><span>인터넷이 연결되면 자동으로 재연결됩니다. 수동 새로고침이 필요 없습니다.</span></div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>PC를 재시작했는데 자동 실행이 안 돼요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>설치 bat 파일을 한 번 더 실행하면 시작 프로그램이 다시 등록됩니다.</span></div>
+          <div class="a-step"><span>로그인 계정이 달라졌다면 새 계정에서 설치 bat를 실행해야 합니다. (사용자별 등록)</span></div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>보안 경고 창이 나타나요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>Windows Defender SmartScreen 경고가 나타나면 <strong>"추가 정보" → "실행"</strong>을 클릭하세요.</span></div>
+          <div class="a-step"><span>이 시스템은 학교 내부용 공개 스크립트이며 안전합니다.</span></div>
+        </div>
+      </div>
+
+      <div class="trouble-item">
+        <div class="trouble-q">
+          <div class="tq-badge">Q</div>
+          <strong>호출이 왔는데 알림이 안 보여요</strong>
+        </div>
+        <div class="trouble-a">
+          <div class="a-step"><span>트레이 아이콘을 더블클릭하거나 우클릭 → <strong>창 보기</strong>로 알림 창을 띄우세요.</span></div>
+          <div class="a-step"><span>연결 상태가 정상인지 알림 창 하단에서 확인하세요.</span></div>
+          <div class="a-step"><span>문제가 지속되면 제거 후 재설치를 시도하세요.</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 8. 파일 구조 -->
+  <section class="section" id="files">
+    <div class="section-header">
+      <div class="section-num num-gray">8</div>
+      <h2>파일 구조</h2>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px; color:var(--gray-500); margin-bottom:16px;">
+        <code>autostart</code> 폴더 안에 있는 파일들입니다. <strong>교실알림.ps1</strong>은 수정하지 마세요.
+      </p>
+      <div class="file-tree">
+<span class="ft-dir">autostart/</span><br>
+&nbsp;&nbsp;├─ <span class="ft-ps">교실알림.ps1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 트레이 상주 스크립트 (공용, 수정 금지)</span><br>
+&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;├─ <span class="ft-install">설치_1-1.bat</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 1학년 1반 설치</span><br>
+&nbsp;&nbsp;├─ <span class="ft-remove">제거_1-1.bat</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 1학년 1반 제거</span><br>
+&nbsp;&nbsp;├─ <span class="ft-install">설치_1-2.bat</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 1학년 2반 설치</span><br>
+&nbsp;&nbsp;├─ <span class="ft-remove">제거_1-2.bat</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 1학년 2반 제거</span><br>
+&nbsp;&nbsp;├─ <span class="ft-comment">... (1학년 ~ 3학년, 각 10반)</span><br>
+&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;├─ <span class="ft-install">설치_3-10.bat</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 3학년 10반 설치</span><br>
+&nbsp;&nbsp;├─ <span class="ft-remove">제거_3-10.bat</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 3학년 10반 제거</span><br>
+&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;├─ <span class="ft-file">윈도우_설명서.html</span>&nbsp;&nbsp;<span class="ft-comment">← 이 파일</span><br>
+&nbsp;&nbsp;└─ <span class="ft-file">README.txt</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-comment">← 텍스트 요약 안내</span>
+      </div>
+
+      <div class="notice notice-info" style="margin-top:16px;">
+        <div class="n-icon">📂</div>
+        <div class="n-body">
+          <strong>설치 후 로컬 복사 위치</strong>
+          <p>설치 bat 실행 시 <code>교실알림.ps1</code>이 <code>C:\Users\[사용자명]\AppData\Local\교실알림\</code> 폴더에 자동 복사됩니다. autostart 폴더가 이동되어도 정상 동작합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. 주의사항 -->
+  <section class="section" id="caution">
+    <div class="section-header">
+      <div class="section-num num-orange">9</div>
+      <h2>주의사항</h2>
+    </div>
+
+    <div class="caution-grid">
+      <div class="caution-card">
+        <div class="cc-icon">🏷️</div>
+        <div>
+          <strong>한 PC에 하나의 반만 설치</strong>
+          <p>동일 PC에 여러 반을 설치하면 충돌이 발생합니다. 반드시 하나의 반만 설치하세요.</p>
+        </div>
+      </div>
+      <div class="caution-card">
+        <div class="cc-icon">🔄</div>
+        <div>
+          <strong>반 변경 시 제거 후 재설치</strong>
+          <p>다른 반으로 변경할 경우 먼저 기존 반의 제거 bat를 실행한 후 새 반의 설치 bat를 실행하세요.</p>
+        </div>
+      </div>
+      <div class="caution-card">
+        <div class="cc-icon">🚫</div>
+        <div>
+          <strong>Chrome 닫아도 종료 아님</strong>
+          <p>Chrome 창을 닫으면 자동 재실행됩니다. 완전 종료는 트레이 우클릭 → 종료 또는 제거 bat 사용.</p>
+        </div>
+      </div>
+      <div class="caution-card">
+        <div class="cc-icon">🛡️</div>
+        <div>
+          <strong>ps1 파일 수정 금지</strong>
+          <p>교실알림.ps1 파일을 임의로 수정하면 정상 동작하지 않을 수 있습니다.</p>
+        </div>
+      </div>
+      <div class="caution-card">
+        <div class="cc-icon">👤</div>
+        <div>
+          <strong>사용자 계정별 등록</strong>
+          <p>시작 프로그램은 설치를 실행한 Windows 계정에만 등록됩니다. 공용 PC에서는 실제 사용하는 계정으로 설치하세요.</p>
+        </div>
+      </div>
+      <div class="caution-card">
+        <div class="cc-icon">🔧</div>
+        <div>
+          <strong>문제 발생 시 재설치</strong>
+          <p>알 수 없는 문제 발생 시 제거 bat → 설치 bat 순서로 재설치하면 대부분 해결됩니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice notice-danger" style="margin-top:20px;">
+      <div class="n-icon">🔴</div>
+      <div class="n-body">
+        <strong>절대 하지 말아야 할 것</strong>
+        <ul>
+          <li>한 PC에 여러 반 동시 설치 (예: 설치_1-1.bat 와 설치_1-2.bat 둘 다 실행)</li>
+          <li>교실알림.ps1 파일 내용 임의 수정</li>
+          <li>%LOCALAPPDATA%\교실알림 폴더 임의 삭제 (제거 bat 사용 권장)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+</main>
+
+<!-- ── FOOTER ──────────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <p><strong>교실 알림 시스템</strong> — Windows 설치 설명서</p>
+  <p style="margin-top:6px; font-size:12px;">문의사항은 시스템 관리자에게 연락하세요. &nbsp;|&nbsp; autostart/윈도우_설명서.html</p>
+</footer>
+
+</body>
+</html>

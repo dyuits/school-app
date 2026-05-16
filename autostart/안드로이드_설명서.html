@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>교실 알림 시스템 - 안드로이드 전자칠판 설치 설명서</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:       #0d9e6e;
+      --primary-dark:  #097a55;
+      --primary-light: #d1fae5;
+      --secondary:     #0891b2;
+      --secondary-dark:#0e7490;
+      --secondary-light:#cffafe;
+      --accent:        #10b981;
+      --accent2:       #06b6d4;
+      --warn:          #f59e0b;
+      --warn-light:    #fef3c7;
+      --danger:        #ef4444;
+      --danger-light:  #fee2e2;
+      --info:          #6366f1;
+      --info-light:    #eef2ff;
+      --bg:            #f0fdf4;
+      --surface:       #ffffff;
+      --border:        #d1fae5;
+      --text:          #1e293b;
+      --text-muted:    #64748b;
+      --radius:        14px;
+      --shadow:        0 4px 24px rgba(13,158,110,.10);
+      --shadow-md:     0 8px 32px rgba(13,158,110,.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      font-size: 15px;
+    }
+
+    /* ── Header ── */
+    .site-header {
+      background: linear-gradient(135deg, #065f46 0%, #0d9e6e 40%, #0891b2 75%, #0e4f7a 100%);
+      color: #fff;
+      padding: 56px 24px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .site-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 20% 50%, rgba(255,255,255,.07) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 80% 30%, rgba(255,255,255,.05) 0%, transparent 70%);
+    }
+    .site-header::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0; height: 40px;
+      background: var(--bg);
+      clip-path: ellipse(55% 100% at 50% 100%);
+    }
+    .header-inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.18);
+      border: 1px solid rgba(255,255,255,.30);
+      border-radius: 999px;
+      padding: 6px 18px;
+      font-size: 13px; font-weight: 600; letter-spacing: .04em;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .site-header h1 {
+      font-size: clamp(26px, 5vw, 42px);
+      font-weight: 900;
+      line-height: 1.2;
+      margin-bottom: 14px;
+      text-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    .site-header .subtitle {
+      font-size: clamp(14px, 2.5vw, 17px);
+      opacity: .88;
+      font-weight: 400;
+      max-width: 600px;
+      margin: 0 auto 28px;
+    }
+    .header-chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .chip {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      padding: 5px 16px;
+      font-size: 13px; font-weight: 500;
+      backdrop-filter: blur(6px);
+    }
+
+    /* ── Table of Contents ── */
+    .toc-wrap {
+      max-width: 860px; margin: 36px auto 0; padding: 0 20px;
+    }
+    .toc {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      padding: 24px 28px;
+      box-shadow: var(--shadow);
+    }
+    .toc h2 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 24px; }
+    .toc li { font-size: 13.5px; }
+    .toc a { color: var(--secondary-dark); text-decoration: none; font-weight: 500; }
+    .toc a:hover { text-decoration: underline; color: var(--primary); }
+
+    /* ── Main Layout ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 20px 64px;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-top: 52px;
+      scroll-margin-top: 24px;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 22px; font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 22px;
+      padding-bottom: 12px;
+      border-bottom: 2.5px solid var(--primary-light);
+    }
+    .section-title .icon-wrap {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(13,158,110,.30);
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      padding: 22px 26px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 15px; font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Step Cards ── */
+    .steps { display: flex; flex-direction: column; gap: 16px; }
+    .step {
+      display: flex; gap: 18px; align-items: flex-start;
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .step:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .step-num {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      color: #fff; font-size: 16px; font-weight: 800;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 3px 10px rgba(13,158,110,.35);
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-body h3 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .step-body p, .step-body li { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+    .step-body ul, .step-body ol { padding-left: 18px; margin-top: 6px; }
+    .step-body li { margin-bottom: 4px; }
+
+    /* ── Code / Command ── */
+    code {
+      font-family: 'SFMono-Regular', 'Consolas', 'Menlo', monospace;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      padding: 1px 7px;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+    .code-block {
+      background: #0f2027;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 12px 0;
+      overflow-x: auto;
+      border: 1px solid #1a3a3a;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+    .code-block pre {
+      font-family: 'SFMono-Regular', 'Consolas', 'Menlo', monospace;
+      font-size: 13.5px;
+      line-height: 1.7;
+      color: #a7f3d0;
+      white-space: pre;
+      margin: 0;
+    }
+    .code-block .comment { color: #4ade80; opacity: .65; }
+    .code-block .cmd     { color: #67e8f9; }
+    .code-block .param   { color: #fde68a; }
+    .code-block .string  { color: #f9a8d4; }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 14px 0;
+      font-size: 14px;
+      display: flex; gap: 12px; align-items: flex-start;
+      border-left: 4px solid;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout.tip      { background: var(--primary-light); border-color: var(--primary);   color: #065f46; }
+    .callout.warn     { background: var(--warn-light);    border-color: var(--warn);      color: #92400e; }
+    .callout.danger   { background: var(--danger-light);  border-color: var(--danger);    color: #991b1b; }
+    .callout.info     { background: var(--info-light);    border-color: var(--info);      color: #3730a3; }
+    .callout.teal     { background: var(--secondary-light); border-color: var(--secondary); color: #164e63; }
+
+    /* ── Method Cards (부팅 자동 실행) ── */
+    .method-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .method-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      padding: 22px 20px;
+      box-shadow: var(--shadow);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .method-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .method-card.recommended {
+      border-color: var(--primary);
+      background: linear-gradient(160deg, #f0fdf4 0%, #ecfdf5 100%);
+    }
+    .method-badge {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 10px; border-radius: 999px;
+      margin-bottom: 10px;
+    }
+    .method-badge.alt { background: var(--secondary); }
+    .method-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .method-card ol { padding-left: 18px; font-size: 13.5px; color: var(--text-muted); }
+    .method-card li { margin-bottom: 5px; line-height: 1.6; }
+
+    /* ── Feature Grid ── */
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+    .feature-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      padding: 20px 18px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .feature-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .feature-card .icon { font-size: 32px; margin-bottom: 10px; }
+    .feature-card h4 { font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-bottom: 6px; }
+    .feature-card p { font-size: 12.5px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Trouble Table ── */
+    .trouble-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .trouble-table thead tr { background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%); color: #fff; }
+    .trouble-table th { padding: 12px 16px; text-align: left; font-weight: 700; }
+    .trouble-table td { padding: 12px 16px; vertical-align: top; border-bottom: 1px solid var(--border); }
+    .trouble-table tbody tr:last-child td { border-bottom: none; }
+    .trouble-table tbody tr:nth-child(even) { background: #f0fdf4; }
+    .trouble-table tbody tr:hover { background: var(--primary-light); }
+    .trouble-table .symptom { font-weight: 600; color: var(--danger); }
+    .trouble-table .solution { color: var(--text); }
+    .table-wrap {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Path Nav ── */
+    .path-nav {
+      display: inline-flex; align-items: center; flex-wrap: wrap; gap: 4px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px; font-weight: 600;
+      color: #065f46;
+      margin: 6px 0;
+    }
+    .path-nav .sep { color: #059669; margin: 0 2px; }
+
+    /* ── Screenshot Placeholder ── */
+    .screenshot {
+      background: linear-gradient(135deg, #ecfdf5 0%, #cffafe 100%);
+      border: 2px dashed #5eead4;
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      margin: 14px 0;
+      color: #0f766e;
+    }
+    .screenshot .ss-icon { font-size: 36px; margin-bottom: 8px; }
+    .screenshot p { font-size: 13px; font-weight: 600; }
+    .screenshot .ss-sub { font-size: 12px; opacity: .75; margin-top: 4px; }
+
+    /* ── Requirements Grid ── */
+    .req-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; }
+    .req-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      padding: 18px 16px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .req-card .icon { font-size: 30px; margin-bottom: 8px; }
+    .req-card h4 { font-size: 13.5px; font-weight: 700; color: var(--primary-dark); margin-bottom: 4px; }
+    .req-card p  { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+    .req-card.required { border-color: var(--primary); }
+
+    /* ── Overview Box ── */
+    .overview-box {
+      background: linear-gradient(135deg, #ecfdf5 0%, #cffafe 100%);
+      border-radius: var(--radius);
+      border: 1.5px solid #5eead4;
+      padding: 28px 30px;
+      box-shadow: var(--shadow);
+    }
+    .overview-box .lead {
+      font-size: 16.5px; font-weight: 600; color: #0f766e;
+      margin-bottom: 18px; line-height: 1.65;
+    }
+    .overview-box .flow {
+      display: flex; flex-wrap: wrap; align-items: center;
+      gap: 8px;
+      font-size: 14px; font-weight: 600;
+    }
+    .flow-item {
+      background: var(--surface);
+      border: 1.5px solid #5eead4;
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #0f766e;
+      text-align: center;
+    }
+    .flow-arrow { color: var(--primary); font-size: 18px; }
+
+    /* ── Footer ── */
+    footer {
+      background: linear-gradient(135deg, #065f46 0%, #0d9e6e 40%, #0891b2 100%);
+      color: rgba(255,255,255,.88);
+      text-align: center;
+      padding: 30px 24px;
+      margin-top: 64px;
+      font-size: 13px;
+    }
+    footer strong { color: #fff; }
+
+    /* ── Utilities ── */
+    .tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      border-radius: 999px;
+      padding: 2px 12px;
+      font-size: 12px; font-weight: 700;
+    }
+    .tag.teal { background: var(--secondary-light); color: var(--secondary-dark); }
+
+    /* ── Print ── */
+    @media print {
+      body { background: #fff; font-size: 13px; }
+      .site-header { background: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .toc-wrap, .toc, .card, .step, .method-card, .feature-card, .req-card { box-shadow: none !important; break-inside: avoid; }
+      .step:hover, .method-card:hover, .feature-card:hover { transform: none; }
+      a { color: inherit; text-decoration: none; }
+      footer { background: #065f46 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .site-header { padding: 40px 16px 42px; }
+      main { padding: 0 14px 48px; }
+      .toc ol { grid-template-columns: 1fr; }
+      .method-grid, .feature-grid, .req-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 400px) {
+      .method-grid, .feature-grid, .req-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-badge">
+      <span>🤖</span>
+      <span>안드로이드 전자칠판 전용</span>
+    </div>
+    <h1>📢 교실 알림 시스템<br/>설치 설명서</h1>
+    <p class="subtitle">교무실에서 학생 호출 시 전자칠판에 실시간 알림을 표시하는<br/>스마트 교실 알림 솔루션</p>
+    <div class="header-chips">
+      <span class="chip">🤖 Android 전자칠판</span>
+      <span class="chip">🌐 Chrome PWA</span>
+      <span class="chip">🔥 Firebase 실시간</span>
+      <span class="chip">🔊 TTS 음성 안내</span>
+      <span class="chip">📡 ADB 자동 설치</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══════════════════════ TOC ══════════════════════ -->
+<div class="toc-wrap">
+  <nav class="toc">
+    <h2>📋 목차</h2>
+    <ol>
+      <li><a href="#overview">개요</a></li>
+      <li><a href="#requirements">요구사항</a></li>
+      <li><a href="#prep">사전 준비 (전자칠판)</a></li>
+      <li><a href="#adb">ADB 설치 (PC)</a></li>
+      <li><a href="#install">설치 방법</a></li>
+      <li><a href="#autostart">부팅 시 자동 실행</a></li>
+      <li><a href="#initial">초기 설정</a></li>
+      <li><a href="#features">주요 기능</a></li>
+      <li><a href="#remove">제거 방법</a></li>
+      <li><a href="#troubleshoot">문제 해결</a></li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<main>
+
+  <!-- ① 개요 -->
+  <section class="section" id="overview">
+    <h2 class="section-title">
+      <div class="icon-wrap">📢</div>
+      1. 개요
+    </h2>
+
+    <div class="overview-box">
+      <p class="lead">
+        교실 알림 시스템은 <strong>교무실에서 학생을 호출</strong>할 때 해당 교실의 전자칠판에
+        <strong>실시간으로 알림을 표시</strong>하는 스마트 교실 관리 솔루션입니다.<br/>
+        Firebase 기반 실시간 푸시와 TTS 음성 안내로 수업 중 불필요한 방해를 최소화합니다.
+      </p>
+      <div class="flow">
+        <div class="flow-item">🏫 교무실<br/><small>학생 호출 입력</small></div>
+        <span class="flow-arrow">➜</span>
+        <div class="flow-item">☁️ Firebase<br/><small>실시간 전송</small></div>
+        <span class="flow-arrow">➜</span>
+        <div class="flow-item">📺 전자칠판<br/><small>알림 + 음성 출력</small></div>
+        <span class="flow-arrow">➜</span>
+        <div class="flow-item">👨‍🎓 학생<br/><small>호출 인지</small></div>
+      </div>
+    </div>
+
+    <div class="callout teal" style="margin-top:16px;">
+      <span class="callout-icon">ℹ️</span>
+      <div>이 설명서는 <strong>안드로이드(Android) OS가 탑재된 전자칠판</strong>을 기준으로 작성되었습니다.
+      Windows PC 전자칠판 설명서와 디자인 색상(초록/청록)으로 구분됩니다.</div>
+    </div>
+  </section>
+
+  <!-- ② 요구사항 -->
+  <section class="section" id="requirements">
+    <h2 class="section-title">
+      <div class="icon-wrap">✅</div>
+      2. 요구사항
+    </h2>
+
+    <div class="req-grid">
+      <div class="req-card required">
+        <div class="icon">📺</div>
+        <h4>안드로이드 전자칠판</h4>
+        <p>Android OS 탑재 스마트 전자칠판<br/>(Android 7.0 이상 권장)</p>
+      </div>
+      <div class="req-card required">
+        <div class="icon">🌐</div>
+        <h4>Chrome 브라우저</h4>
+        <p>Google Chrome (최신 버전)<br/>또는 Chromium 기반 브라우저</p>
+      </div>
+      <div class="req-card required">
+        <div class="icon">📶</div>
+        <h4>인터넷 (Wi-Fi)</h4>
+        <p>학교 Wi-Fi 연결 필수<br/>Firebase 실시간 동기화용</p>
+      </div>
+      <div class="req-card required">
+        <div class="icon">💻</div>
+        <h4>Windows PC</h4>
+        <p>ADB 설치 및 최초 설정용<br/>(최초 1회만 필요)</p>
+      </div>
+      <div class="req-card required">
+        <div class="icon">🔌</div>
+        <h4>USB 케이블</h4>
+        <p>전자칠판 ↔ PC 연결용<br/>USB-A or USB-C (기기에 맞게)</p>
+      </div>
+      <div class="req-card">
+        <div class="icon">📁</div>
+        <h4>설치 파일</h4>
+        <p>안드로이드_설치.bat<br/>(autostart 폴더 내 포함)</p>
+      </div>
+    </div>
+
+    <div class="callout warn" style="margin-top:16px;">
+      <span class="callout-icon">⚠️</span>
+      <div><strong>Chrome 미탑재 기기:</strong> 기본 브라우저(WebView 기반)로도 동작할 수 있으나,
+      Wake Lock 및 PWA 기능이 제한될 수 있습니다. Chrome APK 설치를 권장합니다.</div>
+    </div>
+  </section>
+
+  <!-- ③ 사전 준비 (전자칠판) -->
+  <section class="section" id="prep">
+    <h2 class="section-title">
+      <div class="icon-wrap">⚙️</div>
+      3. 사전 준비 <small style="font-size:15px;font-weight:500;">(전자칠판에서)</small>
+    </h2>
+
+    <div class="callout info">
+      <span class="callout-icon">📌</span>
+      <div>아래 단계는 <strong>전자칠판 화면에서 직접</strong> 진행합니다.
+      USB 케이블 연결 <em>전에</em> USB 디버깅을 먼저 활성화해야 합니다.</div>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>🔧 개발자 모드 활성화</h3>
+          <p>전자칠판의 <strong>설정(톱니바퀴)</strong> 앱을 열고 아래 경로로 이동합니다.</p>
+          <div class="path-nav">
+            <span>⚙️ 설정</span><span class="sep">›</span>
+            <span>태블릿 정보</span><span class="sep">›</span>
+            <span>빌드 번호</span>
+          </div>
+          <p style="margin-top:8px;"><strong>빌드 번호</strong> 항목을 <strong>7번 연속으로 터치</strong>합니다.<br/>
+          "개발자가 되었습니다" 또는 "개발자 옵션이 활성화되었습니다" 메시지가 나타납니다.</p>
+          <div class="screenshot">
+            <div class="ss-icon">📱</div>
+            <p>[ 태블릿 정보 → 빌드 번호 7번 연속 터치 ]</p>
+            <p class="ss-sub">메시지: "개발자가 되었습니다" ✓</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>🐛 USB 디버깅 켜기</h3>
+          <p>개발자 옵션 메뉴에서 USB 디버깅을 활성화합니다.</p>
+          <div class="path-nav">
+            <span>⚙️ 설정</span><span class="sep">›</span>
+            <span>개발자 옵션</span><span class="sep">›</span>
+            <span>USB 디버깅 🔵 ON</span>
+          </div>
+          <p style="margin-top:8px;">경고 다이얼로그가 표시되면 <strong>[확인]</strong>을 터치합니다.</p>
+          <div class="callout tip" style="margin-top:8px;">
+            <span class="callout-icon">💡</span>
+            <div>일부 기기에서는 "개발자 옵션"이 [일반] 또는 [시스템] 메뉴 하위에 있을 수 있습니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>🔌 USB 케이블로 PC 연결</h3>
+          <p>전자칠판과 Windows PC를 <strong>USB 케이블</strong>로 연결합니다.</p>
+          <ul>
+            <li>전자칠판: USB-C 또는 Micro-USB 포트 (기기에 따라 다름)</li>
+            <li>PC: USB-A 포트에 연결</li>
+            <li>데이터 전송을 지원하는 케이블인지 확인 (충전 전용 케이블 불가)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h3>🔓 USB 디버깅 허용 팝업 승인</h3>
+          <p>USB 케이블 연결 후 전자칠판 화면에 팝업이 표시됩니다.</p>
+          <div class="screenshot">
+            <div class="ss-icon">🔐</div>
+            <p>[ "USB 디버깅을 허용하시겠습니까?" 팝업 ]</p>
+            <p class="ss-sub">이 컴퓨터를 항상 허용 체크 → [허용] 터치</p>
+          </div>
+          <div class="callout tip">
+            <span class="callout-icon">💡</span>
+            <div><strong>"이 컴퓨터를 항상 허용"</strong> 체크박스에 체크하면 다음부터 팝업 없이 자동 연결됩니다.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ④ ADB 설치 (PC에서) -->
+  <section class="section" id="adb">
+    <h2 class="section-title">
+      <div class="icon-wrap">💻</div>
+      4. ADB 설치 <small style="font-size:15px;font-weight:500;">(PC에서)</small>
+    </h2>
+
+    <div class="callout info">
+      <span class="callout-icon">ℹ️</span>
+      <div>ADB(Android Debug Bridge)는 PC에서 안드로이드 기기를 제어하기 위한 도구입니다.
+      <strong>최초 1회만 설치</strong>하면 됩니다.</div>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>📥 Platform Tools 다운로드</h3>
+          <p>아래 공식 주소에서 Windows용 Platform Tools를 다운로드합니다.</p>
+          <div class="code-block">
+            <pre><span class="comment"># 공식 다운로드 URL</span>
+<span class="cmd">https://developer.android.com/tools/releases/platform-tools</span></pre>
+          </div>
+          <p>페이지에서 <strong>"Windows용 SDK Platform Tools 다운로드"</strong> 링크를 클릭합니다.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>📂 압축 해제 및 파일 배치</h3>
+          <p>다운로드한 <code>platform-tools_*.zip</code> 파일의 압축을 풀고, 아래 <strong>두 가지 방법 중 하나</strong>를 선택합니다.</p>
+
+          <div class="card" style="margin-top:12px;background:#f0fdf4;border-color:#a7f3d0;">
+            <div class="card-title">✅ 방법 A (권장): autostart 폴더에 복사</div>
+            <p style="font-size:13.5px;color:var(--text-muted);">압축 해제된 폴더에서 <code>adb.exe</code> 파일을 찾아<br/>
+            <code>autostart\</code> 폴더에 복사합니다. 설치 스크립트가 자동으로 인식합니다.</p>
+            <div class="path-nav" style="margin-top:8px;">
+              <span>platform-tools</span><span class="sep">›</span>
+              <span>adb.exe</span><span class="sep">→ 복사 →</span>
+              <span>autostart\adb.exe</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:8px;">
+            <div class="card-title">🔧 방법 B: 시스템 환경변수 PATH에 추가</div>
+            <p style="font-size:13.5px;color:var(--text-muted);">platform-tools 폴더 전체 경로를 Windows 환경변수 PATH에 추가하면
+            어느 위치에서든 <code>adb</code> 명령어를 사용할 수 있습니다.</p>
+            <div class="code-block" style="margin-top:8px;">
+              <pre><span class="comment"># 환경변수 설정 (예시 경로)</span>
+<span class="cmd">C:\Users\사용자명\Downloads\platform-tools</span></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>🔍 ADB 연결 확인</h3>
+          <p>명령 프롬프트(cmd) 또는 PowerShell을 열고 아래 명령으로 연결을 확인합니다.</p>
+          <div class="code-block">
+            <pre><span class="comment"># ADB 버전 확인</span>
+<span class="cmd">adb</span> <span class="param">version</span>
+
+<span class="comment"># 연결된 기기 목록 확인</span>
+<span class="cmd">adb</span> <span class="param">devices</span>
+
+<span class="comment"># 정상 연결 시 출력 예시:</span>
+<span class="comment"># List of devices attached</span>
+<span class="string"># ABCD1234    device</span></pre>
+          </div>
+          <div class="callout warn">
+            <span class="callout-icon">⚠️</span>
+            <div><strong>unauthorized</strong>로 표시된다면 전자칠판 화면에서 "USB 디버깅 허용" 팝업을 확인하고 [허용]을 누르세요.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ⑤ 설치 방법 -->
+  <section class="section" id="install">
+    <h2 class="section-title">
+      <div class="icon-wrap">🚀</div>
+      5. 설치 방법
+    </h2>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div>USB 연결과 ADB 설정이 완료된 후 PC에서 아래 단계를 진행합니다.</div>
+    </div>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>📁 설치 스크립트 실행</h3>
+          <p><code>autostart</code> 폴더에서 아래 파일을 <strong>더블클릭</strong>합니다.</p>
+          <div class="path-nav">
+            <span>📁 autostart</span><span class="sep">›</span>
+            <span>🖱️ 안드로이드_설치.bat (더블클릭)</span>
+          </div>
+          <div class="callout warn" style="margin-top:10px;">
+            <span class="callout-icon">🛡️</span>
+            <div>Windows 보안 경고가 표시되면 <strong>"추가 정보" → "실행"</strong>을 클릭합니다.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>🔢 반 번호 입력</h3>
+          <p>스크립트 실행 후 명령 프롬프트 창에 해당 교실의 반 번호를 입력합니다.</p>
+          <div class="code-block">
+            <pre><span class="comment"># 입력 예시 (학년-반)</span>
+<span class="string">반 번호를 입력하세요: </span><span class="param">1-1</span>   <span class="comment"># 1학년 1반</span>
+<span class="string">반 번호를 입력하세요: </span><span class="param">2-5</span>   <span class="comment"># 2학년 5반</span>
+<span class="string">반 번호를 입력하세요: </span><span class="param">3-10</span>  <span class="comment"># 3학년 10반</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>🤖 자동 설정 완료</h3>
+          <p>스크립트가 아래 작업을 자동으로 수행합니다.</p>
+          <ul>
+            <li>✅ <strong>Chrome 브라우저</strong>에서 교실 알림 페이지 자동 실행</li>
+            <li>✅ <strong>화면 꺼짐 방지</strong> (Stay Awake) 설정</li>
+            <li>✅ <strong>볼륨 최대</strong>로 설정 (미디어 볼륨)</li>
+            <li>✅ <strong>전체화면</strong> (Immersive Mode) 적용</li>
+          </ul>
+          <div class="callout tip" style="margin-top:10px;">
+            <span class="callout-icon">🎉</span>
+            <div>설치 완료 후 전자칠판 화면에 교실 알림 페이지가 자동으로 표시됩니다.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ⑥ 부팅 시 자동 실행 -->
+  <section class="section" id="autostart">
+    <h2 class="section-title">
+      <div class="icon-wrap">🔄</div>
+      6. 부팅 시 자동 실행 설정
+    </h2>
+
+    <p style="color:var(--text-muted);margin-bottom:18px;">
+      전자칠판을 재시작해도 자동으로 교실 알림 페이지가 열리도록 설정합니다.
+      아래 3가지 방법 중 가장 적합한 방법을 선택하세요.
+    </p>
+
+    <div class="method-grid">
+
+      <div class="method-card recommended">
+        <span class="method-badge">★ 가장 권장</span>
+        <h3>방법 1<br/>전자칠판 자체 시작 앱 설정</h3>
+        <ol>
+          <li>전자칠판 <strong>설정(⚙️)</strong> 열기</li>
+          <li><strong>[앱]</strong> 또는 <strong>[시작 앱]</strong> 또는 <strong>[키오스크 모드]</strong> 메뉴 찾기</li>
+          <li>Chrome 또는 교실알림 PWA를 <strong>시작 앱으로 지정</strong></li>
+          <li>전자칠판 재시작으로 확인</li>
+        </ol>
+        <div class="callout tip" style="margin-top:10px;font-size:13px;">
+          <span class="callout-icon">💡</span>
+          <div>제조사마다 메뉴 이름이 다를 수 있습니다 (예: "부팅 앱", "Launcher", "자동 시작").</div>
+        </div>
+      </div>
+
+      <div class="method-card">
+        <span class="method-badge alt">방법 2</span>
+        <h3>방법 2<br/>PWA 홈 앱으로 설정</h3>
+        <ol>
+          <li>Chrome에서 교실 알림 페이지 열기</li>
+          <li>Chrome 메뉴 <strong>(⋮) → [홈 화면에 추가]</strong></li>
+          <li><strong>설정 → 앱 → 기본 앱 → 홈 앱</strong>에서 교실알림 PWA 선택</li>
+          <li>홈 버튼 누르면 자동 실행</li>
+        </ol>
+        <div class="callout warn" style="margin-top:10px;font-size:13px;">
+          <span class="callout-icon">⚠️</span>
+          <div>모든 기기에서 지원되지 않을 수 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="method-card">
+        <span class="method-badge alt">방법 3</span>
+        <h3>방법 3<br/>네트워크 원격 실행 (무선 ADB)</h3>
+        <ol>
+          <li>전자칠판에서<br/><strong>설정 → 개발자 옵션 → ADB over network</strong> 또는 <strong>무선 디버깅 켜기</strong></li>
+          <li>전자칠판 IP 주소 확인<br/>(설정 → Wi-Fi → 연결된 네트워크 상세)</li>
+          <li>PC 명령 프롬프트에서:</li>
+        </ol>
+        <div class="code-block" style="margin-top:6px;">
+          <pre><span class="cmd">adb connect</span> <span class="param">[IP주소]:5555</span>
+<span class="comment"># 예: adb connect 192.168.1.50:5555</span></pre>
+        </div>
+        <p style="font-size:12.5px;color:var(--text-muted);margin-top:8px;">
+          이후 USB 없이 <code>안드로이드_설치.bat</code> 실행 가능
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ⑦ 초기 설정 -->
+  <section class="section" id="initial">
+    <h2 class="section-title">
+      <div class="icon-wrap">🖥️</div>
+      7. 초기 설정 <small style="font-size:15px;font-weight:500;">(전자칠판 화면에서)</small>
+    </h2>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h3>🏫 반 선택</h3>
+          <p>교실 알림 페이지가 열리면 <strong>반 선택 화면</strong>이 표시됩니다.<br/>
+          해당 교실의 반을 <strong>터치</strong>하여 선택합니다.</p>
+          <div class="screenshot">
+            <div class="ss-icon">🏫</div>
+            <p>[ 반 선택 화면 ]</p>
+            <p class="ss-sub">1학년 ▸ 1반, 2반, 3반... / 2학년 ▸ ... / 3학년 ▸ ...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h3>👆 소리 활성화 (중요!)</h3>
+          <p><strong>"화면을 터치하여 시작"</strong> 안내 화면이 표시됩니다.<br/>
+          반드시 화면을 <strong>한 번 터치</strong>해야 합니다.</p>
+          <div class="callout danger">
+            <span class="callout-icon">🔊</span>
+            <div><strong>이 단계를 건너뛰면 알림 소리가 나지 않습니다!</strong><br/>
+            브라우저 정책상 사용자 제스처 없이는 소리를 재생할 수 없습니다.</div>
+          </div>
+          <p style="margin-top:8px;">터치 후 자동으로 <strong>전체화면 모드</strong>로 전환됩니다.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h3>⚙️ 추가 설정 (선택)</h3>
+          <p>화면 <strong>좌측 상단 ⚙️ 설정 버튼</strong>을 터치하면 세부 설정을 변경할 수 있습니다.</p>
+          <ul>
+            <li>🔔 <strong>호출음</strong>: 알림 사운드 종류 선택</li>
+            <li>🗣️ <strong>음성(TTS)</strong>: 음성 안내 켜기/끄기</li>
+            <li>🔊 <strong>볼륨</strong>: 알림 음량 조절 (0~100%)</li>
+            <li>🌙 <strong>야간 모드</strong>: 화면 밝기 자동 조절</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ⑧ 주요 기능 -->
+  <section class="section" id="features">
+    <h2 class="section-title">
+      <div class="icon-wrap">⭐</div>
+      8. 주요 기능
+    </h2>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="icon">🔥</div>
+        <h4>실시간 호출 수신</h4>
+        <p>Firebase Realtime Database 기반<br/>즉시 알림 전송 (지연 없음)</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔊</div>
+        <h4>호출음 + TTS 음성</h4>
+        <p>알림음 재생과 함께<br/>학생 이름 음성으로 안내</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📺</div>
+        <h4>전체화면 표시</h4>
+        <p>Immersive Mode로<br/>화면 전체 활용</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">💡</div>
+        <h4>화면 꺼짐 방지</h4>
+        <p>Wake Lock API로<br/>화면 항상 켜진 상태 유지</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🔄</div>
+        <h4>자동 재연결</h4>
+        <p>오프라인 상태 감지 후<br/>네트워크 복구 시 자동 재연결</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">📱</div>
+        <h4>PWA 지원</h4>
+        <p>홈 화면에 앱처럼 추가<br/>오프라인 캐싱 지원</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🎵</div>
+        <h4>커스텀 알림음</h4>
+        <p>여러 호출음 중 선택<br/>음량 조절 가능</p>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌙</div>
+        <h4>저전력 대기</h4>
+        <p>호출 없을 때<br/>화면만 켜진 상태 유지</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑨ 제거 방법 -->
+  <section class="section" id="remove">
+    <h2 class="section-title">
+      <div class="icon-wrap">🗑️</div>
+      9. 제거 방법
+    </h2>
+
+    <div class="card">
+      <div class="card-title">🔌 USB 연결 후 제거 스크립트 실행</div>
+      <p style="font-size:14px;color:var(--text-muted);">
+        전자칠판을 USB 케이블로 PC에 연결한 후, <code>autostart</code> 폴더에서
+        아래 파일을 <strong>더블클릭</strong>합니다.
+      </p>
+      <div class="path-nav" style="margin-top:12px;">
+        <span>📁 autostart</span><span class="sep">›</span>
+        <span>🖱️ 안드로이드_제거.bat (더블클릭)</span>
+      </div>
+      <p style="font-size:13.5px;color:var(--text-muted);margin-top:12px;">
+        제거 스크립트는 ADB를 통해 설정된 내용을 초기화하고 Chrome 실행을 종료합니다.
+      </p>
+    </div>
+
+    <div class="callout info" style="margin-top:4px;">
+      <span class="callout-icon">ℹ️</span>
+      <div>제거 후 자동 실행 설정(시작 앱 지정 등)은 전자칠판 설정에서 직접 되돌려야 합니다.</div>
+    </div>
+  </section>
+
+  <!-- ⑩ 문제 해결 -->
+  <section class="section" id="troubleshoot">
+    <h2 class="section-title">
+      <div class="icon-wrap">🔧</div>
+      10. 문제 해결
+    </h2>
+
+    <div class="table-wrap">
+      <table class="trouble-table">
+        <thead>
+          <tr>
+            <th>🔴 증상</th>
+            <th>✅ 해결 방법</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="symptom">ADB 연결 안 됨<br/><small style="font-weight:400;color:#b91c1c;">(unauthorized / offline)</small></td>
+            <td class="solution">
+              <ul style="padding-left:16px;font-size:13.5px;">
+                <li>전자칠판에서 USB 디버깅 켜짐 여부 확인</li>
+                <li>USB 케이블을 데이터 전송 가능 케이블로 교체</li>
+                <li>전자칠판 화면에서 "USB 디버깅 허용" 팝업 확인 후 [허용]</li>
+                <li><code>adb kill-server</code> 후 재연결 시도</li>
+                <li>기기 재부팅 후 재시도</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="symptom">소리 안 남<br/><small style="font-weight:400;color:#b91c1c;">(알림은 오는데 음소거)</small></td>
+            <td class="solution">
+              <ul style="padding-left:16px;font-size:13.5px;">
+                <li><strong>"화면을 터치하여 시작"</strong> 화면에서 반드시 터치하여 소리 활성화</li>
+                <li>전자칠판 볼륨(하드웨어 버튼) 최대로 올리기</li>
+                <li>설정(⚙️)에서 앱 볼륨 확인</li>
+                <li>Chrome 탭이 음소거 상태인지 확인 (주소창 옆 🔇 아이콘)</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="symptom">연결 끊김<br/><small style="font-weight:400;color:#b91c1c;">(알림이 오지 않음)</small></td>
+            <td class="solution">
+              <ul style="padding-left:16px;font-size:13.5px;">
+                <li>Wi-Fi 연결 상태 확인 (설정 → Wi-Fi)</li>
+                <li>화면을 터치하여 재연결 시도</li>
+                <li>페이지 새로고침 (F5 또는 Chrome 메뉴)</li>
+                <li>라우터/공유기 재시작</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="symptom">화면 꺼짐<br/><small style="font-weight:400;color:#b91c1c;">(일정 시간 후 꺼짐)</small></td>
+            <td class="solution">
+              <ul style="padding-left:16px;font-size:13.5px;">
+                <li><span class="path-nav" style="font-size:12px;">설정 › 디스플레이 › 자동 꺼짐(절전)</span>을 <strong>최대값</strong>으로 설정</li>
+                <li>개발자 옵션에서 "충전 중 화면 켜짐 유지" 활성화</li>
+                <li>전원 연결(충전 중) 상태 유지</li>
+                <li>설치 스크립트를 다시 실행하여 Wake Lock 재적용</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="symptom">Chrome 없음<br/><small style="font-weight:400;color:#b91c1c;">(앱 설치 불가)</small></td>
+            <td class="solution">
+              <ul style="padding-left:16px;font-size:13.5px;">
+                <li>기본 브라우저(WebView 기반)로 접속 시도</li>
+                <li>Google Play Store에서 Chrome 설치 (Play Store 없으면 APK 사이드로드)</li>
+                <li>Samsung Internet, Firefox 등 대체 브라우저 사용 (일부 기능 제한)</li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td class="symptom">페이지 로드 안 됨<br/><small style="font-weight:400;color:#b91c1c;">(흰 화면 또는 오류)</small></td>
+            <td class="solution">
+              <ul style="padding-left:16px;font-size:13.5px;">
+                <li>인터넷 연결 확인 (Wi-Fi)</li>
+                <li>Chrome 앱 캐시 지우기: 설정 → 앱 → Chrome → 저장소 → 캐시 삭제</li>
+                <li>Chrome 업데이트 확인</li>
+                <li>다른 기기에서 동일 URL 접속하여 서버 상태 확인</li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout tip" style="margin-top:20px;">
+      <span class="callout-icon">📞</span>
+      <div><strong>그래도 해결이 안 된다면:</strong> 전자칠판을 재부팅 후 처음부터 다시 설치를 시도해보세요.
+      대부분의 문제는 재부팅 + 재설치로 해결됩니다.</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ══════════════════════ FOOTER ══════════════════════ -->
+<footer>
+  <p><strong>교실 알림 시스템</strong> — 안드로이드 전자칠판 설치 설명서</p>
+  <p style="margin-top:6px;opacity:.75;">Android 전자칠판 전용 · ADB 자동 설치 스크립트 포함 · Chrome PWA 지원</p>
+  <p style="margin-top:10px;font-size:12px;opacity:.6;">
+    autostart/안드로이드_설치.bat · autostart/안드로이드_제거.bat
+  </p>
+</footer>
+
+</body>
+</html>
