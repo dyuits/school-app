@@ -12,9 +12,15 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /**
- * Chrome 감시 서비스: Chrome이 죽으면 자동 재실행
- * Foreground Service로 시스템에 의한 종료 방지
+ * Chrome 감시 + Firebase 호출 감시 서비스
+ * - Chrome이 죽으면 자동 재실행
+ * - Firebase에 호출이 오면 네이티브 CallActivity 표시 + Android TTS
  */
 public class WatchdogService extends Service {
 
@@ -22,35 +28,47 @@ public class WatchdogService extends Service {
     private static final String PREF_NAME = "classroom_prefs";
     private static final String KEY_CLASS = "class_id";
     private static final String BASE_URL = "https://dyuits.github.io/school-app/classroom.html?class=";
+    private static final String FIREBASE_URL = "https://numeric-mile-356201-default-rtdb.asia-southeast1.firebasedatabase.app";
     private static final String CHANNEL_ID = "classroom_watchdog";
     private static final int NOTIFICATION_ID = 1001;
-    private static final long CHECK_INTERVAL = 15000; // 15초마다 체크
+
+    private static final long CHROME_CHECK_INTERVAL = 15000; // 15초
+    private static final long CALL_CHECK_INTERVAL   = 3000;  // 3초
 
     private Handler handler;
-    private Runnable checkRunnable;
+    private Runnable chromeCheckRunnable;
+    private Runnable callCheckRunnable;
+    private long lastHandledCallTs = 0;
 
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
-
         handler = new Handler(Looper.getMainLooper());
-        checkRunnable = new Runnable() {
-            @Override
-            public void run() {
+
+        chromeCheckRunnable = new Runnable() {
+            @Override public void run() {
                 checkAndRelaunchChrome();
-                handler.postDelayed(this, CHECK_INTERVAL);
+                handler.postDelayed(this, CHROME_CHECK_INTERVAL);
+            }
+        };
+
+        callCheckRunnable = new Runnable() {
+            @Override public void run() {
+                checkFirebaseCall();
+                handler.postDelayed(this, CALL_CHECK_INTERVAL);
             }
         };
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "감시 서비스 시작됨");
-        handler.removeCallbacks(checkRunnable);
-        handler.postDelayed(checkRunnable, CHECK_INTERVAL);
-        // 시스템이 종료해도 자동 재시작
+        Log.d(TAG, "감시 서비스 시작");
+        handler.removeCallbacks(chromeCheckRunnable);
+        handler.removeCallbacks(callCheckRunnable);
+        handler.postDelayed(chromeCheckRunnable, CHROME_CHECK_INTERVAL);
+        handler.postDelayed(callCheckRunnable, 2000); // 2초 후 첫 호출 감시 시작
         return START_STICKY;
     }
 
@@ -58,20 +76,16 @@ public class WatchdogService extends Service {
     public void onDestroy() {
         super.onDestroy();
         if (handler != null) {
-            handler.removeCallbacks(checkRunnable);
+            handler.removeCallbacks(chromeCheckRunnable);
+            handler.removeCallbacks(callCheckRunnable);
         }
-        Log.d(TAG, "감시 서비스 종료됨");
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    public IBinder onBind(Intent intent) { return null; }
 
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        // 앱이 최근 앱에서 제거되어도 서비스 유지
-        Log.d(TAG, "앱 제거됨 - 서비스 재시작 예약");
         Intent restartIntent = new Intent(getApplicationContext(), WatchdogService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(restartIntent);
@@ -81,9 +95,11 @@ public class WatchdogService extends Service {
         super.onTaskRemoved(rootIntent);
     }
 
+    // ── Chrome 감시 ───────────────────────────────────────────────
+
     private void checkAndRelaunchChrome() {
         if (!isChromeRunning()) {
-            Log.d(TAG, "Chrome 미실행 감지 - 재실행");
+            Log.d(TAG, "Chrome 미실행 → 재실행");
             launchChrome();
         }
     }
@@ -92,9 +108,7 @@ public class WatchdogService extends Service {
         ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         if (am == null) return false;
         for (ActivityManager.RunningAppProcessInfo proc : am.getRunningAppProcesses()) {
-            if ("com.android.chrome".equals(proc.processName)) {
-                return true;
-            }
+            if ("com.android.chrome".equals(proc.processName)) return true;
         }
         return false;
     }
@@ -103,13 +117,11 @@ public class WatchdogService extends Service {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         String classId = prefs.getString(KEY_CLASS, "");
         if (classId.isEmpty()) return;
-
         String url = BASE_URL + classId;
         try {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             intent.setPackage("com.android.chrome");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         } catch (Exception e) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
@@ -118,11 +130,106 @@ public class WatchdogService extends Service {
         }
     }
 
+    // ── Firebase 호출 감시 ────────────────────────────────────────
+
+    private void checkFirebaseCall() {
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        String classId = prefs.getString(KEY_CLASS, "");
+        if (classId.isEmpty()) return;
+
+        new Thread(() -> {
+            try {
+                URL url = new URL(FIREBASE_URL + "/calls/" + classId + ".json");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setConnectTimeout(4000);
+                conn.setReadTimeout(4000);
+
+                if (conn.getResponseCode() == 200) {
+                    BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+
+                    String json = sb.toString().trim();
+                    if (!json.equals("null") && json.startsWith("{")) {
+                        long ts = extractLong(json, "timestamp");
+                        if (ts > 0 && ts > lastHandledCallTs) {
+                            // 1분 이내 호출만 처리
+                            if (System.currentTimeMillis() - ts < 60000) {
+                                lastHandledCallTs = ts;
+                                String student = extractString(json, "studentName");
+                                String message  = extractString(json, "message");
+                                String teacher  = extractString(json, "callerTeacher");
+                                handler.post(() -> showCallScreen(classId, student, message, teacher));
+                            }
+                        }
+                    }
+                }
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.w(TAG, "Firebase 호출 확인 실패: " + e.getMessage());
+            }
+        }).start();
+    }
+
+    private void showCallScreen(String classId, String student, String message, String teacher) {
+        Log.d(TAG, "호출 수신: " + student + " / " + message);
+        Intent intent = new Intent(this, CallActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra("studentName", student);
+        intent.putExtra("message", message);
+        intent.putExtra("teacher", teacher);
+        startActivity(intent);
+
+        // 3초 후 Firebase에서 호출 삭제
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+                URL delUrl = new URL(FIREBASE_URL + "/calls/" + classId + ".json");
+                HttpURLConnection delConn = (HttpURLConnection) delUrl.openConnection();
+                delConn.setRequestMethod("DELETE");
+                delConn.setConnectTimeout(4000);
+                delConn.getResponseCode();
+                delConn.disconnect();
+            } catch (Exception ignored) {}
+        }).start();
+    }
+
+    // ── JSON 파싱 (의존성 없이) ───────────────────────────────────
+
+    private long extractLong(String json, String key) {
+        try {
+            int idx = json.indexOf("\"" + key + "\":");
+            if (idx < 0) return 0;
+            int start = idx + key.length() + 3;
+            while (start < json.length() && json.charAt(start) == ' ') start++;
+            int end = start;
+            while (end < json.length() && (Character.isDigit(json.charAt(end)) || json.charAt(end) == '-')) end++;
+            return Long.parseLong(json.substring(start, end));
+        } catch (Exception e) { return 0; }
+    }
+
+    private String extractString(String json, String key) {
+        try {
+            int idx = json.indexOf("\"" + key + "\":");
+            if (idx < 0) return "";
+            int q1 = json.indexOf('"', idx + key.length() + 3);
+            if (q1 < 0) return "";
+            int q2 = json.indexOf('"', q1 + 1);
+            if (q2 < 0) return "";
+            return json.substring(q1 + 1, q2);
+        } catch (Exception e) { return ""; }
+    }
+
+    // ── 알림 채널 ─────────────────────────────────────────────────
+
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, "교실알림 감시", NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("Chrome 자동 실행 감시 서비스");
+            channel.setDescription("Chrome 자동 실행 및 호출 감시 서비스");
             channel.setShowBadge(false);
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
@@ -133,14 +240,12 @@ public class WatchdogService extends Service {
         SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         String classId = prefs.getString(KEY_CLASS, "");
         String text = classId.isEmpty() ? "교실알림 감시 중" : classId + " 교실알림 감시 중";
-
         Notification.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             builder = new Notification.Builder(this, CHANNEL_ID);
         } else {
             builder = new Notification.Builder(this);
         }
-
         return builder
             .setContentTitle("교실알림 자동실행")
             .setContentText(text)

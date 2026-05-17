@@ -40,7 +40,15 @@
             </intent-filter>
         </receiver>
 
-        <!-- 감시 서비스 (Chrome 죽으면 재실행) -->
+        <!-- 호출 수신 시 전면 표시 화면 -->
+        <activity
+            android:name=".CallActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen" />
+
+        <!-- 감시 서비스 (Chrome 죽으면 재실행 + Firebase 호출 감시) -->
         <service
             android:name=".WatchdogService"
             android:enabled="true"
