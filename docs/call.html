@@ -147,11 +147,14 @@
       }
 
       const sp = student + ' 학생, ' + message;
+      const repeat = 2;
 
-      // 호출음 + TTS 1회
-      await playC();
-      await new Promise(r => setTimeout(r, 150));
-      await spk(sp);
+      for (let i = 0; i < repeat; i++) {
+        if (i > 0) await new Promise(r => setTimeout(r, 500));
+        await playC();
+        await new Promise(r => setTimeout(r, 150));
+        await spk(sp);
+      }
 
       // 짧은 대기 후 자동 닫기
       await new Promise(r => setTimeout(r, 600));
