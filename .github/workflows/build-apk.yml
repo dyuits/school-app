@@ -3,8 +3,6 @@ name: APK 빌드 및 릴리즈
 on:
   push:
     branches: [main]
-    paths:
-      - 'autostart/android-autostart/**'
   workflow_dispatch:
 
 jobs:
