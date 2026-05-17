@@ -31,7 +31,9 @@ set "VBS=%STARTUP%\ClassroomAlert_2-10.vbs"
 >> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
 >> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
 >> "%VBS%" echo sLockFile = sUserData ^& "\watcher.lock"
->> "%VBS%" echo If fso.FileExists(sLockFile) Then WScript.Quit
+>> "%VBS%" echo On Error Resume Next
+>> "%VBS%" echo fso.DeleteFile sLockFile, True
+>> "%VBS%" echo On Error GoTo 0
 >> "%VBS%" echo fso.CreateTextFile(sLockFile, True).Close
 >> "%VBS%" echo WScript.Sleep 2000
 >> "%VBS%" echo For vv=1 To 50 : oShell.SendKeys Chr(175) : Next
