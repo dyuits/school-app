@@ -12,7 +12,7 @@ set "USERDATA=%LOCALAPPDATA%\ClassroomAlert\1-9"
 
 taskkill /f /im wscript.exe >nul 2>&1
 timeout /t 3 /nobreak >nul
-del "%LOCALAPPDATA%\ClassroomAlert\watcher_*.lock" >nul 2>&1
+del "%LOCALAPPDATA%\ClassroomAlert\1-9\watcher.lock" >nul 2>&1
 
 rmdir /s /q "%USERDATA%" >nul 2>&1
 mkdir "%USERDATA%"
@@ -30,7 +30,7 @@ set "VBS=%STARTUP%\ClassroomAlert_1-9.vbs"
 >> "%VBS%" echo sLock = sUserData ^& "\lockfile"
 >> "%VBS%" echo If Not fso.FolderExists(sParent) Then fso.CreateFolder(sParent)
 >> "%VBS%" echo If Not fso.FolderExists(sUserData) Then fso.CreateFolder(sUserData)
->> "%VBS%" echo sLockFile = sParent ^& "\watcher_1-9.lock"
+>> "%VBS%" echo sLockFile = sUserData ^& "\watcher.lock"
 >> "%VBS%" echo If fso.FileExists(sLockFile) Then WScript.Quit
 >> "%VBS%" echo fso.CreateTextFile(sLockFile, True).Close
 >> "%VBS%" echo WScript.Sleep 2000
