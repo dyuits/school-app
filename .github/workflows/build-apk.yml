@@ -1,0 +1,60 @@
+name: APK 빌드 및 릴리즈
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'autostart/android-autostart/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Java 17 설정
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle 설정
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '7.6.1'
+
+      - name: APK 빌드
+        run: gradle assembleDebug --no-daemon
+        working-directory: autostart/android-autostart
+
+      - name: APK 경로 확인
+        run: find autostart/android-autostart -name "*.apk"
+
+      - name: 릴리즈 태그 생성 및 APK 업로드
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: 교실알림 자동실행 APK (최신)
+          body: |
+            ## 교실알림 자동실행 APK
+
+            ### 설치 방법 (USB 불필요)
+            1. 전자칠판 브라우저(Chrome)에서 이 페이지를 열기
+            2. 아래 `app-debug.apk` 파일 다운로드
+            3. 설정 → 보안 → **출처를 알 수 없는 앱 허용** (또는 앱 설치 허용)
+            4. 다운로드한 APK 파일 탭하여 설치
+            5. 앱 서랍에서 **교실알림 자동실행** 실행
+            6. 학년·반 선택 후 **[저장 + 실행]** 탭
+            7. Chrome이 열리면 화면을 한 번 터치하여 오디오 활성화
+
+            ### 재부팅 후 자동 실행
+            - 설치 후 재부팅하면 약 **15초 후** Chrome이 자동 실행됩니다.
+            - Chrome이 강제 종료되어도 **15초 내 자동 복구**됩니다.
+          files: autostart/android-autostart/app/build/outputs/apk/debug/app-debug.apk
+          make_latest: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
