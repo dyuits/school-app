@@ -309,19 +309,22 @@
 
   function spk(text) {
     if (!('speechSynthesis' in window)) return Promise.resolve();
-    speechSynthesis.cancel();
-    updV();
     const cl = text.replace(/[^가-힣a-zA-Z0-9\s,.!?\-]/g,'').slice(0,100);
+    if (!cl.trim()) return Promise.resolve();
     return new Promise(r => {
-      const u = new SpeechSynthesisUtterance(cl);
-      u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.0; u.volume = gSV();
-      if (selV) u.voice = selV;
-      let done = false;
-      u.onend = () => { if (!done) { done = true; r(); } };
-      u.onerror = () => { if (!done) { done = true; r(); } };
-      speechSynthesis.speak(u);
-      const ri = setInterval(() => { if (speechSynthesis.speaking && speechSynthesis.paused) speechSynthesis.resume(); }, 3000);
-      setTimeout(() => { clearInterval(ri); if (!done) { done = true; speechSynthesis.cancel(); r(); } }, 15000);
+      speechSynthesis.cancel();
+      // Android Chrome: cancel() 직후 바로 speak()하면 무시됨 — 300ms 대기 필요
+      setTimeout(() => {
+        const u = new SpeechSynthesisUtterance(cl);
+        u.lang = 'ko-KR'; u.rate = 0.9; u.pitch = 1.0; u.volume = gSV();
+        if (selV) u.voice = selV;
+        let done = false;
+        u.onend = () => { if (!done) { done = true; r(); } };
+        u.onerror = () => { if (!done) { done = true; r(); } };
+        speechSynthesis.speak(u);
+        const ri = setInterval(() => { if (speechSynthesis.speaking && speechSynthesis.paused) speechSynthesis.resume(); }, 1000);
+        setTimeout(() => { clearInterval(ri); if (!done) { done = true; r(); } }, 10000);
+      }, 300);
     });
   }
 
@@ -354,7 +357,7 @@
     for (let i = 0; i < repeat; i++) {
       await playC();
       if (i === 0) {
-        await new Promise(r => setTimeout(r, 150));
+        await new Promise(r => setTimeout(r, 500));
         await spk(sp);
       }
       if (i < repeat - 1) await new Promise(r => setTimeout(r, 500));
