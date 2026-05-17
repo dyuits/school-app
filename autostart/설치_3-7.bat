@@ -35,7 +35,7 @@ set "VBS=%STARTUP%\ClassroomAlert_3-7.vbs"
 >> "%VBS%" echo fso.DeleteFile sLockFile, True
 >> "%VBS%" echo On Error GoTo 0
 >> "%VBS%" echo fso.CreateTextFile(sLockFile, True).Close
->> "%VBS%" echo WScript.Sleep 2000
+>> "%VBS%" echo WScript.Sleep 500
 >> "%VBS%" echo For vv=1 To 50 : oShell.SendKeys Chr(175) : Next
 >> "%VBS%" echo Do While True
 >> "%VBS%" echo   If Not fso.FileExists(sLock) Then
