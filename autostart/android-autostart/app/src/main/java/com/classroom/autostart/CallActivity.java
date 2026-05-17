@@ -1,6 +1,9 @@
 package com.classroom.autostart;
 
 import android.app.Activity;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +20,7 @@ import java.util.Locale;
 public class CallActivity extends Activity implements TextToSpeech.OnInitListener {
 
     private TextToSpeech tts;
+    private Ringtone ringtone;
     private String studentName, message, teacher;
 
     @Override
@@ -48,6 +52,13 @@ public class CallActivity extends Activity implements TextToSpeech.OnInitListene
         if (msgView != null)     msgView.setText(message);
         if (teacherView != null) teacherView.setText(teacher.isEmpty() ? "" : teacher + " 선생님 호출");
 
+        // 알림음 재생 (TTS 전에 먼저 소리)
+        try {
+            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            ringtone = RingtoneManager.getRingtone(getApplicationContext(), soundUri);
+            if (ringtone != null) ringtone.play();
+        } catch (Exception ignored) {}
+
         tts = new TextToSpeech(this, this);
 
         // 15초 후 자동 닫기
@@ -65,6 +76,7 @@ public class CallActivity extends Activity implements TextToSpeech.OnInitListene
 
     @Override
     protected void onDestroy() {
+        if (ringtone != null && ringtone.isPlaying()) ringtone.stop();
         if (tts != null) { tts.stop(); tts.shutdown(); tts = null; }
         super.onDestroy();
     }

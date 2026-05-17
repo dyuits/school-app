@@ -17,6 +17,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.app.PendingIntent;
+
 /**
  * Chrome 감시 + Firebase 호출 감시 서비스
  * - Chrome이 죽으면 자동 재실행
@@ -176,14 +178,54 @@ public class WatchdogService extends Service {
 
     private void showCallScreen(String classId, String student, String message, String teacher) {
         Log.d(TAG, "호출 수신: " + student + " / " + message);
-        Intent intent = new Intent(this, CallActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("studentName", student);
-        intent.putExtra("message", message);
-        intent.putExtra("teacher", teacher);
-        startActivity(intent);
 
-        // 3초 후 Firebase에서 호출 삭제
+        Intent callIntent = new Intent(this, CallActivity.class);
+        callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        callIntent.putExtra("studentName", student);
+        callIntent.putExtra("message", message);
+        callIntent.putExtra("teacher", teacher);
+
+        int piFlags = PendingIntent.FLAG_UPDATE_CURRENT |
+            (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+        PendingIntent fullScreenPi = PendingIntent.getActivity(this, 0, callIntent, piFlags);
+
+        // 호출 전용 알림 채널 (IMPORTANCE_HIGH 필수)
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel ch = new NotificationChannel(
+                "classroom_call", "학생 호출", NotificationManager.IMPORTANCE_HIGH);
+            ch.setDescription("학생 호출 알림");
+            ch.enableVibration(true);
+            ch.setVibrationPattern(new long[]{0, 300, 200, 300});
+            if (nm != null) nm.createNotificationChannel(ch);
+        }
+
+        String title   = student.isEmpty() ? "📢 학생 호출" : "📢 " + student + " 학생 호출";
+        String content = (teacher.isEmpty() ? "" : teacher + " 선생님: ") + message;
+
+        Notification.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder = new Notification.Builder(this, "classroom_call");
+        } else {
+            builder = new Notification.Builder(this);
+        }
+        builder.setContentTitle(title)
+               .setContentText(content)
+               .setSmallIcon(android.R.drawable.ic_dialog_info)
+               .setAutoCancel(true)
+               .setFullScreenIntent(fullScreenPi, true); // 전화 수신처럼 전면 표시
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder.setCategory(Notification.CATEGORY_CALL);
+            builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+        }
+
+        if (nm != null) nm.notify(2001, builder.build());
+
+        // 직접 시작도 병행 시도 (일부 기기 호환)
+        try { startActivity(callIntent); } catch (Exception ignored) {}
+
+        // 3초 후 Firebase 호출 삭제
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
