@@ -1,8 +1,10 @@
 package com.classroom.autostart;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -50,6 +52,15 @@ public class MainActivity extends Activity {
 
         // 배터리 최적화 해제 요청
         requestIgnoreBatteryOptimization();
+
+        // 알림 권한 요청 (Android 13+)
+        requestNotificationPermission();
+
+        // 앱 시작 시 서비스도 바로 시작 (저장된 반이 있으면)
+        SharedPreferences prefs2 = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        if (!prefs2.getString(KEY_CLASS, "").isEmpty()) {
+            startWatchdog();
+        }
 
         saveButton.setOnClickListener(v -> {
             saveClassAndStart();
@@ -140,6 +151,15 @@ public class MainActivity extends Activity {
         stopService(serviceIntent);
         statusText.setText("⏹️ 감시 서비스 중지됨 (부팅 시 자동실행은 유지)");
         Toast.makeText(this, "감시 서비스가 중지되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13+
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
+            }
+        }
     }
 
     private void requestIgnoreBatteryOptimization() {

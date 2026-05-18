@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -48,6 +49,7 @@ public class WatchdogService extends Service {
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, buildNotification());
         handler = new Handler(Looper.getMainLooper());
+        scheduleRestartAlarm();
 
         chromeCheckRunnable = new Runnable() {
             @Override public void run() {
@@ -95,6 +97,34 @@ public class WatchdogService extends Service {
             startService(restartIntent);
         }
         super.onTaskRemoved(rootIntent);
+    }
+
+    // ── AlarmManager 재시작 보장 ──────────────────────────────────
+
+    private void scheduleRestartAlarm() {
+        try {
+            AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            if (am == null) return;
+
+            Intent intent = new Intent(this, RestartReceiver.class);
+            intent.setAction(RestartReceiver.ACTION_RESTART);
+            int piFlags = PendingIntent.FLAG_UPDATE_CURRENT |
+                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+            PendingIntent pi = PendingIntent.getBroadcast(this, 9001, intent, piFlags);
+
+            // 5분마다 반복 (서비스가 죽어도 알람이 재시작)
+            long interval = 5 * 60 * 1000L;
+            long trigger = SystemClock.elapsedRealtime() + interval;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                am.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, trigger, pi);
+            } else {
+                am.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, trigger, interval, pi);
+            }
+            Log.d(TAG, "재시작 알람 등록 완료 (5분 주기)");
+        } catch (Exception e) {
+            Log.w(TAG, "알람 등록 실패: " + e.getMessage());
+        }
     }
 
     // ── Chrome 감시 ───────────────────────────────────────────────
