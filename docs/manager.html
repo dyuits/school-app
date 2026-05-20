@@ -255,8 +255,15 @@ const FB_CONFIG = {
   databaseURL: "https://numeric-mile-356201-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "numeric-mile-356201"
 };
-firebase.initializeApp(FB_CONFIG);
-const db = firebase.database();
+let db = null;
+try {
+  firebase.initializeApp(FB_CONFIG);
+  db = firebase.database();
+} catch(e) {
+  try {
+    db = firebase.app().database();
+  } catch(e2) { console.warn('Firebase 초기화 실패:', e2); }
+}
 
 // ── 비밀번호 ──
 const ADMIN_PW = '0070start';
@@ -314,14 +321,12 @@ const TYPE_LABEL = { holiday:'휴일', exam:'시험', important:'중요', event:
 const TYPE_BADGE = { holiday:'badge-holiday', exam:'badge-exam', important:'badge-important', event:'badge-event' };
 
 async function loadCalendar() {
+  if (!db) { calItems = ACADEMIC_CALENDAR.map(e => ({...e})); renderCalTable(); return; }
   // Firebase 오버라이드 먼저, 없으면 기본 data.js
-  const snap = await db.ref('adminData/calendar').once('value');
-  if (snap.val()) {
-    calItems = snap.val();
-  } else {
-    // 기본 데이터 복사
-    calItems = ACADEMIC_CALENDAR.map(e => ({...e}));
-  }
+  try {
+    const snap = await db.ref('adminData/calendar').once('value');
+    if (snap.val()) { calItems = snap.val(); } else { calItems = ACADEMIC_CALENDAR.map(e => ({...e})); }
+  } catch(e) { calItems = ACADEMIC_CALENDAR.map(e => ({...e})); }
   renderCalTable();
 }
 
@@ -393,6 +398,7 @@ function deleteCalItem(idx) {
 }
 
 async function saveCalendar() {
+  if (!db) { showToast('❌ Firebase 연결 실패 — 저장 불가'); return; }
   try {
     await db.ref('adminData/calendar').set(calItems);
     showToast('✅ 학사일정이 저장됐습니다!');
@@ -408,16 +414,15 @@ let teacherItems = []; // [{name, subject}]
 let teacherEditIdx = -1;
 
 async function loadTeachers() {
-  const snap = await db.ref('adminData/teachers').once('value');
-  if (snap.val()) {
-    teacherItems = snap.val();
-  } else {
-    // 기본 data.js에서 로드
-    teacherItems = Object.entries(SUBJECT_SUBSTITUTE_MAP)
-      .filter(([,v]) => v && v.subject)
-      .map(([name, v]) => ({ name, subject: v.subject }))
-      .sort((a,b) => a.name.localeCompare(b.name, 'ko'));
-  }
+  const defaultTeachers = () => Object.entries(SUBJECT_SUBSTITUTE_MAP)
+    .filter(([,v]) => v && v.subject)
+    .map(([name, v]) => ({ name, subject: v.subject }))
+    .sort((a,b) => a.name.localeCompare(b.name, 'ko'));
+  if (!db) { teacherItems = defaultTeachers(); renderTeacherTable(); return; }
+  try {
+    const snap = await db.ref('adminData/teachers').once('value');
+    if (snap.val()) { teacherItems = snap.val(); } else { teacherItems = defaultTeachers(); }
+  } catch(e) { teacherItems = defaultTeachers(); }
   renderTeacherTable();
 }
 
@@ -471,6 +476,7 @@ function deleteTeacherItem(idx) {
 }
 
 async function saveTeachers() {
+  if (!db) { showToast('❌ Firebase 연결 실패 — 저장 불가'); return; }
   try {
     await db.ref('adminData/teachers').set(teacherItems);
     showToast('✅ 교과 선생님 정보가 저장됐습니다!');
@@ -501,9 +507,13 @@ async function loadRosterClasses() {
     sel.appendChild(opt);
   });
 
-  // Firebase 오버라이드 로드
-  const snap = await db.ref('adminData/roster').once('value');
-  const fbData = snap.val() || {};
+  let fbData = {};
+  if (db) {
+    try {
+      const snap = await db.ref('adminData/roster').once('value');
+      fbData = snap.val() || {};
+    } catch(e) { fbData = {}; }
+  }
   // 기본 데이터 + Firebase 오버라이드 병합
   classes.forEach(cls => {
     if (fbData[cls]) {
@@ -580,6 +590,7 @@ function deleteStudent(idx) {
 }
 
 async function saveRoster() {
+  if (!db) { showToast('❌ Firebase 연결 실패 — 저장 불가'); return; }
   try {
     const saveObj = {};
     saveObj[currentClass] = rosterData[currentClass];
