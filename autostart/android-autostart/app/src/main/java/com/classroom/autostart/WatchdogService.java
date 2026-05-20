@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -252,8 +253,16 @@ public class WatchdogService extends Service {
 
         if (nm != null) nm.notify(2001, builder.build());
 
-        // 직접 시작도 병행 시도 (일부 기기 호환)
-        try { startActivity(callIntent); } catch (Exception ignored) {}
+        // 오버레이 권한 있으면 직접 Activity 시작 (가장 확실한 방법)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Settings.canDrawOverlays(this)) {
+            callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            try { startActivity(callIntent); } catch (Exception e) {
+                Log.w(TAG, "직접 시작 실패: " + e.getMessage());
+            }
+        } else {
+            // 오버레이 권한 없으면 알림 전면 표시로 시도
+            try { startActivity(callIntent); } catch (Exception ignored) {}
+        }
 
         // 3초 후 Firebase 호출 삭제
         new Thread(() -> {

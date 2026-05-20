@@ -56,6 +56,9 @@ public class MainActivity extends Activity {
         // 알림 권한 요청 (Android 13+)
         requestNotificationPermission();
 
+        // 다른 앱 위에 표시 권한 요청 (백그라운드에서 호출 화면 띄우기 필수)
+        requestOverlayPermission();
+
         // 앱 시작 시 서비스도 바로 시작 (저장된 반이 있으면)
         SharedPreferences prefs2 = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         if (!prefs2.getString(KEY_CLASS, "").isEmpty()) {
@@ -151,6 +154,23 @@ public class MainActivity extends Activity {
         stopService(serviceIntent);
         statusText.setText("⏹️ 감시 서비스 중지됨 (부팅 시 자동실행은 유지)");
         Toast.makeText(this, "감시 서비스가 중지되었습니다.", Toast.LENGTH_SHORT).show();
+    }
+
+    private void requestOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                try {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:" + getPackageName()));
+                    startActivity(intent);
+                    Toast.makeText(this,
+                            "\"다른 앱 위에 표시\" 권한을 허용해주세요.\n호출 화면 표시에 필요합니다.",
+                            Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    // 일부 기기 미지원
+                }
+            }
+        }
     }
 
     private void requestNotificationPermission() {
