@@ -2668,6 +2668,9 @@ window.addEventListener('DOMContentLoaded', () => {
   initFirebase();
   setTimeout(startHeartbeatListener, 1000);
 
+  // 관리자 오버라이드 데이터 로드 (학사일정/교과선생님/학생명단)
+  setTimeout(loadAdminOverrides, 1500);
+
   // 엔터키 지원
   qs('#contactPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')verifyContactPassword();});
   qs('#rosterPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')verifyRosterPassword();});
