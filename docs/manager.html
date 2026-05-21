@@ -248,7 +248,10 @@ tr:hover td{background:#fafbff}
 
 <script src="js/data.js"></script>
 <script>
-// ── Firebase 설정 ──
+// ── 비밀번호 ──
+const ADMIN_PW = '0070start';
+
+// ── Firebase 설정 (로그인 후 초기화) ──
 const FB_CONFIG = {
   apiKey: "AIzaSyDF8OLuBylKToxAxKDfZAm9D1uBRlBjv4s",
   authDomain: "numeric-mile-356201.firebaseapp.com",
@@ -256,23 +259,24 @@ const FB_CONFIG = {
   projectId: "numeric-mile-356201"
 };
 let db = null;
-try {
-  firebase.initializeApp(FB_CONFIG);
-  db = firebase.database();
-} catch(e) {
-  try {
-    db = firebase.app().database();
-  } catch(e2) { console.warn('Firebase 초기화 실패:', e2); }
-}
 
-// ── 비밀번호 ──
-const ADMIN_PW = '0070start';
+function initFirebase() {
+  if (db) return; // 이미 초기화됨
+  try {
+    firebase.initializeApp(FB_CONFIG);
+    db = firebase.database();
+  } catch(e) {
+    try { db = firebase.app().database(); }
+    catch(e2) { console.warn('Firebase 초기화 실패:', e2); db = null; }
+  }
+}
 
 function tryLogin() {
   const pw = document.getElementById('pwInput').value;
   if (pw === ADMIN_PW) {
     document.getElementById('lockScreen').style.display = 'none';
     document.getElementById('adminPage').style.display = 'block';
+    initFirebase();
     initAdmin();
   } else {
     const err = document.getElementById('pwErr');
