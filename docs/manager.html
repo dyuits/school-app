@@ -4,6 +4,29 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>교실알림 관리자</title>
+<!-- 로그인 함수는 외부 스크립트보다 먼저 정의 -->
+<script>
+var ADMIN_PW = '0070start';
+function tryLogin() {
+  var pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PW) {
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('adminPage').style.display = 'block';
+    if (typeof initFirebase === 'function') initFirebase();
+    if (typeof initAdmin === 'function') initAdmin();
+  } else {
+    var err = document.getElementById('pwErr');
+    err.textContent = '비밀번호가 올바르지 않습니다.';
+    document.getElementById('pwInput').value = '';
+    setTimeout(function(){ err.textContent = ''; }, 2000);
+  }
+}
+function logout() {
+  document.getElementById('lockScreen').style.display = 'flex';
+  document.getElementById('adminPage').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+}
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
@@ -90,7 +113,7 @@ tr:hover td{background:#fafbff}
     <div class="lock-title">교실알림 관리자</div>
     <div class="lock-sub">관리자 비밀번호를 입력해주세요</div>
     <input type="password" class="lock-input" id="pwInput" placeholder="비밀번호" maxlength="20"
-      onkeydown="if(event.key==='Enter')tryLogin()">
+      autocomplete="new-password" onkeydown="if(event.key==='Enter')tryLogin()">
     <button class="lock-btn" onclick="tryLogin()">로그인</button>
     <div class="lock-err" id="pwErr"></div>
   </div>
@@ -248,9 +271,6 @@ tr:hover td{background:#fafbff}
 
 <script src="js/data.js"></script>
 <script>
-// ── 비밀번호 ──
-const ADMIN_PW = '0070start';
-
 // ── Firebase 설정 (로그인 후 초기화) ──
 const FB_CONFIG = {
   apiKey: "AIzaSyDF8OLuBylKToxAxKDfZAm9D1uBRlBjv4s",
@@ -269,26 +289,6 @@ function initFirebase() {
     try { db = firebase.app().database(); }
     catch(e2) { console.warn('Firebase 초기화 실패:', e2); db = null; }
   }
-}
-
-function tryLogin() {
-  const pw = document.getElementById('pwInput').value;
-  if (pw === ADMIN_PW) {
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('adminPage').style.display = 'block';
-    initFirebase();
-    initAdmin();
-  } else {
-    const err = document.getElementById('pwErr');
-    err.textContent = '비밀번호가 올바르지 않습니다.';
-    document.getElementById('pwInput').value = '';
-    setTimeout(() => err.textContent = '', 2000);
-  }
-}
-function logout() {
-  document.getElementById('lockScreen').style.display = 'flex';
-  document.getElementById('adminPage').style.display = 'none';
-  document.getElementById('pwInput').value = '';
 }
 
 // ── 탭 전환 ──
