@@ -599,7 +599,7 @@
   <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">2026학년도 고교학점제 성취평가제 · 추정분할점수 산출 보조 도구</p>
 
   <!-- ② 계산 모드 탭 -->
-  <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e0e0e0;">
+  <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #1565c0;">
     <button id="estTabBtn1" onclick="switchEstTab(1)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#1565c0;color:#fff;margin-right:4px;"><i class="fas fa-file-alt"></i> 정기시험</button>
     <button id="estTabBtn2" onclick="switchEstTab(2)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#f5f5f5;color:#888;margin-right:4px;"><i class="fas fa-tasks"></i> 수행평가</button>
     <button id="estTabBtn3" onclick="switchEstTab(3)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#f5f5f5;color:#888;"><i class="fas fa-plus-circle"></i> 지필+수행 합산</button>
@@ -607,19 +607,12 @@
 
   <!-- ③ 정기시험 추정분할점수 -->
   <div id="estPanel1" style="display:block;">
-    <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
-      <div style="font-size:13px;font-weight:700;color:#1565c0;margin-bottom:12px;"><i class="fas fa-info-circle"></i> 산출 원리: 난이도 범주별 배점합 × 성취수준별 최소 능력자 예상 정답률 합산</div>
-      <div style="font-size:12px;color:#546e7a;margin-bottom:16px;line-height:1.6;background:#e3f2fd;padding:10px;border-radius:8px;">
-        문항을 <strong>쉬움·보통·어려움</strong> 3개 난이도로 분류하고, 각 난이도 범주에서 성취수준별 최소 능력자가 맞힐 것으로 예상되는 정답률(%)을 입력합니다. 동일 난이도 범주가 하나의 성취수준 목표 문항으로만 구성되면 약 <strong>65%</strong>를 기준으로 추정합니다. 예상 정답률은 A~D는 5% 단위, E는 1% 단위로 입력합니다.
-      </div>
-
-        </div>
-      </div>
+    <div class="card" style="padding:14px 18px;border-radius:0 8px 8px 8px;background:#fff;border:1px solid #e0e0e0;">
 
             <!-- 나이스 동일 구조: 문항구분/난이도/해당문항번호/문항수/배점합/A~D 예상정답률 -->
 
       <!-- 평가단계 선택 -->
-      <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;padding:10px 14px;background:#e3f2fd;border-radius:8px;flex-wrap:wrap;">
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;padding:10px 14px;background:#f8f9fa;border-radius:8px;border:1px solid #e0e0e0;flex-wrap:wrap;">
         <div style="font-size:12.5px;font-weight:700;color:#1565c0;">평가단계:</div>
         <label style="display:flex;align-items:center;gap:5px;font-size:12.5px;cursor:pointer;">
           <input type="radio" name="evalStage" value="5plus" checked onchange="calcEstimate()" style="accent-color:#1565c0;"> 5수준(A-E) + 미도달
@@ -770,7 +763,7 @@
       <div id="estResult1" style="margin-top:16px;padding:16px;background:#f0f4ff;border-radius:10px;">
         <div style="text-align:center;color:#aaa;font-size:13px;">배점합과 예상 정답률을 입력하면 자동 계산됩니다</div>
       </div>
-      <div style="margin-top:10px;padding:10px;background:#fff8e1;border-radius:8px;border:1px solid #ffe082;">
+      <div style="margin-top:10px;padding:10px;background:#f5f5f5;border-radius:8px;border:1px solid #e0e0e0;">
         <div style="font-size:11px;color:#795548;line-height:1.6;"><i class="fas fa-exclamation-triangle" style="color:#f57f17;"></i> <strong>주의:</strong> 본 계산기는 교과협의 및 나이스 입력 전 검토를 돕는 보조 도구입니다. 실제 분할점수는 교과 협의를 통해 결정하고 나이스에 입력해야 합니다. 분할점수를 의도적으로 높이거나 낮춰 특정 성적 분포를 만드는 것은 금지됩니다.</div>
       </div>
     </div>
@@ -778,7 +771,7 @@
       <!-- 사용방법 설명서 -->
       <div style="margin-bottom:16px;border:1.5px solid #90caf9;border-radius:10px;overflow:hidden;">
         <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#1565c0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span><i class="fas fa-book-open"></i> 사용방법 — 정기시험 추정분할점수 입력 가이드</span>
+          <span><i class="fas fa-book-open"></i> 사용방법 — 정기시험 추정분할점수 입력 가이드 <span style="font-size:11px;font-weight:400;opacity:0.85;margin-left:8px;">▼ 삼각형을 누르면 설명서가 나와요</span></span>
           <span class="guide-arrow" style="font-size:14px;transition:transform 0.2s;">▼</span>
         </div>
         <div style="display:none;padding:14px;background:#f8fbff;">
@@ -870,16 +863,11 @@
 
   <!-- ④ 수행평가 추정분할점수 -->
   <div id="estPanel2" style="display:none;">
-    <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
-      <div style="font-size:13px;font-weight:700;color:#6a1b9a;margin-bottom:12px;"><i class="fas fa-info-circle"></i> 산출 원리: 평가요소별 성취수준 최소 능력자 배점 합산 → 점수 영역 설정</div>
-      <div style="font-size:12px;color:#546e7a;margin-bottom:16px;line-height:1.6;background:#f3e5f5;padding:10px;border-radius:8px;">
-        채점기준표의 각 평가요소에서 성취수준별 최소 능력자에게 부여되는 배점을 입력합니다. 각 성취수준의 배점 합계가 해당 성취수준의 분할점수(최소 점수)가 됩니다. 점수 영역은 해당 성취수준 최소점수 ~ 바로 위 성취수준 최소점수 -1 로 자동 설정됩니다.
-      </div>
-
+    <div class="card" style="padding:14px 18px;border-radius:0 8px 8px 8px;background:#fff;border:1px solid #e0e0e0;">
 
       <!-- 평가요소 입력 (최대 5개) -->
       <div style="margin-bottom:12px;">
-        <div style="font-size:12.5px;font-weight:700;color:#37474f;margin-bottom:8px;">평가요소별 성취수준 최소 능력자 배점 입력</div>
+        <div style="font-size:12.5px;font-weight:700;color:#37474f;margin-bottom:8px;padding:8px 0;border-bottom:2px solid #e0e0e0;">평가요소별 성취수준 최소 능력자 배점 입력</div>
         <div style="overflow-x:auto;">
           <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px;">
             <thead>
@@ -936,7 +924,7 @@
       <!-- 수행평가 사용방법 설명서 -->
       <div style="margin-bottom:16px;border:1.5px solid #ce93d8;border-radius:10px;overflow:hidden;">
         <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow2').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#6a1b9a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span><i class="fas fa-book-open"></i> 사용방법 — 수행평가 추정분할점수 입력 가이드</span>
+          <span><i class="fas fa-book-open"></i> 사용방법 — 수행평가 추정분할점수 입력 가이드 <span style="font-size:11px;font-weight:400;opacity:0.85;margin-left:8px;">▼ 삼각형을 누르면 설명서가 나와요</span></span>
           <span class="guide-arrow2" style="font-size:14px;transition:transform 0.2s;">▼</span>
         </div>
         <div style="display:none;padding:14px;background:#fdf8ff;">
@@ -989,16 +977,14 @@
 
   <!-- ⑤ 지필+수행 합산 -->
   <div id="estPanel3" style="display:none;">
-    <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
-      <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:4px;"><i class="fas fa-calculator"></i> 학기말 추정분할점수산출 결과</div>
-      <div style="font-size:11.5px;color:#546e7a;margin-bottom:14px;line-height:1.6;background:#e8f5e9;padding:8px 12px;border-radius:8px;">나이스 <strong>학기말 추정분할점수산출</strong> 화면과 동일한 결과표 형식입니다. 정기시험 + 수행평가 반영비율을 입력하면 성취수준별 추정분할점수와 평균점수가 자동 산출됩니다.</div>
+    <div class="card" style="padding:14px 18px;border-radius:0 8px 8px 8px;background:#fff;border:1px solid #e0e0e0;">
 
 
       <!-- 나이스 학기말 추정분할점수산출 화면 동일 구조 -->
 
       <!-- 행 추가/삭제 버튼 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:12.5px;font-weight:700;color:#2e7d32;">📋 정기시험/수행평가 목록 입력</div>
+        <div style="font-size:12.5px;font-weight:700;color:#37474f;">📋 정기시험/수행평가 목록 입력</div>
         <div style="display:flex;gap:6px;">
           <button onclick="addFinalRow()" style="padding:5px 12px;background:#2e7d32;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">+ 행 추가</button>
           <button onclick="resetFinalRows()" style="padding:5px 12px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:12px;cursor:pointer;">전체 지우기</button>
@@ -1095,10 +1081,10 @@
       <!-- 학기말 추정분할 사용방법 설명서 - 초등학생도 이해 가능 -->
       <div style="margin-bottom:16px;border:2px solid #a5d6a7;border-radius:12px;overflow:hidden;">
         <div onclick="var c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('.ga3').style.transform=c.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:11px 14px;background:#2e7d32;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span>📖 이렇게 입력하면 돼요! (클릭하면 접혀요)</span>
-          <span class="ga3" style="font-size:14px;transition:transform 0.2s;transform:rotate(180deg);">▼</span>
+          <span>📖 이렇게 입력하면 돼요! <span style="font-size:11px;font-weight:400;opacity:0.85;margin-left:8px;">▼ 삼각형을 누르면 설명서가 나와요</span></span>
+          <span class="ga3" style="font-size:14px;transition:transform 0.2s;transform:rotate(0deg);">▼</span>
         </div>
-        <div style="display:block;padding:16px;background:#f1f8f2;">
+        <div style="display:none;padding:16px;background:#f1f8f2;">
 
           <!-- 전체 흐름 한눈에 -->
           <div style="background:#fff;border:2px solid #2e7d32;border-radius:10px;padding:12px;margin-bottom:14px;">
