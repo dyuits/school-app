@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260428">
+  <!-- PDF.js: 세특 탭 PDF 업로드 텍스트 추출 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>if(typeof pdfjsLib!=='undefined'){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
 </head>
 <body>
 <div class="app-wrapper">
@@ -1236,36 +1239,138 @@
 </section>
 
 <section id="setechTab" class="tab-panel" style="display:none;padding:16px;">
-  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-pencil-alt" style="color:#1565c0;"></i> 교과 수행평가(세특)</h2>
-  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">세부능력 및 특기사항 작성 보조 · 붙여넣기 시 AI 보완 예시 1안/2안 생성</p>
-  <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
-    <div>
-      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">교과 선택</div>
-      <div id="setechSubjectList" style="display:flex;flex-direction:column;gap:4px;"></div>
-    </div>
-    <div>
-      <div id="setechTitle" style="font-size:15px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:12px;"></div>
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">키워드 클릭 → 자동 삽입</div>
-        <div id="setechKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:2px;"><i class="fas fa-pencil-alt" style="color:#1565c0;"></i> 교과 세특 AI 생성</h2>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">학년·교과·PDF 자료를 입력하면 생기부 기재요령에 맞는 세특 2안을 자동 생성합니다.</p>
+
+  <!-- ① 기본 정보 선택 -->
+  <div style="background:#f0f4ff;border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1.5px solid #c5cae9;">
+    <div style="font-size:13px;font-weight:800;color:#1a237e;margin-bottom:10px;">① 기본 정보</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start;">
+      <!-- 학년 -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">학년</div>
+        <div style="display:flex;gap:5px;">
+          <button class="setech-grade-btn" data-val="고1" onclick="selectSetechBtn(this,'grade')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고1</button>
+          <button class="setech-grade-btn" data-val="고2" onclick="selectSetechBtn(this,'grade')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고2</button>
+          <button class="setech-grade-btn" data-val="고3" onclick="selectSetechBtn(this,'grade')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고3</button>
+        </div>
       </div>
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">문장 템플릿</div>
-        <div id="setechTemplates" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <!-- 학기 -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">학기</div>
+        <div style="display:flex;gap:5px;">
+          <button class="setech-semester-btn" data-val="1학기" onclick="selectSetechBtn(this,'semester')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">1학기</button>
+          <button class="setech-semester-btn" data-val="2학기" onclick="selectSetechBtn(this,'semester')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">2학기</button>
+        </div>
       </div>
-      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">세특 작성 <span style="font-weight:400;color:#888;">(직접 작성 또는 아래에 기존 세특 붙여넣기 → AI 보완)</span></div>
-      <textarea id="setechEditor" rows="8" placeholder="위 키워드/템플릿을 클릭하거나 직접 작성하세요.&#10;&#10;기존 세특을 붙여넣으면 AI 보완 예시 1안/2안이 자동 생성됩니다." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
-        <button onclick="generateSetech()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> AI 보완 예시 생성</button>
-        <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
-        <button onclick="navigator.clipboard.writeText(document.getElementById('setechEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
-        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('setechEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
-        <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
+      <!-- 학과 -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">학과</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <button class="setech-dept-btn" data-val="보통과" onclick="selectSetechBtn(this,'dept')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">보통과</button>
+          <button class="setech-dept-btn" data-val="금융비즈니스학과" onclick="selectSetechBtn(this,'dept')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">금융비즈니스</button>
+          <button class="setech-dept-btn" data-val="문화콘텐츠학과" onclick="selectSetechBtn(this,'dept')" style="padding:6px 12px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">문화콘텐츠</button>
+        </div>
       </div>
-      <!-- AI 보완 예시 결과 영역 -->
-      <div id="setechAIResult" style="display:none;margin-top:14px;"></div>
+      <!-- 교과명 -->
+      <div style="flex:1;min-width:180px;">
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">교과명</div>
+        <select id="setechSubjectSel" style="padding:6px 10px;border-radius:7px;border:1.5px solid #c5cae9;font-size:12px;background:#fff;width:100%;">
+          <option value="">-- 교과 선택 --</option>
+          <option value="국어">국어</option>
+          <option value="화법">화법</option>
+          <option value="수학">수학</option>
+          <option value="영어">영어</option>
+          <option value="사회">사회</option>
+          <option value="과학">과학</option>
+          <option value="체육">체육</option>
+          <option value="음악">음악</option>
+          <option value="미술">미술</option>
+          <option value="정보">정보</option>
+          <option value="디자인">디자인</option>
+          <option value="상업">상업</option>
+          <option value="일본어">일본어</option>
+          <option value="역사">역사</option>
+          <option value="기술·가정">기술·가정</option>
+          <option value="진로">진로</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
     </div>
   </div>
+
+  <!-- ② PDF 업로드 -->
+  <div style="background:#f9fbe7;border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1.5px solid #dce775;">
+    <div style="font-size:13px;font-weight:800;color:#33691e;margin-bottom:10px;">② 자료 업로드 <span style="font-size:11px;font-weight:400;color:#888;">(PDF 또는 텍스트 파일 · 선택사항)</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <!-- 평가계획서 -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">📋 평가계획서 PDF</div>
+        <label style="display:block;padding:10px 12px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#558b2f;">
+          <i class="fas fa-upload"></i> 파일 선택 (PDF/TXT)
+          <input type="file" id="setechPlanFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'plan')">
+        </label>
+        <div id="setechPlanFileName" style="font-size:11px;color:#888;margin-top:4px;text-align:center;">선택된 파일 없음</div>
+        <textarea id="setechPlanText" rows="4" placeholder="또는 평가계획서 내용을 직접 붙여넣으세요 (성취기준, 평가방법 등)" style="width:100%;margin-top:6px;padding:8px;border:1.5px solid #dce775;border-radius:7px;font-size:12px;line-height:1.6;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      </div>
+      <!-- 수행평가 학습지 -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">📝 수행평가·학습지 PDF</div>
+        <label style="display:block;padding:10px 12px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#558b2f;">
+          <i class="fas fa-upload"></i> 파일 선택 (PDF/TXT)
+          <input type="file" id="setechActivityFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'activity')">
+        </label>
+        <div id="setechActivityFileName" style="font-size:11px;color:#888;margin-top:4px;text-align:center;">선택된 파일 없음</div>
+        <textarea id="setechActivityText" rows="4" placeholder="또는 학생 수행평가 활동 내용을 직접 붙여넣으세요 (활동 내용, 결과물, 발표 내용 등)" style="width:100%;margin-top:6px;padding:8px;border:1.5px solid #dce775;border-radius:7px;font-size:12px;line-height:1.6;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 교사 총평 -->
+  <div style="background:#fce4ec;border-radius:12px;padding:14px 16px;margin-bottom:14px;border:1.5px solid #f48fb1;">
+    <div style="font-size:13px;font-weight:800;color:#880e4f;margin-bottom:6px;">③ 교사 총평 및 관찰 의견 <span style="font-size:11px;font-weight:400;color:#888;">(필수)</span></div>
+    <textarea id="setechTeacherComment" rows="4" placeholder="예) 수업 중 질문이 많고 탐구 의지가 강함. 모둠 활동에서 리더 역할을 자처하며 의견을 조율함. 피드백을 수용하여 보고서를 3차례 수정함." style="width:100%;padding:10px;border:1.5px solid #f48fb1;border-radius:8px;font-size:12.5px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+  </div>
+
+  <!-- ④ OpenAI API Key (선택) -->
+  <div style="background:#ede7f6;border-radius:12px;padding:12px 16px;margin-bottom:14px;border:1.5px solid #b39ddb;">
+    <div style="font-size:13px;font-weight:800;color:#4a148c;margin-bottom:6px;">④ OpenAI API Key <span style="font-size:11px;font-weight:400;color:#888;">(없으면 로컬 AI로 자동 생성)</span></div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:200px;">
+        <input type="password" id="openaiApiKey" placeholder="sk-..." autocomplete="off" style="width:100%;padding:7px 36px 7px 10px;border:1.5px solid #b39ddb;border-radius:7px;font-size:12.5px;box-sizing:border-box;">
+        <button id="apiKeyToggleBtn" onclick="toggleApiKeyVisibility()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888;font-size:14px;"><i class="fas fa-eye"></i></button>
+      </div>
+      <button onclick="saveApiKey()" style="padding:7px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer;font-weight:700;">저장</button>
+      <button onclick="clearApiKey()" style="padding:7px 12px;background:#e0e0e0;color:#666;border:none;border-radius:7px;font-size:12px;cursor:pointer;">삭제</button>
+      <span id="apiKeyStatus" style="font-size:11.5px;color:#888;"></span>
+    </div>
+    <div style="margin-top:6px;font-size:11px;color:#7b1fa2;">🔑 API Key가 있으면 GPT-4o로 고품질 세특 생성 · 없으면 내장 AI로 자동 처리</div>
+  </div>
+
+  <!-- 생성 버튼 -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+    <button onclick="generateSetechNew()" style="padding:10px 24px;background:linear-gradient(135deg,#7b1fa2,#1565c0);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(123,31,162,0.3);"><i class="fas fa-magic"></i> 세특 AI 생성</button>
+    <button onclick="clearSetechForm()" style="padding:10px 16px;background:#e0e0e0;color:#666;border:none;border-radius:10px;font-size:13px;cursor:pointer;">초기화</button>
+    <span style="font-size:11.5px;color:#888;">※ 교사 총평은 반드시 입력하세요</span>
+  </div>
+
+  <!-- 결과 영역 -->
+  <div id="setechAIResult" style="display:none;margin-top:4px;"></div>
+
+  <!-- 기존 에디터 (하단 보조) -->
+  <details style="margin-top:16px;">
+    <summary style="font-size:12.5px;font-weight:700;color:#888;cursor:pointer;padding:6px 0;">✏️ 직접 작성 / 기존 세특 보완 (펼치기)</summary>
+    <div style="margin-top:8px;">
+      <textarea id="setechEditor" rows="6" placeholder="기존 세특을 붙여넣거나 직접 작성하세요. AI 보완 버튼으로 개선할 수 있습니다." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap;">
+        <button onclick="generateSetech()" style="padding:7px 14px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> 기존 세특 보완</button>
+        <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 12px;background:#e0e0e0;color:#666;border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('setechEditor').value)" style="padding:7px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
+        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('setechEditor').value;updateRecordCount();},100)" style="padding:7px 12px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
+        <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
+      </div>
+    </div>
+  </details>
 </section>
 
 <section id="activityTab" class="tab-panel" style="display:none;padding:16px;">
@@ -2450,6 +2555,331 @@ function calcFinal() {
 
 
 // AI 보완 예시 생성 함수 (세특)
+// ── 교과세특 새 UI 관련 함수 ──
+
+// 버튼 선택 토글
+function selectSetechBtn(btn, group) {
+  document.querySelectorAll('.setech-' + group + '-btn').forEach(b => {
+    b.style.background = '#fff';
+    b.style.color = '#333';
+    b.style.borderColor = '#c5cae9';
+  });
+  btn.style.background = '#3949ab';
+  btn.style.color = '#fff';
+  btn.style.borderColor = '#3949ab';
+}
+
+// 파일 업로드 핸들러 (PDF → 텍스트 추출)
+function handleSetechFile(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+  const nameEl = document.getElementById('setech' + (type==='plan'?'Plan':'Activity') + 'FileName');
+  const textEl = document.getElementById('setech' + (type==='plan'?'Plan':'Activity') + 'Text');
+  nameEl.textContent = file.name;
+  if (file.type === 'text/plain') {
+    const reader = new FileReader();
+    reader.onload = e => { textEl.value = e.target.result; };
+    reader.readAsText(file, 'utf-8');
+  } else if (file.type === 'application/pdf') {
+    // PDF.js로 텍스트 추출
+    const reader = new FileReader();
+    reader.onload = async e => {
+      try {
+        if (typeof pdfjsLib === 'undefined') {
+          textEl.placeholder = '⚠️ PDF 자동 추출 불가 → 내용을 직접 붙여넣으세요';
+          nameEl.textContent = file.name + ' (직접 입력 필요)';
+          return;
+        }
+        const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
+        let allText = '';
+        for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
+          const page = await pdf.getPage(i);
+          const content = await page.getTextContent();
+          allText += content.items.map(item => item.str).join(' ') + '\n';
+        }
+        textEl.value = allText.trim();
+        nameEl.textContent = file.name + ' (' + pdf.numPages + '페이지 추출 완료)';
+      } catch(err) {
+        textEl.placeholder = '⚠️ PDF 추출 실패 → 내용을 직접 붙여넣으세요';
+        nameEl.textContent = file.name + ' (추출 실패)';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+// 초기화
+function clearSetechForm() {
+  document.querySelectorAll('.setech-grade-btn,.setech-semester-btn,.setech-dept-btn').forEach(b => {
+    b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#c5cae9';
+  });
+  document.getElementById('setechSubjectSel').value = '';
+  document.getElementById('setechPlanText').value = '';
+  document.getElementById('setechActivityText').value = '';
+  document.getElementById('setechTeacherComment').value = '';
+  document.getElementById('setechPlanFileName').textContent = '선택된 파일 없음';
+  document.getElementById('setechActivityFileName').textContent = '선택된 파일 없음';
+  const resultEl = document.getElementById('setechAIResult');
+  resultEl.style.display = 'none';
+  resultEl.innerHTML = '';
+}
+
+// 학년별 작성 방향성 반환
+function getGradeGuideline(grade) {
+  if (grade === '고1') return '기초 개념과 원리를 정확히 이해하고 습득하는 단계. 과정 60%, 결과 20%, 성장 20% 비율로 서술. 지적 호기심, 탐색 과정, 시행착오, 자료조사, 질문, 사고 변화를 반드시 드러낼 것.';
+  if (grade === '고2') return '교과 지식과 실무 기술을 연결하여 시뮬레이션이나 문제 해결에 적용하는 단계. 과정 40%, 진로 연결 40%, 성장 20% 비율로 서술. 교과와 진로 연결, 실제 사례 적용, 융합 사고, 데이터 활용, 심화 탐구를 반드시 드러낼 것.';
+  if (grade === '고3') return '스스로 문제를 발굴하고 기술과 데이터를 활용해 실질적 해결책을 도출하는 단계. 전공 적합성 40%, 탐구 심화 40%, 성장 20% 비율로 서술. 논문·보고서 활용, 전문 자료 탐독, 후속 연구, 비판적 사고, 전공 확장을 반드시 드러낼 것.';
+  return '';
+}
+
+// 학과별 포함 요소 반환
+function getDeptGuideline(dept) {
+  if (dept === '금융비즈니스학과') return '금융비즈니스과 학생이므로 경제, 회계, 세무, 마케팅, 데이터 분석, 창업, 고객관리, 비즈니스 매너, 실무 프로젝트, 시장 분석, 의사결정 등의 요소를 교과 내용과 연결하여 서술할 것.';
+  if (dept === '문화콘텐츠학과') return '문화콘텐츠과 학생이므로 기획, 콘텐츠 제작, 스토리텔링, 영상, 디자인, 애니메이션, 게임, 미디어, 생성형 AI 활용, 창의성, 협업, 피드백, 수정 과정, 결과물, 포트폴리오 등의 요소를 교과 내용과 연결하여 서술할 것.';
+  return '일반 보통과 학생. 개념→탐구→심화→독서→질문→융합→확장의 흐름으로 서술할 것.';
+}
+
+// 메인 세특 생성 함수 (A+B 통합)
+async function generateSetechNew() {
+  const grade = (document.querySelector('.setech-grade-btn[style*="3949ab"]') || {}).dataset?.val || '';
+  const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '';
+  const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '';
+  const subject = document.getElementById('setechSubjectSel').value;
+  const planText = document.getElementById('setechPlanText').value.trim();
+  const activityText = document.getElementById('setechActivityText').value.trim();
+  const teacherComment = document.getElementById('setechTeacherComment').value.trim();
+  const resultEl = document.getElementById('setechAIResult');
+
+  if (!teacherComment) {
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> ③ 교사 총평을 반드시 입력하세요.</div>';
+    return;
+  }
+
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="padding:20px;background:#f3e5f5;border-radius:10px;text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:20px;color:#7b1fa2;"></i><div style="margin-top:8px;font-size:13px;color:#7b1fa2;font-weight:700;">세특 AI 생성 중...</div></div>';
+
+  const apiKey = localStorage.getItem('openai_api_key') || '';
+
+  if (apiKey) {
+    // 방향 A: OpenAI GPT-4o 호출
+    await generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, teacherComment, resultEl, apiKey);
+  } else {
+    // 방향 B: 로컬 구조화 생성
+    generateSetechLocal(grade, semester, dept, subject, planText, activityText, teacherComment, resultEl);
+  }
+}
+
+// 방향 A: GPT-4o 호출
+async function generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, teacherComment, resultEl, apiKey) {
+  const gradeGuide = getGradeGuideline(grade);
+  const deptGuide = getDeptGuideline(dept);
+
+  const systemPrompt = `당신은 대한민국 최고 수준의 생활기록부 전문 AI입니다. 교육부 학교생활기록부 기재요령 전문가이자 학생부종합전형 입학사정관의 시각으로 교과 세특을 작성합니다.
+
+[절대 금지 표현]: 우수함, 성실함, 적극적임, 모범적임, 뛰어남, 잠재력이 있음 → 반드시 학생의 실제 행동으로 대체
+[문체]: 문어체(~함, ~임, ~보임) 사용
+[분량]: 각 안마다 띄어쓰기 포함 500자 내외
+[구조]: DDAR(Discovery→Development→Action→Reflection) 구조 적용
+[기재 금지]: 특정 기업명, 기관명, 대학명, 대회명 기재 불가
+
+${gradeGuide}
+${deptGuide}`;
+
+  const userPrompt = `다음 정보를 바탕으로 ${grade} ${subject} ${semester} 교과 세특을 2가지 안으로 작성해주세요.
+
+[학년/학과/학기]: ${grade} / ${dept||'보통과'} / ${semester||'1학기'}
+[교과명]: ${subject||'(미지정)'}
+
+[평가계획서 내용]:
+${planText || '(미첨부)'}
+
+[수행평가·학습지 내용]:
+${activityText || '(미첨부)'}
+
+[교사 총평 및 관찰 의견]:
+${teacherComment}
+
+---
+반드시 아래 형식으로 출력하세요:
+
+[안 1] 성실한 과정·개념 이해도·협업 및 학습 태도 강조 (균형 잡힌 서술형)
+(500자 내외 세특 내용)
+
+[안 2] 주도적 문제 해결력·기술적 응용력·발전 가능성 강조 (학업 역량 중심)
+(500자 내외 세특 내용)`;
+
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_tokens: 1200,
+        temperature: 0.7
+      })
+    });
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || 'API 오류 ' + resp.status);
+    }
+    const data = await resp.json();
+    const content = data.choices[0].message.content.trim();
+    // [안 1] / [안 2] 파싱
+    const plan1Match = content.match(/\[안\s*1\][^\[]*([\s\S]*?)(?=\[안\s*2\]|$)/);
+    const plan2Match = content.match(/\[안\s*2\][^\[]*([\s\S]*)/);
+    const plan1 = plan1Match ? plan1Match[1].trim() : content;
+    const plan2 = plan2Match ? plan2Match[1].trim() : '';
+    renderSetechResult(plan1, plan2, resultEl, true);
+  } catch(err) {
+    resultEl.innerHTML = `<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> GPT 오류: ${err.message}<br><small>API Key를 확인하거나, 로컬 AI로 재시도하세요.</small></div>`;
+  }
+}
+
+// 방향 B: 로컬 구조화 생성
+function generateSetechLocal(grade, semester, dept, subject, planText, activityText, teacherComment, resultEl) {
+  // 추상어 → 증거어 치환
+  const replacements = [
+    ['적극적으로', '스스로 질문을 제기하며'],['열심히', '지속적으로 수정·보완하며'],
+    ['다양한 활동', '여러 유형의 활동'],['다양한 경험', '직접 체험한 경험'],
+    ['다양한', '여러 유형의'],['우수한', '완성도 높은'],['뛰어난', '두드러진'],
+    ['성실한', '매 수업마다 준비하는'],['창의적인', '독자적 방식으로 접근한'],
+    ['창의적', '독자적 방식으로'],['열정적으로', '주도적으로'],
+    ['헌신적으로', '책임감 있게'],['잠재력', '성장 가능성'],
+    ['마음이 따뜻한', '주변을 배려하는 행동을 보이는'],
+    ['인성이 바른', '공동체 규칙을 솔선수범하는'],
+    ['착한 학생', '협력적 태도를 보이는 학생'],
+  ];
+  let baseComment = teacherComment;
+  replacements.forEach(([f,t]) => { baseComment = baseComment.split(f).join(t); });
+
+  const gradeTag = grade ? `[${grade}] ` : '';
+  const subjectTag = subject ? `${subject} ` : '';
+  const semesterTag = semester ? `${semester} ` : '';
+
+  // 학년별 접두 문장
+  const gradeIntro = {
+    '고1': `${subjectTag}${semesterTag}수업에서 기초 개념을 성실히 탐구하며 지식을 내실화하는 모습을 보임. `,
+    '고2': `${subjectTag}${semesterTag}수업에서 교과 지식을 실제 문제에 연결하여 응용하는 융합적 사고를 발휘함. `,
+    '고3': `${subjectTag}${semesterTag}수업에서 스스로 탐구 주제를 설정하고 심화된 분석을 통해 전문성을 드러냄. `,
+  }[grade] || `${subjectTag}${semesterTag}수업에서 `;
+
+  // 학과별 연결 문장
+  const deptLink = {
+    '금융비즈니스학과': ' 이를 금융·비즈니스 실무와 연결하여 데이터 분석 및 의사결정 역량을 함양함.',
+    '문화콘텐츠학과': ' 이를 콘텐츠 기획 및 제작 역량과 연결하여 창의적 결과물을 완성함.',
+  }[dept] || ' 이를 통해 교과 역량을 심화하고 성장하는 모습이 드러남.';
+
+  // 활동 내용 요약 (있을 경우)
+  const actSummary = activityText ? activityText.substring(0, 80).replace(/\n/g,' ') + (activityText.length > 80 ? '...' : '') : '';
+  const planSummary = planText ? planText.substring(0, 60).replace(/\n/g,' ') + (planText.length > 60 ? '...' : '') : '';
+
+  const actPart = actSummary ? ` 수행평가에서 ${actSummary}` : '';
+
+  // 1안: 성실·과정·협업 중심
+  const plan1 = (gradeIntro + baseComment + actPart + deptLink).substring(0, 500);
+
+  // 2안: 주도성·역량·성장 중심 (DDAR 구조)
+  const ddarParts = [
+    gradeIntro,
+    baseComment,
+    actPart,
+    ' 이 과정에서 문제를 스스로 정의하고 해결 방법을 설계하며 시행착오를 통해 수정하는 과정을 반복함으로써 사고력이 성장하는 모습이 드러남.',
+    deptLink
+  ].join('');
+  const plan2 = ddarParts.substring(0, 500);
+
+  renderSetechResult(plan1, plan2, resultEl, false);
+}
+
+// 결과 렌더링 (공통)
+function renderSetechResult(plan1, plan2, resultEl, isGPT) {
+  const bytes1 = new TextEncoder().encode(plan1).length;
+  const bytes2 = new TextEncoder().encode(plan2).length;
+  const modeLabel = isGPT ? '🤖 GPT-4o 생성' : '🔧 내장 AI 생성';
+  const modeBg = isGPT ? '#e8f5e9' : '#fff8e1';
+  const modeColor = isGPT ? '#2e7d32' : '#7a5c00';
+
+  resultEl.innerHTML = `
+    <div style="padding:14px;background:#f3e5f5;border-radius:12px;border:1.5px solid #ce93d8;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:800;color:#7b1fa2;"><i class="fas fa-magic"></i> 세특 AI 생성 결과</div>
+        <span style="font-size:11px;padding:3px 8px;background:${modeBg};color:${modeColor};border-radius:10px;font-weight:700;">${modeLabel}</span>
+      </div>
+      <!-- 1안 -->
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:12.5px;font-weight:800;color:#6a1b9a;">🟣 [안 1] 성실한 과정·협업·학습 태도 강조</span>
+          <span style="font-size:11px;color:${bytes1>1500?'#c62828':'#888'}">${plan1.length}자 / ${bytes1}bytes${bytes1>1500?' ⚠️':''}</span>
+        </div>
+        <div id="setechResult_plan1" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.85;white-space:pre-wrap;border:1px solid #e0e0e0;">${plan1.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">
+          <button onclick="applySetechPlan('setechResult_plan1')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">← 에디터에 적용</button>
+          <button onclick="copySetechPlan('setechResult_plan1')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">📋 복사</button>
+          <button onclick="sendToRecordCheck('setechResult_plan1')" style="padding:5px 12px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:6px;font-size:11.5px;cursor:pointer;">생기부 점검</button>
+        </div>
+      </div>
+      <!-- 2안 -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:12.5px;font-weight:800;color:#6a1b9a;">🟢 [안 2] 주도적 문제해결력·학업 역량 중심</span>
+          <span style="font-size:11px;color:${bytes2>1500?'#c62828':'#888'}">${plan2.length}자 / ${bytes2}bytes${bytes2>1500?' ⚠️':''}</span>
+        </div>
+        <div id="setechResult_plan2" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.85;white-space:pre-wrap;border:1px solid #e0e0e0;">${plan2.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">
+          <button onclick="applySetechPlan('setechResult_plan2')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">← 에디터에 적용</button>
+          <button onclick="copySetechPlan('setechResult_plan2')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">📋 복사</button>
+          <button onclick="sendToRecordCheck('setechResult_plan2')" style="padding:5px 12px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:6px;font-size:11.5px;cursor:pointer;">생기부 점검</button>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:6px;font-size:11.5px;color:#7a5c00;">
+        💡 생성된 내용을 수정하여 실제 수업 내용과 학생 특성을 반영하세요. '에디터에 적용' 버튼으로 하단 에디터에 바로 적용됩니다.
+      </div>
+    </div>`;
+}
+
+function applySetechPlan(divId) {
+  const div = document.getElementById(divId);
+  const editor = document.getElementById('setechEditor');
+  if (div && editor) {
+    editor.value = div.textContent;
+    editor.dispatchEvent(new Event('input'));
+    // 에디터 펼치기
+    const details = editor.closest('details');
+    if (details) details.open = true;
+    editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+function copySetechPlan(divId) {
+  const div = document.getElementById(divId);
+  if (div) navigator.clipboard.writeText(div.textContent).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+function sendToRecordCheck(divId) {
+  const div = document.getElementById(divId);
+  if (div) {
+    switchTab('recordCheck');
+    setTimeout(() => {
+      document.getElementById('recordInput').value = div.textContent;
+      updateRecordCount();
+    }, 100);
+  }
+}
+
+// ── 기존 세특 보완 함수 (하단 에디터용) ──
 function generateSetech() {
   const text = document.getElementById('setechEditor').value.trim();
   const resultEl = document.getElementById('setechAIResult');
