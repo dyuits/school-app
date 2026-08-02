@@ -69,7 +69,7 @@
       <i class="fas fa-calculator tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 추정분할계산기</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
     </button>
     <button class="tab-btn" data-tab="recordCheck" onclick="switchTab('recordCheck')" style="background:var(--sky-pale,#eaf4ff);border-color:var(--sky-mid,#90caf9);">
-      <i class="fas fa-spell-check tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 생기부 점검</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
+      <i class="fas fa-spell-check tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 학생부: 기재요령 및 맞춤법 검사</span>
     </button>
     <button class="tab-btn" data-tab="setech" onclick="switchTab('setech')" style="background:var(--sky-pale,#eaf4ff);border-color:var(--sky-mid,#90caf9);">
       <i class="fas fa-pencil-alt tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 교과 세특</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
@@ -661,8 +661,8 @@
 </section>
 
 <section id="recordCheckTab" class="tab-panel" style="display:none;padding:16px;">
-  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-spell-check" style="color:#1565c0;"></i> 생기부 점검</h2>
-  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">2026 기재요령 기반 · 맞춤법·띄어쓰기·금지어·추상어·글자수 자동 점검</p>
+  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-spell-check" style="color:#1565c0;"></i> 학생부: 기재요령 및 맞춤법 검사</h2>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">2026 기재요령 기반 · 기재 금지 사항 점검 + AI 맞춤법·띄어쓰기 검사 (Daum 연동)</p>
 
   <!-- 상단 안내 링크 -->
   <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
@@ -671,78 +671,63 @@
     <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12.5px;font-weight:700;text-decoration:none;"><i class="fas fa-check-circle"></i> 부산대 맞춤법 검사기</a>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <!-- 왼쪽: 입력 -->
-    <div>
-      <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">생기부 내용 입력</div>
-      <textarea id="recordInput" rows="12" placeholder="학생부 기재 내용을 붙여넣기 하세요...&#10;&#10;예) 수업 시간에 알고리즘 개념을 학습하고 직접 코드를 작성하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <!-- 맞춤법 검사 안내 (API 키 불필요) -->
-      <div style="margin-top:10px;padding:8px 12px;background:#e8f5e9;border-radius:10px;border:1.5px solid #a5d6a7;">
-        <div style="font-size:12px;color:#2e7d32;"><i class="fas fa-check-circle"></i> <strong>Daum 맞춤법 검사기</strong> 연동 — API 키 없이 바로 사용 가능합니다.</div>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
-        <button onclick="checkRecord()" style="padding:8px 18px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i> 점검 시작</button>
-        <button onclick="checkSpelling()" style="padding:8px 18px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-spell-check"></i> AI 맞춤법 검사</button>
-        <button onclick="clearRecord()" style="padding:8px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">삭제</button>
-        <button onclick="navigator.clipboard.writeText(document.getElementById('recordInput').value)" style="padding:8px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:13px;cursor:pointer;">복사</button>
-        <span id="recordCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자 / 0 bytes</span>
-      </div>
+  <!-- 입력 영역 (1콼럼 전체 너비) -->
+  <div style="margin-bottom:16px;">
+    <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">학생부 내용 입력</div>
+    <textarea id="recordInput" rows="8" placeholder="학생부 기재 내용을 붙여넣기 하세요...&#10;&#10;예) 수업 시간에 알고리즘 개념을 학습하고 직접 코드를 작성하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+      <button onclick="checkSpelling()" style="padding:9px 22px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-spell-check"></i> 맞춤법·띄어쓰기 검사</button>
+      <button onclick="checkRecord()" style="padding:9px 22px;background:#e65100;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-exclamation-triangle"></i> 기재요령 금지어 점검</button>
+      <button onclick="clearRecord()" style="padding:9px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">삭제</button>
+      <span id="recordCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자 / 0 bytes</span>
+    </div>
+    <div style="margin-top:8px;padding:7px 12px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;">
+      <div style="font-size:12px;color:#2e7d32;"><i class="fas fa-check-circle"></i> <strong>Daum 맞춤법 검사기</strong> 연동 — API 키 없이 바로 사용 가능</div>
+    </div>
+  </div>
 
-      <!-- 기재 금지 사항 안내 -->
-      <div style="margin-top:16px;padding:12px;background:#fff8e1;border-radius:10px;border:1.5px solid #ffe082;">
-        <div style="font-size:12.5px;font-weight:800;color:#7a5c00;margin-bottom:8px;"><i class="fas fa-exclamation-triangle"></i> 2026 기재요령 기재 금지 사항</div>
-        <div style="font-size:12px;color:#7a5c00;line-height:1.8;">
-          <div>⛔ 교내·외 대회 참여 사실, 성적, 수상실적</div>
-          <div>⛔ 교외상 (표창장, 감사장, 공로상 등)</div>
-          <div>⛔ K-MOOC, MOOC, KOCW 등 온라인 강좌</div>
-          <div>⛔ 방과후학교 활동 내용</div>
-          <div>⛔ 연구보고서(소논문) 관련 사항</div>
-          <div>⛔ 정치활동 참여 관련 사항</div>
-          <div>⛔ 야간자율학습 관련 내용 기반 교내상</div>
-          <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ffe082;">🏢 <strong>기관명·상호명 기재 금지</strong> (기재요령 타항)</div>
-          <div>⛔ 특정 기업명: 삼성, LG, 네이버, 카카오, 구글, 유튜브 등</div>
-          <div>⛔ 방송사·기관명: EBS, KBS, 통계청, 교육부 등</div>
-          <div>⛔ 국제기구명: UN, WHO, UNESCO, OECD 등 → '국제 기구'로 대체</div>
-          <div>⛔ 특정 대학명: 서울대, 연세대, KAIST 등</div>
-          <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ffe082;">🏆 <strong>대회명·행사명 기재 주의</strong></div>
-          <div>⛔ '대회' 명칭 자체를 세특/창체에 기재 불가 (수상경력란에만 가능)</div>
-          <div>⛔ 체육대회, 과학축제, 경진대회, 학교축제 등 행사명 기재 불가</div>
-        </div>
+  <!-- 결과 영역 (1콼럼 전체 너비) -->
+  <div style="margin-bottom:16px;">
+    <!-- 탭: 맞춤법 결과 / 기재요령 금지어 -->
+    <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e0e0e0;">
+      <button id="resultTabBtn2" onclick="switchResultTab(2)" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:700;cursor:pointer;margin-right:4px;">✏️ 맞춤법·띄어쓰기</button>
+      <button id="resultTabBtn1" onclick="switchResultTab(1)" style="padding:7px 16px;background:#e0e0e0;color:#666;border:none;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:700;cursor:pointer;">⛔ 기재요령 금지어</button>
+    </div>
+    <div id="spellResult" style="min-height:200px;padding:14px;background:#f8f9fa;border-radius:0 0 10px 10px;font-size:13px;line-height:1.7;">
+      <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 [맞춤법·띄어쓰기 검사] 버튼을 눌러주세요</div>
+    </div>
+    <div id="recordResult" style="display:none;min-height:200px;padding:14px;background:#f8f9fa;border-radius:0 0 10px 10px;font-size:13px;line-height:1.7;">
+      <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 [기재요령 금지어 점검] 버튼을 눌러주세요</div>
+    </div>
+  </div>
+
+  <!-- 아래 영역: 기재 금지 사항 안내 + 태그 목록 -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- 기재 금지 사항 안내 -->
+    <div style="padding:12px;background:#fff8e1;border-radius:10px;border:1.5px solid #ffe082;">
+      <div style="font-size:12.5px;font-weight:800;color:#7a5c00;margin-bottom:8px;"><i class="fas fa-exclamation-triangle"></i> 2026 기재요령 기재 금지 사항</div>
+      <div style="font-size:12px;color:#7a5c00;line-height:1.8;">
+        <div>⛔ 교내·외 대회 참여 사실, 성적, 수상실적</div>
+        <div>⛔ 교외상 (표창장, 감사장, 공로상 등)</div>
+        <div>⛔ K-MOOC, MOOC, KOCW 등 온라인 강좌</div>
+        <div>⛔ 방과후학교 활동 내용</div>
+        <div>⛔ 연구보고서(소논문) 관련 사항</div>
+        <div>⛔ 정치활동 참여 관련 사항</div>
+        <div>⛔ 야간자율학습 관련 내용 기반 교내상</div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ffe082;">🏢 <strong>기관명·상호명 기재 금지</strong></div>
+        <div>⛔ 특정 기업명: 삼성, LG, 네이버, 카카오, 구글, 유튜브 등</div>
+        <div>⛔ 방송사·기관명: EBS, KBS, 통계청, 교육부 등</div>
+        <div>⛔ 국제기구명: UN, WHO, UNESCO, OECD 등 → '국제 기구'로 대체</div>
+        <div>⛔ 특정 대학명: 서울대, 연세대, KAIST 등</div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ffe082;">🏆 <strong>대회명·행사명 기재 주의</strong></div>
+        <div>⛔ '대회' 명칭은 수상경력란에만 가능, 세특·창체 기재 불가</div>
+        <div>⛔ 체육대회, 과학축제, 경진대회, 학교축제 등 행사명 기재 불가</div>
       </div>
     </div>
-
-    <!-- 오른쪽: 결과 -->
+    <!-- 금지어 태그 목록 -->
     <div>
-      <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">점검 결과</div>
-      <!-- 탭: 점검결과 / 맞춤법 -->
-      <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e0e0e0;">
-        <button id="resultTabBtn1" onclick="switchResultTab(1)" style="padding:7px 16px;background:#1565c0;color:#fff;border:none;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:700;cursor:pointer;margin-right:4px;">📋 점검 결과</button>
-        <button id="resultTabBtn2" onclick="switchResultTab(2)" style="padding:7px 16px;background:#e0e0e0;color:#666;border:none;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:700;cursor:pointer;">✏️ 맞춤법·오타</button>
-      </div>
-      <div id="recordResult" style="min-height:220px;padding:14px;background:#f8f9fa;border-radius:0 0 10px 10px;font-size:13px;line-height:1.7;">
-        <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 점검을 시작해주세요</div>
-      </div>
-      <div id="spellResult" style="display:none;min-height:220px;padding:14px;background:#f8f9fa;border-radius:0 0 10px 10px;font-size:13px;line-height:1.7;">
-        <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 맞춤법 검사를 시작해주세요</div>
-      </div>
-
-      <!-- 추상어 → 증거어 변환 안내 -->
-      <div style="margin-top:12px;padding:12px;background:#e8f5e9;border-radius:10px;border:1.5px solid #a5d6a7;">
-        <div style="font-size:12.5px;font-weight:800;color:#2e7d32;margin-bottom:8px;"><i class="fas fa-exchange-alt"></i> 추상어 → 증거어 변환 가이드</div>
-        <div style="font-size:11.5px;color:#2e7d32;line-height:1.8;">
-          <div>🔴 <strong>추상어</strong>: 창의적, 성실한, 적극적, 뛰어난, 우수한</div>
-          <div>🟢 <strong>증거어</strong>: 비교했다, 검증했다, 수정했다, 재정의했다</div>
-          <div style="margin-top:6px;padding:6px 8px;background:#fff;border-radius:6px;font-size:11px;">
-            💡 <strong>공식</strong>: [수업 장면]에서 [자료/문제]를 [행동동사]하여 [변화/산출물]을 만들었고, [평가 신호]가 드러남.
-          </div>
-        </div>
-      </div>
-
-      <!-- 금지 용어 태그 목록 -->
-      <div style="margin-top:12px;">
-        <div style="font-size:12.5px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:6px;">⛔ 기재 금지·추상어 목록 (클릭하면 검색)</div>
-        <div id="forbiddenList" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
-      </div>
+      <div style="font-size:12.5px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:6px;">⛔ 기재 금지·추상어 목록 (클릭하면 입력란에 추가)</div>
+      <div id="forbiddenList" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
     </div>
   </div>
 </section>
@@ -1051,13 +1036,15 @@ function switchResultTab(n) {
   const b1 = document.getElementById('resultTabBtn1');
   const b2 = document.getElementById('resultTabBtn2');
   if (n === 1) {
+    // 기재요령 금지어 탭
     r1.style.display = 'block'; r2.style.display = 'none';
-    b1.style.background = '#1565c0'; b1.style.color = '#fff';
-    b2.style.background = '#e0e0e0'; b2.style.color = '#666';
+    if (b1) { b1.style.background = '#e65100'; b1.style.color = '#fff'; }
+    if (b2) { b2.style.background = '#e0e0e0'; b2.style.color = '#666'; }
   } else {
+    // 맞춤법 탭 (기본)
     r1.style.display = 'none'; r2.style.display = 'block';
-    b1.style.background = '#e0e0e0'; b1.style.color = '#666';
-    b2.style.background = '#7b1fa2'; b2.style.color = '#fff';
+    if (b1) { b1.style.background = '#e0e0e0'; b1.style.color = '#666'; }
+    if (b2) { b2.style.background = '#7b1fa2'; b2.style.color = '#fff'; }
   }
 }
 
@@ -1272,42 +1259,46 @@ async function checkSpelling() {
     const typeBg = {'맞춤법':'#fce4ec','오타':'#fff3e0','띄어쓰기':'#e3f2fd'};
 
     resultEl.innerHTML = `
-      <div style="margin-bottom:12px;padding:10px 14px;background:#fce4ec;border-radius:8px;border-left:4px solid #c62828;">
-        <strong style="color:#c62828;">⚠️ ${errors.length}개의 오류 발견</strong>
-        <span style="font-size:11.5px;color:#888;margin-left:8px;">(AI 분석 결과)</span>
+      <!-- 상단: 오류 요약 배지 -->
+      <div style="margin-bottom:12px;padding:10px 14px;background:#fce4ec;border-radius:8px;border-left:4px solid #c62828;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div><strong style="color:#c62828;">⚠️ ${errors.length}개의 오류 발견</strong>
+        <span style="font-size:11.5px;color:#888;margin-left:8px;">(Daum AI 분석 결과)</span></div>
       </div>
 
-      <div style="margin-bottom:14px;">
-        <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:8px;">📋 오류 목록</div>
-        ${errors.map(e => `
-          <div style="margin-bottom:8px;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee;font-size:12.5px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-              <span style="font-size:11px;padding:2px 8px;background:${typeBg[e.type]||'#f5f5f5'};color:${typeColors[e.type]||'#333'};border-radius:10px;font-weight:700;">${e.type||'기타'}</span>
-              <span style="color:#c62828;font-weight:700;text-decoration:line-through;">${(e.original||'').replace(/</g,'&lt;')}</span>
-              <span style="color:#888;">→</span>
-              <span style="color:#2e7d32;font-weight:700;">${(e.corrected||'').replace(/</g,'&lt;')}</span>
-            </div>
-            <div style="color:#888;font-size:11.5px;">${e.help||e.reason||''}</div>
-          </div>
-        `).join('')}
-      </div>
-
+      <!-- ① 원문 (오류 표시) - 상단 -->
       <div style="margin-bottom:14px;">
         <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:6px;">🔍 원문 (오류 표시)</div>
-        <div style="padding:12px;background:#fff;border-radius:8px;border:1.5px solid #ffe082;font-size:13px;line-height:1.8;white-space:pre-wrap;">${highlighted}</div>
+        <div style="padding:12px;background:#fff;border-radius:8px;border:1.5px solid #ffe082;font-size:13px;line-height:1.9;white-space:pre-wrap;">${highlighted}</div>
       </div>
 
+      <!-- ② 교정 후 전체 텍스트 - 원문 바로 아래 -->
       <div style="margin-bottom:14px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <div style="font-size:12.5px;font-weight:700;color:#333;">✅ Daum 교정 후 전체 텍스트</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+          <div style="font-size:12.5px;font-weight:700;color:#2e7d32;">✅ 교정 후 전체 텍스트</div>
           <div style="display:flex;gap:6px;">
-            <button onclick="document.getElementById('recordInput').value=document.getElementById('aiCorrectedText').textContent;updateRecordCount()" style="padding:4px 10px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 적용</button>
-            <button onclick="navigator.clipboard.writeText(document.getElementById('aiCorrectedText').textContent)" style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
+            <button onclick="document.getElementById('recordInput').value=document.getElementById('aiCorrectedText').textContent;updateRecordCount()" style="padding:5px 12px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">← 입력란에 적용</button>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('aiCorrectedText').textContent).then(()=>{this.textContent='✅ 복사됨';setTimeout(()=>{this.textContent='클립보드 복사';},1500)})" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">클립보드 복사</button>
           </div>
         </div>
-        <div style="padding:12px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;font-size:13px;line-height:1.8;white-space:pre-wrap;">
+        <div style="padding:12px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;font-size:13px;line-height:1.9;white-space:pre-wrap;">
           <div id="aiCorrectedText">${correctedFull.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
         </div>
+      </div>
+
+      <!-- ③ 오류 목록 - 하단 -->
+      <div style="margin-bottom:8px;">
+        <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:8px;">📋 오류 목록 (${errors.length}개)</div>
+        ${errors.map((e,i) => `
+          <div style="margin-bottom:6px;padding:9px 12px;background:#fff;border-radius:8px;border:1px solid #eee;font-size:12.5px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-size:10.5px;padding:2px 7px;background:${typeBg[e.type]||'#f5f5f5'};color:${typeColors[e.type]||'#333'};border-radius:10px;font-weight:700;min-width:40px;text-align:center;">${e.type||'기타'}</span>
+              <span style="color:#c62828;font-weight:700;text-decoration:line-through;">${(e.original||'').replace(/</g,'&lt;')}</span>
+              <span style="color:#888;font-size:14px;">→</span>
+              <span style="color:#2e7d32;font-weight:700;">${(e.corrected||'').replace(/</g,'&lt;')}</span>
+              ${e.help||e.reason ? `<span style="color:#888;font-size:11px;margin-left:4px;">${(e.help||e.reason||'').replace(/</g,'&lt;')}</span>` : ''}
+            </div>
+          </div>
+        `).join('')}
       </div>`;
 
   } catch(e) {
@@ -1379,29 +1370,24 @@ const SPELLING_PATTERNS = [
 function checkRecord() {
   const text = document.getElementById('recordInput').value.trim();
   const result = document.getElementById('recordResult');
+  switchResultTab(1); // 기재요령 금지어 탭으로 전환
   if (!text) { result.innerHTML = '<div style="color:#e53935;padding:10px;">내용을 입력해주세요.</div>'; return; }
 
   const bytes = new TextEncoder().encode(text).length;
   const chars = text.length;
-  let score = 100; // 점수 계산
   let html = '';
 
-  // 1. 글자수 판정
-  let charStatus, charColor;
-  if (chars <= 500) { charStatus = '✅ 적절 (500자 이내)'; charColor = '#2e7d32'; }
-  else if (chars <= 600) { charStatus = '⚠️ 주의 (500자 초과)'; charColor = '#f57f17'; score -= 10; }
-  else { charStatus = '⛔ 초과 (600자 초과, 실제 저장 불가)'; charColor = '#c62828'; score -= 20; }
-
-  html += `<div style="margin-bottom:10px;padding:12px;background:#f8f9fa;border-radius:8px;border-left:4px solid ${charColor};">
-    <div style="font-weight:700;color:${charColor};margin-bottom:4px;">📊 글자수 판정</div>
-    <div>글자수: <strong>${chars}자</strong> / Bytes: <strong>${bytes} bytes</strong></div>
-    <div style="color:${charColor};font-weight:600;">${charStatus}</div>
+  // 글자수 미리 표시
+  let charColor = chars <= 500 ? '#2e7d32' : chars <= 600 ? '#f57f17' : '#c62828';
+  let charStatus = chars <= 500 ? '✅ 적절' : chars <= 600 ? '⚠️ 주의' : '⛔ 초과';
+  html += `<div style="margin-bottom:10px;padding:8px 12px;background:#f8f9fa;border-radius:8px;border-left:4px solid ${charColor};display:flex;gap:12px;align-items:center;">
+    <span style="font-weight:700;color:${charColor};">📊 ${chars}자 / ${bytes} bytes</span>
+    <span style="color:${charColor};font-size:12px;">${charStatus}</span>
   </div>`;
 
-  // 2. 금지어/추상어 탐지
+  // 금지어/추상어 탐지
   const found = FORBIDDEN_WORDS.filter(w => text.includes(w));
   if (found.length > 0) {
-    score -= found.length * 5;
     // 특이 사항 구분
     const STRICT_FORBID = ['K-MOOC','MOOC','KOCW','소논문','연구보고서','교외상','표창장','감사장','공로상','온라인 강좌','방과후학교','대회 수상','대회 성적','대회 참가','교외 대회','수상 실적','교외 기관','잠재력','마음이 따뜻한',
       '삼성','LG','현대','SK','카카오','네이버','유튜브','구글','애플','마이크로소프트','EBS','KBS','MBC','SBS','JTBC',
@@ -1433,47 +1419,8 @@ function checkRecord() {
       </div>`;
     }
   } else {
-    html += '<div style="padding:12px;background:#e8f5e9;border-radius:8px;margin-bottom:8px;border-left:4px solid #2e7d32;"><strong style="color:#2e7d32;">✅ 금지어/추상어 없음</strong></div>';
+    html += '<div style="padding:12px;background:#e8f5e9;border-radius:8px;margin-bottom:8px;border-left:4px solid #2e7d32;"><strong style="color:#2e7d32;">✅ 기재 금지어 및 추상어 발견되지 않았습니다.</strong></div>';
   }
-
-  // 3. 매춤법 패턴 점검
-  const spellFound = SPELLING_PATTERNS.filter(p => text.includes(p.wrong));
-  if (spellFound.length > 0) {
-    score -= spellFound.length * 3;
-    html += `<div style="padding:12px;background:#f3e5f5;border-radius:8px;margin-bottom:8px;border-left:4px solid #7b1fa2;">
-      <div style="font-weight:700;color:#7b1fa2;margin-bottom:8px;">📖 매춤법/표현 개선 권장 (${spellFound.length}건)</div>
-      ${spellFound.map(p => `<div style="margin-bottom:6px;padding:6px 10px;background:#fff;border-radius:6px;font-size:12px;">
-        <span style="color:#c62828;font-weight:700;">❌ ${p.wrong}</span> → <span style="color:#2e7d32;font-weight:700;">✅ ${p.right}</span>
-        <span style="display:inline-block;margin-left:6px;padding:1px 6px;background:#f3e5f5;color:#7b1fa2;border-radius:4px;font-size:10px;">${p.type}</span>
-      </div>`).join('')}
-    </div>`;
-  }
-
-  // 4. 문장 구조 분석
-  const sentences = text.split(/(?<=[.!?])/g).filter(s => s.trim().length > 0);
-  const avgLen = sentences.length > 0 ? Math.round(chars / sentences.length) : 0;
-  let sentStatus = '✅ 적절';
-  if (avgLen > 80) { sentStatus = '⚠️ 문장이 너무 깁니다 (한 문장 평균 ' + avgLen + '자)'; score -= 5; }
-  html += `<div style="padding:12px;background:#e3f2fd;border-radius:8px;margin-bottom:8px;border-left:4px solid #1565c0;">
-    <div style="font-weight:700;color:#1565c0;margin-bottom:4px;">📝 문장 구조 분석</div>
-    <div>문장 수: <strong>${sentences.length}문</strong> / 평균 문장 길이: <strong>${avgLen}자</strong></div>
-    <div style="color:${avgLen > 80 ? '#e65100' : '#2e7d32'};">${sentStatus}</div>
-  </div>`;
-
-  // 5. 종합 평가
-  score = Math.max(0, score);
-  let scoreColor = score >= 80 ? '#2e7d32' : score >= 60 ? '#f57f17' : '#c62828';
-  let scoreLabel = score >= 80 ? '좌우' : score >= 60 ? '보완 필요' : '대폭 수정 필요';
-  html += `<div style="padding:12px;background:#fff;border-radius:8px;margin-bottom:8px;border:2px solid ${scoreColor};">
-    <div style="font-weight:700;color:${scoreColor};font-size:14px;">🎯 종합 평가: <span style="font-size:20px;">${score}점</span> — ${scoreLabel}</div>
-  </div>`;
-
-  // 6. 매춤법 검사기 링크
-  html += `<div style="padding:10px;background:#fff8e1;border-radius:8px;font-size:12px;color:#7a5c00;">
-    <strong>💡 매춤법·띄어쓰기 정밀 점검:</strong>
-    <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="color:#1565c0;font-weight:700;">부산대 매춤법 검사기</a> 또는
-    <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="color:#7b1fa2;font-weight:700;">국립국어원</a>을 활용하세요.
-  </div>`;
 
   result.innerHTML = html;
 }
