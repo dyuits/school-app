@@ -1283,126 +1283,67 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- B안: AI 세특 생성 옵션 (접기/펼치기) -->
+  <!-- AI 세특 생성 옵션 -->
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <details id="setechBPanel" style="margin-bottom:16px;">
-    <summary style="font-size:13px;font-weight:800;color:#1565c0;cursor:pointer;padding:11px 16px;background:linear-gradient(135deg,#e3f2fd,#ede7f6);border-radius:12px;border:1.5px solid #90caf9;list-style:none;display:flex;align-items:center;gap:8px;">
-      <i class="fas fa-magic" style="color:#7b1fa2;"></i> ✨ AI 세특 자동 생성 (풀옵션) &nbsp;<span style="font-size:11px;font-weight:400;color:#888;">학년·학과·교사총평 입력 → 2안 생성</span>
-      <span style="margin-left:auto;font-size:11px;color:#aaa;">▼ 펼치기</span>
-    </summary>
-    <div style="margin-top:10px;padding:16px;background:#fafafa;border-radius:12px;border:1.5px solid #e0e0e0;">
-
-      <!-- 학년/학기/학과 선택 -->
-      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
-        <div>
-          <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학년</div>
-          <div style="display:flex;gap:4px;">
-            <button class="setech-grade-btn" data-val="고1" onclick="selectSetechBtn(this,'grade')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고1</button>
-            <button class="setech-grade-btn" data-val="고2" onclick="selectSetechBtn(this,'grade')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고2</button>
-            <button class="setech-grade-btn" data-val="고3" onclick="selectSetechBtn(this,'grade')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고3</button>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학기</div>
-          <div style="display:flex;gap:4px;">
-            <button class="setech-semester-btn" data-val="1학기" onclick="selectSetechBtn(this,'semester')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">1학기</button>
-            <button class="setech-semester-btn" data-val="2학기" onclick="selectSetechBtn(this,'semester')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">2학기</button>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학과</div>
-          <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <button class="setech-dept-btn" data-val="보통과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">보통과</button>
-            <button class="setech-dept-btn" data-val="금융비즈니스학과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">금융비즈니스</button>
-            <button class="setech-dept-btn" data-val="문화콘텐츠학과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">문화콘텐츠</button>
-          </div>
-        </div>
+  <!-- 학년/학기/학과 + 교과 선택 (한 줄 배치) -->
+  <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:16px;padding:14px 16px;background:#f8f9fa;border-radius:12px;border:1.5px solid #e0e0e0;">
+    <div>
+      <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학기</div>
+      <div style="display:flex;gap:4px;">
+        <button class="setech-semester-btn" data-val="1학기" onclick="selectSetechBtn(this,'semester')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">1학기</button>
+        <button class="setech-semester-btn" data-val="2학기" onclick="selectSetechBtn(this,'semester')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">2학기</button>
       </div>
-
-      <!-- 교사 총평 -->
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11.5px;font-weight:700;color:#c62828;margin-bottom:4px;">✏️ 교사 총평 및 관찰 의견 <span style="color:#c62828;">(필수)</span></div>
-        <textarea id="setechTeacherComment" rows="3" placeholder="예) 수업 중 질문이 많고 탐구 의지가 강함. 모둠 활동에서 리더 역할을 자처하며 의견을 조율함. 피드백을 수용하여 보고서를 3차례 수정함." style="width:100%;padding:9px;border:1.5px solid #f48fb1;border-radius:8px;font-size:12px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      </div>
-
-      <!-- API Key -->
-      <div style="margin-bottom:12px;padding:9px 13px;background:#ede7f6;border-radius:9px;border:1px solid #b39ddb;">
-        <div style="font-size:11.5px;font-weight:700;color:#4a148c;margin-bottom:5px;">🔑 OpenAI API Key <span style="font-weight:400;color:#888;">(없으면 내장 AI로 자동 생성)</span></div>
-        <div style="display:flex;gap:5px;align-items:center;">
-          <div style="position:relative;flex:1;">
-            <input type="password" id="openaiApiKey" placeholder="sk-..." autocomplete="off" style="width:100%;padding:6px 32px 6px 9px;border:1.5px solid #b39ddb;border-radius:6px;font-size:12px;box-sizing:border-box;">
-            <button id="apiKeyToggleBtn" onclick="toggleApiKeyVisibility()" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888;font-size:13px;"><i class="fas fa-eye"></i></button>
-          </div>
-          <button onclick="saveApiKey()" style="padding:6px 10px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">저장</button>
-          <button onclick="clearApiKey()" style="padding:6px 10px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">삭제</button>
-          <span id="apiKeyStatus" style="font-size:11px;color:#888;"></span>
-        </div>
-      </div>
-
-      <!-- 생성 버튼 -->
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-        <button onclick="generateSetechNew()" style="padding:10px 24px;background:linear-gradient(135deg,#7b1fa2,#1565c0);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(123,31,162,0.3);"><i class="fas fa-magic"></i> 세특 AI 생성 (2안)</button>
-        <button onclick="clearSetechForm()" style="padding:10px 14px;background:#e0e0e0;color:#666;border:none;border-radius:10px;font-size:12px;cursor:pointer;">초기화</button>
-        <span style="font-size:11px;color:#888;">※ 교사 총평 필수 입력</span>
-      </div>
-
-      <!-- 결과 영역 -->
-      <div id="setechAIResult" style="display:none;margin-top:14px;"></div>
     </div>
-  </details>
-
-  <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- 교과 드롭다운 + 키워드/템플릿/에디터 -->
-  <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- 교과 선택 드롭다운 -->
-  <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-    <label style="font-size:12.5px;font-weight:700;color:var(--txt-mid,#555);">📚 교과 선택</label>
-    <select id="setechSubjectDropdown" onchange="selectSubjectByDropdown(this.value)" style="padding:7px 14px;border:1.5px solid #90caf9;border-radius:8px;font-size:13px;font-weight:700;color:#1565c0;background:#e3f2fd;cursor:pointer;min-width:160px;">
-      <option value="">-- 교과 선택 --</option>
-    </select>
-    <div id="setechTitle" style="font-size:14px;font-weight:800;color:#7b1fa2;"></div>
+    <div>
+      <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학과</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button class="setech-dept-btn" data-val="보통과" onclick="selectSetechBtn(this,'dept')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">보통과</button>
+        <button class="setech-dept-btn" data-val="금융비즈니스학과" onclick="selectSetechBtn(this,'dept')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">금융비즈니스</button>
+        <button class="setech-dept-btn" data-val="문화콘텐츠학과" onclick="selectSetechBtn(this,'dept')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">문화콘텐츠</button>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">📚 교과</div>
+      <select id="setechSubjectDropdown" onchange="selectSubjectByDropdown(this.value)" style="padding:6px 14px;border:1.5px solid #90caf9;border-radius:8px;font-size:13px;font-weight:700;color:#1565c0;background:#e3f2fd;cursor:pointer;min-width:160px;">
+        <option value="">-- 교과 선택 --</option>
+      </select>
+    </div>
   </div>
-  <!-- 키워드/템플릿/에디터 -->
-  <div id="setechSubjectList" style="display:none;"></div>
-  <div>
 
-      <!-- 키워드 -->
-      <div style="margin-bottom:10px;">
-        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">키워드 클릭 → 자동 삽입</div>
-        <div id="setechKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  <!-- 교사 충평 -->
+  <div style="margin-bottom:12px;">
+    <div style="font-size:12px;font-weight:700;color:#c62828;margin-bottom:5px;">✏️ 교사 충평 및 관찰 의견 <span style="color:#c62828;font-weight:400;font-size:11px;">(필수)</span></div>
+    <textarea id="setechTeacherComment" rows="3" placeholder="예) 수업 중 질문이 많고 탐구 의지가 강함. 모둥 활동에서 리더 역할을 자청하며 의견을 조율함. 피드백을 수용하여 보고서를 3차례 수정함." style="width:100%;padding:9px;border:1.5px solid #f48fb1;border-radius:8px;font-size:12.5px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+  </div>
+
+  <!-- API Key -->
+  <div style="margin-bottom:14px;padding:9px 13px;background:#ede7f6;border-radius:9px;border:1px solid #b39ddb;">
+    <div style="font-size:11.5px;font-weight:700;color:#4a148c;margin-bottom:5px;">🔑 OpenAI API Key <span style="font-weight:400;color:#888;">(없으면 내장 AI로 자동 생성)</span></div>
+    <div style="display:flex;gap:5px;align-items:center;">
+      <div style="position:relative;flex:1;">
+        <input type="password" id="openaiApiKey" placeholder="sk-..." autocomplete="off" style="width:100%;padding:6px 32px 6px 9px;border:1.5px solid #b39ddb;border-radius:6px;font-size:12px;box-sizing:border-box;">
+        <button id="apiKeyToggleBtn" onclick="toggleApiKeyVisibility()" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888;font-size:13px;"><i class="fas fa-eye"></i></button>
       </div>
-
-      <!-- 문장 템플릿 -->
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">문장 템플릿</div>
-        <div id="setechTemplates" style="display:flex;flex-direction:column;gap:6px;"></div>
-      </div>
-
-      <!-- 세특 에디터 -->
-      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">세특 작성 <span style="font-weight:400;color:#888;">(직접 작성 또는 위 AI 생성 결과 적용)</span></div>
-      <textarea id="setechEditor" rows="7" placeholder="위 키워드/템플릿을 클릭하거나 직접 작성하세요.&#10;&#10;위 'AI 세특 생성' 버튼으로 자동 생성 후 이 칸에 적용할 수 있습니다." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
-        <button onclick="generateSetech()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> 기존 세특 보완</button>
-        <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
-        <button onclick="(function(btn){const txt=document.getElementById('setechEditor').value;if(!txt){alert('복사할 내용이 없습니다.');return;}if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent='복사';},1500);}).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent='복사';},1500);});}else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent='복사';},1500);}})(this)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
-        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('setechEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
-        <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════ -->
-      <!-- A안: 간단 AI 세특 생성 (하단) -->
-      <!-- ═══════════════════════════════════════════════════════════ -->
-      <div style="margin-top:18px;padding:14px 16px;background:linear-gradient(135deg,#fff8e1,#fff3e0);border-radius:12px;border:1.5px solid #ffcc02;">
-        <div style="font-size:12.5px;font-weight:800;color:#e65100;margin-bottom:8px;"><i class="fas fa-bolt"></i> ⚡ 간단 AI 세특 생성 (A안) &nbsp;<span style="font-weight:400;font-size:11px;color:#888;">교사 총평만 입력하면 바로 생성</span></div>
-        <textarea id="setechSimpleComment" rows="2" placeholder="교사 총평을 간단히 입력하세요. 예) 탐구 의지가 강하고 발표력이 뛰어남. 모둠 활동에서 적극적으로 기여함." style="width:100%;padding:8px;border:1.5px solid #ffcc02;border-radius:7px;font-size:12px;line-height:1.6;resize:vertical;box-sizing:border-box;font-family:inherit;background:#fffde7;"></textarea>
-        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-          <button onclick="generateSetechSimple()" style="padding:8px 20px;background:linear-gradient(135deg,#ff6f00,#e65100);color:#fff;border:none;border-radius:8px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 2px 6px rgba(230,81,0,0.3);"><i class="fas fa-bolt"></i> 빠른 세특 생성</button>
-          <span style="font-size:11px;color:#888;">※ API Key 있으면 GPT, 없으면 내장 AI 사용</span>
-        </div>
-        <div id="setechSimpleResult" style="display:none;margin-top:10px;"></div>
-      </div>
-
+      <button onclick="saveApiKey()" style="padding:6px 10px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">저장</button>
+      <button onclick="clearApiKey()" style="padding:6px 10px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">삭제</button>
+      <span id="apiKeyStatus" style="font-size:11px;color:#888;"></span>
     </div>
+  </div>
+
+  <!-- 생성 버튼 -->
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+    <button onclick="generateSetechAllGrades()" style="padding:11px 28px;background:linear-gradient(135deg,#7b1fa2,#1565c0);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(123,31,162,0.3);"><i class="fas fa-magic"></i> 세특 AI 생성 (고1/고2/고3 전체)</button>
+    <button onclick="clearSetechAllForm()" style="padding:11px 14px;background:#e0e0e0;color:#666;border:none;border-radius:10px;font-size:12px;cursor:pointer;">초기화</button>
+    <span style="font-size:11px;color:#888;">※ 교사 충평 필수 입력 · 자료는 위에서 업로드</span>
+  </div>
+
+  <!-- 결과 영역: 고1/고2/고3 각 2안 -->
+  <div id="setechAllResult" style="display:none;"></div>
+
+  <!-- 숨김 요소 (initSetech에서 사용) -->
+  <div id="setechSubjectList" style="display:none;"></div>
+  <div id="setechTitle" style="display:none;"></div>
+  <div id="setechAIResult" style="display:none;"></div>
 </section>
 
 <section id="activityTab" class="tab-panel" style="display:none;padding:16px;">
@@ -3077,6 +3018,76 @@ function sendToRecordCheck(divId) {
       updateRecordCount();
     }, 100);
   }
+}
+
+// ── 고1/고2/고3 전체 생성 함수 ──
+async function generateSetechAllGrades() {
+  const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '1학기';
+  const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '보통과';
+  const subjectDropdown = document.getElementById('setechSubjectDropdown');
+  const subject = subjectDropdown ? subjectDropdown.value : '';
+  const planText = (document.getElementById('setechPlanText') || {}).value?.trim() || '';
+  const activityText = (document.getElementById('setechActivityText') || {}).value?.trim() || '';
+  const excelText = (window._setechExcelText || '').trim();
+  const teacherComment = document.getElementById('setechTeacherComment').value.trim();
+  const resultEl = document.getElementById('setechAllResult');
+
+  if (!teacherComment) {
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> 교사 총평을 반드시 입력하세요.</div>';
+    return;
+  }
+
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="padding:20px;background:#f3e5f5;border-radius:10px;text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:22px;color:#7b1fa2;"></i><div style="margin-top:10px;font-size:13px;color:#7b1fa2;font-weight:700;">고1 / 고2 / 고3 세특 생성 중...</div></div>';
+
+  const apiKey = localStorage.getItem('openai_api_key') || '';
+  const grades = ['고1', '고2', '고3'];
+  const gradeLabels = { '고1': '🟡 고1 (학습법 체득)', '고2': '🟠 고2 (연결과 응용)', '고3': '🔴 고3 (확장과 심화)' };
+  const results = {};
+
+  for (const grade of grades) {
+    if (apiKey) {
+      await new Promise(async (resolve) => {
+        const tmpEl = document.createElement('div');
+        await generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, tmpEl, apiKey);
+        results[grade] = tmpEl.innerHTML;
+        resolve();
+      });
+    } else {
+      const tmpEl = document.createElement('div');
+      generateSetechLocal(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, tmpEl);
+      results[grade] = tmpEl.innerHTML;
+    }
+  }
+
+  // 전체 결과 렌더링
+  let html = `<div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:14px;"><i class="fas fa-magic"></i> 세특 AI 생성 결과 — ${subject||'(교과 미선택)'} / ${semester} / ${dept}</div>`;
+  for (const grade of grades) {
+    html += `
+    <div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid #ce93d8;">
+      <div style="padding:10px 16px;background:linear-gradient(135deg,#7b1fa2,#1565c0);color:#fff;font-size:13.5px;font-weight:800;">${gradeLabels[grade]}</div>
+      <div style="padding:14px;background:#fafafa;">${results[grade]}</div>
+    </div>`;
+  }
+  resultEl.innerHTML = html;
+}
+
+function clearSetechAllForm() {
+  document.getElementById('setechTeacherComment').value = '';
+  const resultEl = document.getElementById('setechAllResult');
+  if (resultEl) { resultEl.style.display = 'none'; resultEl.innerHTML = ''; }
+  // 버튼 선택 초기화
+  document.querySelectorAll('.setech-semester-btn,.setech-dept-btn').forEach(b => {
+    b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#c5cae9';
+  });
+  const dd = document.getElementById('setechSubjectDropdown');
+  if (dd) dd.value = '';
+  window._setechExcelText = '';
+  const planText = document.getElementById('setechPlanText');
+  const actText = document.getElementById('setechActivityText');
+  if (planText) planText.value = '';
+  if (actText) actText.value = '';
 }
 
 // ── 기존 세특 보완 함수 (하단 에디터용) ──
