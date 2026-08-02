@@ -7,6 +7,539 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260428">
+  <style>
+    /* ══════════ 추가 탭 공통 스타일 ══════════ */
+    .new-tab-badge {
+      display:inline-block;
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      font-size:9px;
+      font-weight:700;
+      padding:1px 5px;
+      border-radius:8px;
+      margin-left:4px;
+      vertical-align:middle;
+      letter-spacing:.3px;
+    }
+
+    /* ── 실습실 서브탭 ── */
+    .sub-tab-nav {
+      display:flex;
+      gap:6px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .sub-tab-btn {
+      padding:7px 18px;
+      border:2px solid var(--border-lt,#e0e6f0);
+      border-radius:20px;
+      background:#fff;
+      font-size:13px;
+      font-weight:600;
+      color:var(--txt-mid,#6b7a99);
+      cursor:pointer;
+      transition:all .18s;
+    }
+    .sub-tab-btn.active, .sub-tab-btn:hover {
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      border-color:var(--primary,#4f7ef8);
+    }
+    .sub-tab-panel { display:none; }
+    .sub-tab-panel.active { display:block; }
+
+    /* ── 추정분할계산기 ── */
+    .calc-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:16px;
+    }
+    .calc-card {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow:0 2px 8px rgba(80,100,160,.06);
+    }
+    .calc-card-header {
+      padding:12px 18px;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .calc-card-header.blue { background:#eef3ff; color:#3a5bd9; }
+    .calc-card-header.green { background:#edfaf3; color:#1e8a5a; }
+    .calc-card-header.orange { background:#fff6ed; color:#c96a00; }
+    .calc-card-header.purple { background:#f5f0ff; color:#6b3fa0; }
+    .calc-card-body { padding:18px; }
+    .calc-row {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+    .calc-label {
+      font-size:13px;
+      font-weight:600;
+      color:var(--txt-dark,#2d3a5a);
+      min-width:100px;
+    }
+    .calc-input {
+      flex:1;
+      min-width:80px;
+      padding:8px 12px;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:8px;
+      font-size:13px;
+      font-family:inherit;
+      outline:none;
+      transition:border-color .15s;
+    }
+    .calc-input:focus { border-color:var(--primary,#4f7ef8); }
+    .calc-result-box {
+      background:var(--bg-soft,#f5f7ff);
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:10px;
+      padding:14px 18px;
+      margin-top:10px;
+    }
+    .calc-result-title { font-size:12px; color:var(--txt-light,#9aa3bf); margin-bottom:8px; font-weight:600; }
+    .calc-result-value { font-size:20px; font-weight:800; color:var(--primary,#4f7ef8); }
+    .calc-result-sub { font-size:12px; color:var(--txt-mid,#6b7a99); margin-top:4px; }
+    .calc-btn {
+      padding:9px 20px;
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      border:none;
+      border-radius:9px;
+      font-size:13px;
+      font-weight:700;
+      cursor:pointer;
+      transition:opacity .15s;
+      font-family:inherit;
+    }
+    .calc-btn:hover { opacity:.85; }
+    .calc-btn.secondary {
+      background:#fff;
+      color:var(--primary,#4f7ef8);
+      border:1.5px solid var(--primary,#4f7ef8);
+    }
+    .grade-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+    .grade-table th {
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      padding:8px 10px;
+      text-align:center;
+      font-weight:700;
+    }
+    .grade-table td {
+      padding:7px 10px;
+      text-align:center;
+      border-bottom:1px solid var(--border-lt,#e0e6f0);
+      color:var(--txt-mid,#6b7a99);
+    }
+    .grade-table tr:last-child td { border-bottom:none; }
+    .grade-table tr.highlight td { background:#eef3ff; color:var(--primary,#4f7ef8); font-weight:700; }
+
+    /* ── 실습실 예약 ── */
+    .reservation-grid {
+      display:grid;
+      grid-template-columns:220px 1fr;
+      gap:14px;
+    }
+    @media(max-width:700px){.reservation-grid{grid-template-columns:1fr;}}
+    .reservation-calendar {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .res-cal-header {
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      padding:12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      font-weight:700;
+      font-size:14px;
+    }
+    .res-cal-nav { background:none; border:none; color:#fff; font-size:16px; cursor:pointer; padding:2px 6px; border-radius:6px; }
+    .res-cal-nav:hover { background:rgba(255,255,255,.2); }
+    .res-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); }
+    .res-cal-day-name {
+      text-align:center;
+      font-size:11px;
+      font-weight:700;
+      padding:8px 2px;
+      color:var(--txt-mid,#6b7a99);
+    }
+    .res-cal-day-name.sun { color:#e74c3c; }
+    .res-cal-day-name.sat { color:#3498db; }
+    .res-cal-cell {
+      text-align:center;
+      padding:7px 2px;
+      font-size:12px;
+      cursor:pointer;
+      border-radius:6px;
+      margin:1px;
+      transition:background .12s;
+      color:var(--txt-dark,#2d3a5a);
+    }
+    .res-cal-cell:hover { background:var(--bg-soft,#f5f7ff); }
+    .res-cal-cell.today { background:var(--primary,#4f7ef8); color:#fff; font-weight:800; }
+    .res-cal-cell.selected { background:#3a5bd9; color:#fff; font-weight:800; }
+    .res-cal-cell.other-month { color:var(--txt-light,#9aa3bf); }
+    .res-cal-cell.weekend-sun { color:#e74c3c; }
+    .res-cal-cell.weekend-sat { color:#3498db; }
+    .res-cal-cell.has-reservation::after {
+      content:'';
+      display:block;
+      width:5px;
+      height:5px;
+      background:var(--primary,#4f7ef8);
+      border-radius:50%;
+      margin:2px auto 0;
+    }
+    .res-cal-cell.today.has-reservation::after,
+    .res-cal-cell.selected.has-reservation::after { background:#fff; }
+    .reservation-main {
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    .res-room-select {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .res-room-btn {
+      padding:7px 16px;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:20px;
+      background:#fff;
+      font-size:13px;
+      font-weight:600;
+      color:var(--txt-mid,#6b7a99);
+      cursor:pointer;
+      transition:all .15s;
+    }
+    .res-room-btn.active {
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      border-color:var(--primary,#4f7ef8);
+    }
+    .res-timetable {
+      width:100%;
+      border-collapse:collapse;
+      font-size:12.5px;
+    }
+    .res-timetable th {
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      padding:9px 8px;
+      text-align:center;
+      font-weight:700;
+    }
+    .res-timetable td {
+      padding:8px;
+      text-align:center;
+      border:1px solid var(--border-lt,#e0e6f0);
+      cursor:pointer;
+      transition:background .12s;
+      min-width:60px;
+    }
+    .res-timetable td.available { background:#f0fff6; color:#1e8a5a; }
+    .res-timetable td.available:hover { background:#d0f5e4; }
+    .res-timetable td.booked { background:#fff0f0; color:#c0392b; cursor:default; }
+    .res-timetable td.my-booking { background:#eef3ff; color:#3a5bd9; font-weight:700; }
+    .res-timetable td.period-label { background:var(--bg-soft,#f5f7ff); font-weight:700; color:var(--txt-dark,#2d3a5a); cursor:default; }
+    .res-form {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      padding:18px;
+    }
+    .res-form-title { font-size:14px; font-weight:700; color:var(--txt-dark,#2d3a5a); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .res-form-row { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+    .res-form-label { font-size:13px; font-weight:600; color:var(--txt-dark,#2d3a5a); min-width:80px; }
+    .res-form-input {
+      flex:1;
+      min-width:120px;
+      padding:8px 12px;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:8px;
+      font-size:13px;
+      font-family:inherit;
+      outline:none;
+    }
+    .res-form-input:focus { border-color:var(--primary,#4f7ef8); }
+    .res-list { margin-top:10px; }
+    .res-item {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 14px;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:10px;
+      margin-bottom:8px;
+      background:#fff;
+      flex-wrap:wrap;
+    }
+    .res-item-badge {
+      padding:3px 10px;
+      border-radius:12px;
+      font-size:11px;
+      font-weight:700;
+    }
+    .res-item-badge.confirmed { background:#eef3ff; color:#3a5bd9; }
+    .res-item-badge.pending { background:#fff6ed; color:#c96a00; }
+    .res-item-info { flex:1; font-size:13px; color:var(--txt-dark,#2d3a5a); }
+    .res-item-del { background:none; border:none; color:#e74c3c; cursor:pointer; font-size:14px; padding:4px 8px; border-radius:6px; }
+    .res-item-del:hover { background:#fff0f0; }
+
+    /* ── 생기부 점검 ── */
+    .record-check-layout {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+    @media(max-width:800px){.record-check-layout{grid-template-columns:1fr;}}
+    .record-input-area {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .record-input-header {
+      padding:12px 18px;
+      background:#eef3ff;
+      color:#3a5bd9;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .record-textarea {
+      width:100%;
+      min-height:280px;
+      padding:16px;
+      border:none;
+      font-size:13.5px;
+      font-family:inherit;
+      line-height:1.9;
+      resize:vertical;
+      outline:none;
+      box-sizing:border-box;
+      color:var(--txt-dark,#2d3a5a);
+    }
+    .record-action-bar {
+      padding:12px 16px;
+      border-top:1px solid var(--border-lt,#e0e6f0);
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .record-char-count {
+      margin-left:auto;
+      font-size:12px;
+      color:var(--txt-light,#9aa3bf);
+    }
+    .record-char-count.over { color:#e74c3c; font-weight:700; }
+    .record-result-area {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .record-result-header {
+      padding:12px 18px;
+      background:#edfaf3;
+      color:#1e8a5a;
+      font-size:14px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .record-result-body { padding:16px; max-height:500px; overflow-y:auto; }
+    .check-item {
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      padding:10px 14px;
+      border-radius:10px;
+      margin-bottom:8px;
+      font-size:13px;
+    }
+    .check-item.error { background:#fff0f0; border-left:3px solid #e74c3c; }
+    .check-item.warning { background:#fff8ed; border-left:3px solid #f39c12; }
+    .check-item.ok { background:#f0fff6; border-left:3px solid #2ecc71; }
+    .check-item-icon { font-size:15px; margin-top:1px; }
+    .check-item-content { flex:1; }
+    .check-item-title { font-weight:700; margin-bottom:3px; }
+    .check-item.error .check-item-title { color:#c0392b; }
+    .check-item.warning .check-item-title { color:#c96a00; }
+    .check-item.ok .check-item-title { color:#1e8a5a; }
+    .check-item-detail { color:var(--txt-mid,#6b7a99); font-size:12px; line-height:1.7; }
+    .forbidden-word { background:#ffd6d6; padding:1px 4px; border-radius:4px; font-weight:700; color:#c0392b; }
+    .check-summary {
+      display:flex;
+      gap:10px;
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .check-summary-badge {
+      padding:6px 14px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:700;
+    }
+    .check-summary-badge.error { background:#fff0f0; color:#c0392b; }
+    .check-summary-badge.warning { background:#fff8ed; color:#c96a00; }
+    .check-summary-badge.ok { background:#f0fff6; color:#1e8a5a; }
+    .forbidden-list {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:8px;
+    }
+    .forbidden-tag {
+      padding:3px 10px;
+      background:#fff0f0;
+      border:1px solid #f5c6c6;
+      border-radius:12px;
+      font-size:12px;
+      color:#c0392b;
+      font-weight:600;
+    }
+    .highlight-text { position:relative; }
+    .highlight-text mark.err { background:#ffd6d6; border-radius:3px; }
+    .highlight-text mark.warn { background:#fff3cd; border-radius:3px; }
+
+    /* ── 세특 / 창체·행특 공통 ── */
+    .setech-layout {
+      display:grid;
+      grid-template-columns:240px 1fr;
+      gap:14px;
+    }
+    @media(max-width:800px){.setech-layout{grid-template-columns:1fr;}}
+    .setech-side {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .setech-side-header {
+      padding:12px 16px;
+      background:var(--primary,#4f7ef8);
+      color:#fff;
+      font-size:13px;
+      font-weight:700;
+    }
+    .setech-side-list { padding:10px; }
+    .setech-side-item {
+      padding:9px 12px;
+      border-radius:8px;
+      font-size:13px;
+      font-weight:600;
+      color:var(--txt-mid,#6b7a99);
+      cursor:pointer;
+      transition:background .12s;
+      margin-bottom:3px;
+    }
+    .setech-side-item:hover { background:var(--bg-soft,#f5f7ff); }
+    .setech-side-item.active { background:#eef3ff; color:var(--primary,#4f7ef8); }
+    .setech-main {
+      background:#fff;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .setech-main-header {
+      padding:14px 18px;
+      background:#f5f7ff;
+      border-bottom:1.5px solid var(--border-lt,#e0e6f0);
+      font-size:14px;
+      font-weight:700;
+      color:var(--txt-dark,#2d3a5a);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .setech-main-body { padding:18px; }
+    .setech-template-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .setech-template-card {
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:12px;
+      padding:14px;
+      cursor:pointer;
+      transition:all .15s;
+      background:#fff;
+    }
+    .setech-template-card:hover {
+      border-color:var(--primary,#4f7ef8);
+      background:#eef3ff;
+    }
+    .setech-template-title { font-size:13px; font-weight:700; color:var(--txt-dark,#2d3a5a); margin-bottom:6px; }
+    .setech-template-preview { font-size:12px; color:var(--txt-mid,#6b7a99); line-height:1.7; }
+    .setech-editor {
+      width:100%;
+      min-height:220px;
+      padding:14px;
+      border:1.5px solid var(--border-lt,#e0e6f0);
+      border-radius:10px;
+      font-size:13.5px;
+      font-family:inherit;
+      line-height:1.9;
+      resize:vertical;
+      outline:none;
+      box-sizing:border-box;
+    }
+    .setech-editor:focus { border-color:var(--primary,#4f7ef8); }
+    .setech-toolbar {
+      display:flex;
+      gap:8px;
+      margin-bottom:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .setech-keyword-chips {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-bottom:12px;
+    }
+    .setech-chip {
+      padding:4px 12px;
+      background:#eef3ff;
+      color:var(--primary,#4f7ef8);
+      border-radius:14px;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      border:1px solid #c5d4ff;
+      transition:all .12s;
+    }
+    .setech-chip:hover { background:var(--primary,#4f7ef8); color:#fff; }
+    .setech-char-info {
+      font-size:12px;
+      color:var(--txt-light,#9aa3bf);
+      text-align:right;
+      margin-top:6px;
+    }
+    .setech-char-info.over { color:#e74c3c; font-weight:700; }
+  </style>
 </head>
 <body>
 <div class="app-wrapper">
@@ -45,7 +578,6 @@
     <button class="tab-btn" onclick="location.href='club.html'" style="background:var(--orange-pale);border-color:var(--orange-soft);">
       <i class="fas fa-clipboard-check tab-icon" style="color:var(--orange);"></i><span class="tab-label"> 동아리 출석부</span>
     </button>
-
     <button class="tab-btn" data-tab="meeting" onclick="switchTab('meeting')">
       <i class="fas fa-users tab-icon"></i><span class="tab-label"> 협의시간</span>
     </button>
@@ -63,6 +595,19 @@
     </button>
     <button class="tab-btn" data-tab="util" onclick="switchTab('util')">
       <i class="fas fa-sun tab-icon"></i><span class="tab-label"> 금일 일정 요약</span>
+    </button>
+    <!-- ══ 새 탭들 ══ -->
+    <button class="tab-btn" data-tab="gradeCalc" onclick="switchTab('gradeCalc')" style="background:var(--orange-pale,#fff6ed);border-color:var(--orange-soft,#ffd6a0);">
+      <i class="fas fa-calculator tab-icon" style="color:#c96a00;"></i><span class="tab-label"> 추정분할계산기</span><span class="new-tab-badge">NEW</span>
+    </button>
+    <button class="tab-btn" data-tab="recordCheck" onclick="switchTab('recordCheck')" style="background:#f5f0ff;border-color:#d4b8ff;">
+      <i class="fas fa-spell-check tab-icon" style="color:#6b3fa0;"></i><span class="tab-label"> 생기부 점검</span><span class="new-tab-badge" style="background:#6b3fa0;">NEW</span>
+    </button>
+    <button class="tab-btn" data-tab="setech" onclick="switchTab('setech')" style="background:#edfaf3;border-color:#a8e6c8;">
+      <i class="fas fa-pen-nib tab-icon" style="color:#1e8a5a;"></i><span class="tab-label"> 교과 세특</span><span class="new-tab-badge" style="background:#1e8a5a;">NEW</span>
+    </button>
+    <button class="tab-btn" data-tab="activity" onclick="switchTab('activity')" style="background:#fff8e1;border-color:#ffe082;">
+      <i class="fas fa-star tab-icon" style="color:#f9a825;"></i><span class="tab-label"> 창체·행특</span><span class="new-tab-badge" style="background:#f9a825;">NEW</span>
     </button>
   </nav>
 
@@ -121,7 +666,6 @@
     <!-- ── 2. 교사별 시간표 ── -->
     <section id="teacherTab" class="tab-panel">
       <div class="side-btn-layout">
-        <!-- 왼쪽: 교사 버튼 목록 -->
         <div class="side-btn-panel">
           <div class="side-btn-panel-header"><i class="fas fa-chalkboard-teacher"></i> 교사 목록</div>
           <div class="side-btn-search">
@@ -134,7 +678,6 @@
             <div class="empty-state" style="padding:20px;"><p>로딩 중...</p></div>
           </div>
         </div>
-        <!-- 오른쪽: 시간표 상세 -->
         <div id="teacherDetailPanel" class="side-btn-content card">
           <div class="empty-state">
             <div class="empty-icon">👈</div>
@@ -169,7 +712,6 @@
     <!-- ── 3. 학급별 시간표 ── -->
     <section id="classScheduleTab" class="tab-panel">
       <div class="side-btn-layout">
-        <!-- 왼쪽: 학급 버튼 목록 -->
         <div class="side-btn-panel">
           <div class="side-btn-panel-header"><i class="fas fa-th"></i> 학급 목록</div>
           <div class="side-btn-search">
@@ -182,7 +724,6 @@
             <div class="empty-state" style="padding:20px;"><p>로딩 중...</p></div>
           </div>
         </div>
-        <!-- 오른쪽: 시간표 상세 -->
         <div id="classScheduleDetail" class="side-btn-content card">
           <div class="empty-state">
             <div class="empty-icon">🏫</div>
@@ -193,33 +734,145 @@
       </div>
     </section>
 
-    <!-- ── 4. 실습실 시간표 ── -->
+    <!-- ── 4. 실습실 시간표 + 예약 (서브탭) ── -->
     <section id="labTab" class="tab-panel">
-      <div class="side-btn-layout">
-        <!-- 왼쪽: 실습실 버튼 목록 -->
-        <div class="side-btn-panel">
-          <div class="side-btn-panel-header"><i class="fas fa-flask"></i> 실습실 목록</div>
-          <div class="side-btn-list" id="labSideList">
-            <!-- JS로 채워짐 -->
+      <!-- 서브탭 네비게이션 -->
+      <div class="sub-tab-nav">
+        <button class="sub-tab-btn active" id="labSubBtn-schedule" onclick="switchLabSubTab('schedule')">
+          <i class="fas fa-flask"></i> 실습실 시간표
+        </button>
+        <button class="sub-tab-btn" id="labSubBtn-reservation" onclick="switchLabSubTab('reservation')">
+          <i class="fas fa-calendar-plus"></i> 실습실 사용예약
+          <span class="new-tab-badge">NEW</span>
+        </button>
+      </div>
+
+      <!-- 서브탭: 실습실 시간표 -->
+      <div class="sub-tab-panel active" id="labSubPanel-schedule">
+        <div class="side-btn-layout">
+          <div class="side-btn-panel">
+            <div class="side-btn-panel-header"><i class="fas fa-flask"></i> 실습실 목록</div>
+            <div class="side-btn-list" id="labSideList"></div>
+          </div>
+          <div class="side-btn-content card" id="labTableWrap">
+            <div class="empty-state">
+              <div class="empty-icon">🏫</div>
+              <h3>왼쪽에서 실습실을 선택해주세요</h3>
+              <p>실습실별 주간 시간표를 보여드립니다</p>
+            </div>
           </div>
         </div>
-        <!-- 오른쪽: 시간표 -->
-        <div class="side-btn-content card" id="labTableWrap">
-          <div class="empty-state">
-            <div class="empty-icon">🏫</div>
-            <h3>왼쪽에서 실습실을 선택해주세요</h3>
-            <p>실습실별 주간 시간표를 보여드립니다</p>
+      </div>
+
+      <!-- 서브탭: 실습실 사용예약 -->
+      <div class="sub-tab-panel" id="labSubPanel-reservation">
+        <div class="reservation-grid">
+          <!-- 왼쪽: 달력 -->
+          <div>
+            <div class="reservation-calendar">
+              <div class="res-cal-header">
+                <button class="res-cal-nav" onclick="resCalPrev()">&#8249;</button>
+                <span id="resCalTitle">2026년 8월</span>
+                <button class="res-cal-nav" onclick="resCalNext()">&#8250;</button>
+              </div>
+              <div class="res-cal-grid" id="resCalGrid"></div>
+            </div>
+            <div style="margin-top:12px;">
+              <div class="res-room-select" id="resRoomBtns"></div>
+            </div>
+          </div>
+          <!-- 오른쪽: 예약 현황 + 폼 -->
+          <div class="reservation-main">
+            <div class="card" style="overflow:hidden;">
+              <div class="card-header">
+                <i class="fas fa-table"></i>
+                <span id="resTableTitle">날짜와 실습실을 선택해주세요</span>
+              </div>
+              <div style="overflow-x:auto;padding:14px;">
+                <table class="res-timetable" id="resTimeTable">
+                  <thead>
+                    <tr>
+                      <th>교시</th>
+                      <th>시간</th>
+                      <th>예약자</th>
+                      <th>목적</th>
+                      <th>상태</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resTimeTableBody">
+                    <tr><td colspan="5" style="padding:30px;color:var(--txt-light);">날짜와 실습실을 선택해주세요</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="res-form">
+              <div class="res-form-title"><i class="fas fa-plus-circle" style="color:var(--primary);"></i> 예약 신청</div>
+              <div class="res-form-row">
+                <span class="res-form-label">실습실</span>
+                <select class="res-form-input" id="resFormRoom">
+                  <option value="">-- 선택 --</option>
+                  <option>컴퓨터실 1</option>
+                  <option>컴퓨터실 2</option>
+                  <option>컴퓨터실 3</option>
+                  <option>과학실험실</option>
+                  <option>음악실</option>
+                  <option>미술실</option>
+                  <option>체육관</option>
+                  <option>시청각실</option>
+                </select>
+              </div>
+              <div class="res-form-row">
+                <span class="res-form-label">날짜</span>
+                <input type="date" class="res-form-input" id="resFormDate">
+              </div>
+              <div class="res-form-row">
+                <span class="res-form-label">교시</span>
+                <select class="res-form-input" id="resFormPeriod">
+                  <option value="">-- 선택 --</option>
+                  <option value="1">1교시 (08:40~09:30)</option>
+                  <option value="2">2교시 (09:40~10:30)</option>
+                  <option value="3">3교시 (10:40~11:30)</option>
+                  <option value="4">4교시 (11:40~12:30)</option>
+                  <option value="5">5교시 (13:40~14:30)</option>
+                  <option value="6">6교시 (14:40~15:30)</option>
+                  <option value="7">7교시 (15:40~16:30)</option>
+                </select>
+              </div>
+              <div class="res-form-row">
+                <span class="res-form-label">신청자</span>
+                <input type="text" class="res-form-input" id="resFormTeacher" placeholder="선생님 성함">
+              </div>
+              <div class="res-form-row">
+                <span class="res-form-label">사용 목적</span>
+                <input type="text" class="res-form-input" id="resFormPurpose" placeholder="예: 정보 수업, 과학 실험 등">
+              </div>
+              <div class="res-form-row">
+                <span class="res-form-label">학급</span>
+                <input type="text" class="res-form-input" id="resFormClass" placeholder="예: 2-4">
+              </div>
+              <div style="display:flex;gap:8px;margin-top:6px;">
+                <button class="calc-btn" onclick="submitReservation()"><i class="fas fa-check"></i> 예약 신청</button>
+                <button class="calc-btn secondary" onclick="clearResForm()"><i class="fas fa-undo"></i> 초기화</button>
+              </div>
+            </div>
+            <!-- 예약 목록 -->
+            <div class="card" style="overflow:hidden;">
+              <div class="card-header" style="justify-content:space-between;">
+                <div><i class="fas fa-list-ul"></i> 내 예약 목록</div>
+                <button class="btn btn-outline btn-sm" onclick="clearMyReservations()"><i class="fas fa-trash"></i> 전체 삭제</button>
+              </div>
+              <div style="padding:14px;" id="myResList">
+                <div class="empty-state"><div class="empty-icon">📋</div><h3>예약 내역이 없습니다</h3></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-
-
     <!-- ── 6. 협의회 시간 ── -->
     <section id="meetingTab" class="tab-panel">
       <div class="meeting-layout">
-        <!-- 왼쪽 패널 -->
         <div class="side-btn-panel" style="position:sticky;top:8px;">
           <div class="side-btn-panel-header"><i class="fas fa-users"></i> 참석자 선택</div>
           <div class="side-btn-search">
@@ -228,25 +881,20 @@
               <input type="text" class="search-input" id="meetingSearch" placeholder="이름 검색 (다중 가능)" oninput="renderMeetingTab()">
             </div>
           </div>
-          <!-- 요일 필터 -->
           <div class="meeting-filter-section">
             <div class="meeting-filter-title">📅 요일 필터</div>
             <div class="meeting-filter-options" id="meetingDayFilters"></div>
           </div>
-          <!-- 교시 필터 -->
           <div class="meeting-filter-section">
             <div class="meeting-filter-title">🕐 교시 필터</div>
             <div class="meeting-filter-options" id="meetingPeriodFilters"></div>
           </div>
-          <!-- 교사 버튼 목록 -->
           <div class="side-btn-list meeting-teacher-btn-list" id="meetingTeacherList"></div>
-          <!-- 하단 바 -->
           <div class="meeting-left-footer">
             <button class="btn btn-outline btn-sm" onclick="resetMeetingSelection()"><i class="fas fa-undo"></i> 전체 해제</button>
             <div style="margin-left:auto;font-size:12px;color:var(--txt-mid);" id="meetingCount">0명 선택됨</div>
           </div>
         </div>
-        <!-- 오른쪽: 결과 -->
         <div class="card meeting-result">
           <div class="card-header" style="justify-content:space-between;">
             <div><i class="fas fa-calendar-check"></i> 협의회 가능 시간</div>
@@ -266,12 +914,10 @@
     <!-- ── 7. 학사일정 달력 ── -->
     <section id="calendarTab" class="tab-panel">
       <div class="calendar-layout">
-        <!-- 월 목록 -->
         <div class="card" style="overflow:hidden;">
           <div class="card-header"><i class="fas fa-calendar-alt"></i> 2026학년도</div>
           <div id="calendarMonthList"></div>
         </div>
-        <!-- 달력 뷰 -->
         <div class="card" style="overflow:hidden;">
           <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <div><i class="fas fa-calendar-day"></i> 월별 달력</div>
@@ -290,7 +936,6 @@
 
     <!-- ── 8. 학생 명렬표 (비밀번호 보호) ── -->
     <section id="rosterTab" class="tab-panel">
-      <!-- 비밀번호 입력 화면 -->
       <div id="rosterLockScreen" class="lock-screen">
         <div class="lock-card">
           <div class="lock-icon">🔒</div>
@@ -308,7 +953,6 @@
           </div>
         </div>
       </div>
-      <!-- 명렬표 내용 -->
       <div id="rosterContent" style="display:none;">
         <div class="card">
           <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
@@ -329,7 +973,6 @@
 
     <!-- ── 9. 연락처 (비밀번호 보호) ── -->
     <section id="contactTab" class="tab-panel">
-      <!-- 비밀번호 입력 화면 -->
       <div id="contactLockScreen" class="lock-screen">
         <div class="lock-card">
           <div class="lock-icon">📱</div>
@@ -344,7 +987,6 @@
           </div>
         </div>
       </div>
-      <!-- 연락처 내용 -->
       <div id="contactContent" style="display:none;">
         <div class="card">
           <div class="card-header" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
@@ -373,7 +1015,6 @@
         설정된 시간은 교체·대체 검색과 협의회 찾기에서 자동으로 제외됩니다.
       </div>
       <div class="block-layout">
-        <!-- 왼쪽: 교사 버튼 목록 -->
         <div class="side-btn-panel" style="position:sticky;top:8px;">
           <div class="side-btn-panel-header"><i class="fas fa-user-slash"></i> 교사 선택</div>
           <div class="side-btn-search">
@@ -384,14 +1025,12 @@
           </div>
           <div class="side-btn-list" id="blockTeacherList"></div>
         </div>
-        <!-- 가운데: 설정 영역 -->
         <div class="card">
           <div class="card-header"><i class="fas fa-calendar-times"></i> 교체 불가 요일·교시 설정</div>
           <div style="padding:16px;" id="blockSettingArea">
             <div class="empty-state"><div class="empty-icon">👈</div><h3>왼쪽에서 교사를 선택해주세요</h3></div>
           </div>
         </div>
-        <!-- 오른쪽: 목록 -->
         <div class="card">
           <div class="card-header">
             <i class="fas fa-list-ul"></i> 교체 불가 목록
@@ -410,8 +1049,6 @@
         <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);"><i class="fas fa-sun" style="color:var(--primary);"></i> 금일 일정 요약</h2>
       </div>
       <div class="util-grid">
-
-        <!-- 메모장 -->
         <div class="util-card">
           <div class="util-card-header blue"><i class="fas fa-sticky-note"></i> 메모장</div>
           <div class="util-card-body">
@@ -423,32 +1060,22 @@
             </div>
           </div>
         </div>
-
-        <!-- 오늘 수업 현황 -->
         <div class="util-card">
           <div class="util-card-header green"><i class="fas fa-calendar-day"></i> 오늘 수업 현황</div>
           <div class="util-card-body" id="todayStatus"></div>
         </div>
-
-        <!-- 오늘 학사일정 -->
         <div class="util-card">
           <div class="util-card-header orange"><i class="fas fa-bell"></i> 오늘 학사일정</div>
           <div class="util-card-body" id="todayCalendar"></div>
         </div>
-
-        <!-- 담임 명단 -->
         <div class="util-card">
           <div class="util-card-header purple"><i class="fas fa-users"></i> 담임 명단</div>
           <div class="util-card-body" id="homeroomListBody" style="padding:10px;max-height:280px;overflow-y:auto;"></div>
         </div>
-
-        <!-- 교과별 대체 그룹 -->
         <div class="util-card">
           <div class="util-card-header blue"><i class="fas fa-book"></i> 교과별 대체 그룹</div>
           <div class="util-card-body" id="subjectGroupBody" style="max-height:280px;overflow-y:auto;"></div>
         </div>
-
-        <!-- 일과 시간표 -->
         <div class="util-card">
           <div class="util-card-header green"><i class="fas fa-clock"></i> 일과 시간표</div>
           <div class="util-card-body">
@@ -474,8 +1101,6 @@
             </table>
           </div>
         </div>
-
-        <!-- 사용법 안내 -->
         <div class="util-card">
           <div class="util-card-header orange"><i class="fas fa-question-circle"></i> 사용법 안내</div>
           <div class="util-card-body">
@@ -484,15 +1109,291 @@
               <li><strong style="color:var(--txt-dark);">교사별 시간표</strong>: 특정 선생님의 주간 시간표 전체 조회</li>
               <li><strong style="color:var(--txt-dark);">학급별 시간표</strong>: 반별 주간 시간표 조회</li>
               <li><strong style="color:var(--txt-dark);">실습실 시간표</strong>: 실습실·특별실별 사용 시간표 조회</li>
-              <li><strong style="color:var(--txt-dark);">공강 시간표</strong>: 선생님별 공강 시간 확인</li>
+              <li><strong style="color:var(--txt-dark);">실습실 사용예약</strong>: 실습실 사용 예약 신청 및 조회</li>
               <li><strong style="color:var(--txt-dark);">협의회 시간</strong>: 여러 선생님 선택 → 공통 공강 자동 탐색</li>
               <li><strong style="color:var(--txt-dark);">학생 명렬표</strong>: 담임 핸드폰 뒷 4자리 비밀번호로 열람</li>
-              <li><strong style="color:var(--txt-dark);">연락처</strong>: 본인 핸드폰 뒷 4자리 비밀번호로 열람</li>
-              <li><strong style="color:var(--txt-dark);">교체 불가 설정</strong>: 개인 사정으로 교체 불가한 시간 등록</li>
+              <li><strong style="color:var(--txt-dark);">추정분할계산기</strong>: 성취도 추정 등급 및 분할점수 계산</li>
+              <li><strong style="color:var(--txt-dark);">생기부 점검</strong>: 맞춤법·금지어·글자수 자동 점검</li>
+              <li><strong style="color:var(--txt-dark);">교과 세특</strong>: 세부능력 및 특기사항 작성 보조</li>
+              <li><strong style="color:var(--txt-dark);">창체·행특</strong>: 창의적 체험활동 및 행동특성 작성 보조</li>
             </ol>
           </div>
         </div>
+      </div>
+    </section>
 
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- ── NEW 12. 추정분할계산기 ── -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <section id="gradeCalcTab" class="tab-panel">
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);"><i class="fas fa-calculator" style="color:#c96a00;"></i> 추정분할계산기</h2>
+        <span style="font-size:12px;color:var(--txt-light);">고교학점제 성취평가제 기반 추정 등급 및 분할점수 계산</span>
+      </div>
+      <div class="calc-grid">
+
+        <!-- 카드 1: 성취도 추정 등급 계산 -->
+        <div class="calc-card">
+          <div class="calc-card-header blue"><i class="fas fa-chart-bar"></i> 성취도 추정 등급 계산</div>
+          <div class="calc-card-body">
+            <div class="calc-row">
+              <span class="calc-label">전체 응시자 수</span>
+              <input type="number" class="calc-input" id="calcTotalStudents" placeholder="예: 120" min="1" oninput="calcGradeEstimate()">
+              <span style="font-size:12px;color:var(--txt-light);">명</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">내 점수 (원점수)</span>
+              <input type="number" class="calc-input" id="calcMyScore" placeholder="예: 85" min="0" max="100" oninput="calcGradeEstimate()">
+              <span style="font-size:12px;color:var(--txt-light);">점</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">과목 만점</span>
+              <input type="number" class="calc-input" id="calcMaxScore" placeholder="예: 100" min="1" value="100" oninput="calcGradeEstimate()">
+              <span style="font-size:12px;color:var(--txt-light);">점</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">A 비율 (%)</span>
+              <input type="number" class="calc-input" id="calcRatioA" placeholder="예: 40" min="0" max="100" oninput="calcGradeEstimate()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">B 비율 (%)</span>
+              <input type="number" class="calc-input" id="calcRatioB" placeholder="예: 30" min="0" max="100" oninput="calcGradeEstimate()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-result-box" id="calcGradeResult">
+              <div class="calc-result-title">추정 성취도</div>
+              <div class="calc-result-value">—</div>
+              <div class="calc-result-sub">값을 입력하면 자동 계산됩니다</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 카드 2: 분할점수 계산 -->
+        <div class="calc-card">
+          <div class="calc-card-header green"><i class="fas fa-cut"></i> 분할점수 계산</div>
+          <div class="calc-card-body">
+            <div class="calc-row">
+              <span class="calc-label">과목 만점</span>
+              <input type="number" class="calc-input" id="splitMaxScore" placeholder="예: 100" min="1" value="100" oninput="calcSplitScore()">
+              <span style="font-size:12px;color:var(--txt-light);">점</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">A 비율 (%)</span>
+              <input type="number" class="calc-input" id="splitRatioA" placeholder="예: 40" min="0" max="100" oninput="calcSplitScore()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">B 비율 (%)</span>
+              <input type="number" class="calc-input" id="splitRatioB" placeholder="예: 30" min="0" max="100" oninput="calcSplitScore()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">C 비율 (%)</span>
+              <input type="number" class="calc-input" id="splitRatioC" placeholder="예: 20" min="0" max="100" oninput="calcSplitScore()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-result-box" id="splitScoreResult">
+              <div class="calc-result-title">분할점수 (A/B/C/D 경계)</div>
+              <div class="calc-result-value">—</div>
+              <div class="calc-result-sub">비율을 입력하면 자동 계산됩니다</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 카드 3: 등급 구간표 -->
+        <div class="calc-card">
+          <div class="calc-card-header orange"><i class="fas fa-table"></i> 성취도 등급 구간표</div>
+          <div class="calc-card-body">
+            <p style="font-size:12px;color:var(--txt-mid);margin-bottom:12px;">고교학점제 성취평가제 기준 (2025학년도 적용)</p>
+            <table class="grade-table">
+              <thead>
+                <tr><th>성취도</th><th>원점수 구간</th><th>비고</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><strong style="color:#3a5bd9;">A</strong></td><td>90점 이상</td><td style="font-size:11px;">매우 우수</td></tr>
+                <tr><td><strong style="color:#1e8a5a;">B</strong></td><td>80점 이상 ~ 90점 미만</td><td style="font-size:11px;">우수</td></tr>
+                <tr><td><strong style="color:#c96a00;">C</strong></td><td>70점 이상 ~ 80점 미만</td><td style="font-size:11px;">보통</td></tr>
+                <tr><td><strong style="color:#c0392b;">D</strong></td><td>60점 이상 ~ 70점 미만</td><td style="font-size:11px;">미흡</td></tr>
+                <tr><td><strong style="color:#7f8c8d;">E</strong></td><td>60점 미만</td><td style="font-size:11px;">매우 미흡</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:11px;color:var(--txt-light);margin-top:10px;">※ 학교별·과목별 분할점수는 다를 수 있습니다</p>
+          </div>
+        </div>
+
+        <!-- 카드 4: 수행평가 비율 계산 -->
+        <div class="calc-card">
+          <div class="calc-card-header purple"><i class="fas fa-percent"></i> 수행평가 비율 계산</div>
+          <div class="calc-card-body">
+            <p style="font-size:12px;color:var(--txt-mid);margin-bottom:12px;">지필+수행 합산 점수 및 성취도 추정</p>
+            <div class="calc-row">
+              <span class="calc-label">지필 점수</span>
+              <input type="number" class="calc-input" id="perfWritten" placeholder="예: 85" min="0" max="100" oninput="calcPerformance()">
+              <span style="font-size:12px;color:var(--txt-light);">점</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">지필 비율</span>
+              <input type="number" class="calc-input" id="perfWrittenRatio" placeholder="예: 70" min="0" max="100" oninput="calcPerformance()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">수행 점수</span>
+              <input type="number" class="calc-input" id="perfPerform" placeholder="예: 90" min="0" max="100" oninput="calcPerformance()">
+              <span style="font-size:12px;color:var(--txt-light);">점</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">수행 비율</span>
+              <input type="number" class="calc-input" id="perfPerformRatio" placeholder="예: 30" min="0" max="100" oninput="calcPerformance()">
+              <span style="font-size:12px;color:var(--txt-light);">%</span>
+            </div>
+            <div class="calc-result-box" id="perfResult">
+              <div class="calc-result-title">합산 원점수 / 추정 성취도</div>
+              <div class="calc-result-value">—</div>
+              <div class="calc-result-sub">값을 입력하면 자동 계산됩니다</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- ── NEW 13. 생기부 점검 ── -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <section id="recordCheckTab" class="tab-panel">
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);"><i class="fas fa-spell-check" style="color:#6b3fa0;"></i> 생기부 점검</h2>
+        <span style="font-size:12px;color:var(--txt-light);">맞춤법·띄어쓰기·금지어·글자수 자동 점검</span>
+      </div>
+      <div class="record-check-layout">
+        <!-- 입력 영역 -->
+        <div class="record-input-area">
+          <div class="record-input-header">
+            <i class="fas fa-edit"></i> 생기부 내용 입력
+          </div>
+          <textarea class="record-textarea" id="recordInput" placeholder="학생부 기재 내용을 입력하세요...&#10;&#10;예) 수업 시간에 적극적으로 참여하며 질문을 통해 개념을 심화하는 모습을 보임. 모둠 활동에서 리더십을 발휘하여 팀원들과 협력하여 과제를 완성함." oninput="updateRecordCount()"></textarea>
+          <div class="record-action-bar">
+            <button class="calc-btn" onclick="checkRecord()"><i class="fas fa-search"></i> 점검 시작</button>
+            <button class="calc-btn secondary" onclick="clearRecord()"><i class="fas fa-undo"></i> 초기화</button>
+            <button class="calc-btn" style="background:#1e8a5a;" onclick="copyRecord()"><i class="fas fa-copy"></i> 복사</button>
+            <span class="record-char-count" id="recordCharCount">0자 / 0 bytes</span>
+          </div>
+          <!-- 금지어 목록 -->
+          <div style="padding:14px;border-top:1px solid var(--border-lt);">
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;"><i class="fas fa-ban" style="color:#e74c3c;"></i> 기재 금지 용어</div>
+            <div class="forbidden-list" id="forbiddenList"></div>
+          </div>
+        </div>
+        <!-- 결과 영역 -->
+        <div class="record-result-area">
+          <div class="record-result-header">
+            <i class="fas fa-clipboard-check"></i> 점검 결과
+          </div>
+          <div class="record-result-body" id="recordResultBody">
+            <div class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <h3>내용을 입력하고 점검을 시작해주세요</h3>
+              <p>맞춤법, 띄어쓰기, 금지어, 글자수를 자동으로 확인합니다</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- ── NEW 14. 교과 수행평가(세특) ── -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <section id="setechTab" class="tab-panel">
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);"><i class="fas fa-pen-nib" style="color:#1e8a5a;"></i> 교과 수행평가(세특)</h2>
+        <span style="font-size:12px;color:var(--txt-light);">세부능력 및 특기사항 작성 보조 도구</span>
+      </div>
+      <div class="setech-layout">
+        <!-- 왼쪽: 교과 목록 -->
+        <div class="setech-side">
+          <div class="setech-side-header"><i class="fas fa-book"></i> 교과 선택</div>
+          <div class="setech-side-list" id="setechSubjectList">
+            <div class="setech-side-item active" onclick="selectSetechSubject(this,'정보')">💻 정보</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'국어')">📖 국어</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'수학')">📐 수학</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'영어')">🌍 영어</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'과학')">🔬 과학</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'사회')">🌏 사회</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'역사')">📜 역사</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'체육')">⚽ 체육</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'음악')">🎵 음악</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'미술')">🎨 미술</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'기술·가정')">🔧 기술·가정</div>
+            <div class="setech-side-item" onclick="selectSetechSubject(this,'진로')">🎯 진로</div>
+          </div>
+        </div>
+        <!-- 오른쪽: 작성 영역 -->
+        <div class="setech-main">
+          <div class="setech-main-header" id="setechMainHeader">
+            <i class="fas fa-laptop-code" style="color:#1e8a5a;"></i> 정보 세특 작성
+          </div>
+          <div class="setech-main-body">
+            <!-- 키워드 칩 -->
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">📌 키워드 클릭 → 자동 삽입</div>
+            <div class="setech-keyword-chips" id="setechKeywords"></div>
+            <!-- 문장 템플릿 -->
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">📝 문장 템플릿</div>
+            <div class="setech-template-grid" id="setechTemplates"></div>
+            <!-- 에디터 -->
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">✏️ 세특 작성</div>
+            <div class="setech-toolbar">
+              <button class="calc-btn secondary" onclick="clearSetechEditor()"><i class="fas fa-undo"></i> 초기화</button>
+              <button class="calc-btn" onclick="copySetechEditor()"><i class="fas fa-copy"></i> 복사</button>
+              <button class="calc-btn" style="background:#6b3fa0;" onclick="checkSetechRecord()"><i class="fas fa-spell-check"></i> 생기부 점검</button>
+            </div>
+            <textarea class="setech-editor" id="setechEditor" placeholder="위 키워드나 템플릿을 클릭하거나 직접 작성하세요..." oninput="updateSetechCount()"></textarea>
+            <div class="setech-char-info" id="setechCharInfo">0자 / 0 bytes</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════ -->
+    <!-- ── NEW 15. 창체 및 행특 ── -->
+    <!-- ══════════════════════════════════════════════════ -->
+    <section id="activityTab" class="tab-panel">
+      <div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);"><i class="fas fa-star" style="color:#f9a825;"></i> 창체 및 행특</h2>
+        <span style="font-size:12px;color:var(--txt-light);">창의적 체험활동 및 행동특성·종합의견 작성 보조</span>
+      </div>
+      <div class="setech-layout">
+        <!-- 왼쪽: 영역 선택 -->
+        <div class="setech-side">
+          <div class="setech-side-header" style="background:#f9a825;"><i class="fas fa-star"></i> 영역 선택</div>
+          <div class="setech-side-list" id="activityAreaList">
+            <div class="setech-side-item active" onclick="selectActivityArea(this,'자율활동')">🏫 자율활동</div>
+            <div class="setech-side-item" onclick="selectActivityArea(this,'동아리활동')">🎭 동아리활동</div>
+            <div class="setech-side-item" onclick="selectActivityArea(this,'진로활동')">🎯 진로활동</div>
+            <div class="setech-side-item" onclick="selectActivityArea(this,'봉사활동')">🤝 봉사활동</div>
+            <div class="setech-side-item" onclick="selectActivityArea(this,'행동특성·종합의견')">📋 행동특성·종합의견</div>
+          </div>
+        </div>
+        <!-- 오른쪽: 작성 영역 -->
+        <div class="setech-main">
+          <div class="setech-main-header" id="activityMainHeader">
+            <i class="fas fa-school" style="color:#f9a825;"></i> 자율활동 작성
+          </div>
+          <div class="setech-main-body">
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">📌 키워드 클릭 → 자동 삽입</div>
+            <div class="setech-keyword-chips" id="activityKeywords"></div>
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">📝 문장 템플릿</div>
+            <div class="setech-template-grid" id="activityTemplates"></div>
+            <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">✏️ 내용 작성</div>
+            <div class="setech-toolbar">
+              <button class="calc-btn secondary" onclick="clearActivityEditor()"><i class="fas fa-undo"></i> 초기화</button>
+              <button class="calc-btn" onclick="copyActivityEditor()"><i class="fas fa-copy"></i> 복사</button>
+              <button class="calc-btn" style="background:#6b3fa0;" onclick="checkActivityRecord()"><i class="fas fa-spell-check"></i> 생기부 점검</button>
+            </div>
+            <textarea class="setech-editor" id="activityEditor" placeholder="위 키워드나 템플릿을 클릭하거나 직접 작성하세요..." oninput="updateActivityCount()"></textarea>
+            <div class="setech-char-info" id="activityCharInfo">0자 / 0 bytes</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -502,7 +1403,6 @@
 <!-- ══ 교체/대체 결과 모달 ══ -->
 <div class="modal-overlay" id="resultModal" onclick="if(event.target===this)closeModal()">
   <div class="modal result-modal">
-    <!-- 헤더 -->
     <div class="result-modal-header">
       <div class="result-modal-title"><i class="fas fa-search"></i> 수업 매칭 결과</div>
       <div class="result-modal-header-btns">
@@ -510,9 +1410,7 @@
         <button class="result-close-btn" onclick="closeModal()">✕</button>
       </div>
     </div>
-    <!-- 선택 수업 박스 -->
     <div id="modalMyLesson"></div>
-    <!-- 결과 목록 -->
     <div class="result-modal-body" id="modalSwapList"></div>
   </div>
 </div>
@@ -536,5 +1434,720 @@
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js?v=20260428"></script>
 <script src="js/app.js?v=20260428"></script>
+
+<!-- ══ 새 탭 기능 스크립트 ══ -->
+<script>
+/* ─────────────────────────────────────────
+   실습실 서브탭 전환
+───────────────────────────────────────── */
+function switchLabSubTab(id) {
+  document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sub-tab-panel').forEach(p => p.classList.remove('active'));
+  const btn = document.getElementById('labSubBtn-' + id);
+  const panel = document.getElementById('labSubPanel-' + id);
+  if (btn) btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+}
+
+/* ─────────────────────────────────────────
+   추정분할계산기
+───────────────────────────────────────── */
+function calcGradeEstimate() {
+  const total = parseFloat(document.getElementById('calcTotalStudents').value);
+  const score = parseFloat(document.getElementById('calcMyScore').value);
+  const max   = parseFloat(document.getElementById('calcMaxScore').value) || 100;
+  const ratioA = parseFloat(document.getElementById('calcRatioA').value);
+  const ratioB = parseFloat(document.getElementById('calcRatioB').value);
+  const el = document.getElementById('calcGradeResult');
+  if (isNaN(score) || isNaN(max)) return;
+  const pct = (score / max) * 100;
+  let grade = 'E', color = '#7f8c8d';
+  if (pct >= 90) { grade = 'A'; color = '#3a5bd9'; }
+  else if (pct >= 80) { grade = 'B'; color = '#1e8a5a'; }
+  else if (pct >= 70) { grade = 'C'; color = '#c96a00'; }
+  else if (pct >= 60) { grade = 'D'; color = '#c0392b'; }
+  let sub = `원점수 ${score}점 / 만점 ${max}점 = ${pct.toFixed(1)}%`;
+  if (!isNaN(total) && !isNaN(ratioA) && !isNaN(ratioB)) {
+    const cntA = Math.round(total * ratioA / 100);
+    const cntB = Math.round(total * ratioB / 100);
+    sub += `<br>A 인원: 약 ${cntA}명 / B 인원: 약 ${cntB}명`;
+  }
+  el.innerHTML = `<div class="calc-result-title">추정 성취도</div>
+    <div class="calc-result-value" style="color:${color};">${grade}</div>
+    <div class="calc-result-sub">${sub}</div>`;
+}
+
+function calcSplitScore() {
+  const max = parseFloat(document.getElementById('splitMaxScore').value) || 100;
+  const rA  = parseFloat(document.getElementById('splitRatioA').value);
+  const rB  = parseFloat(document.getElementById('splitRatioB').value);
+  const rC  = parseFloat(document.getElementById('splitRatioC').value);
+  const el  = document.getElementById('splitScoreResult');
+  if (isNaN(rA) || isNaN(rB) || isNaN(rC)) return;
+  const rD = 100 - rA - rB - rC;
+  if (rD < 0) {
+    el.innerHTML = `<div class="calc-result-title">오류</div><div class="calc-result-value" style="color:#e74c3c;">비율 합이 100%를 초과합니다</div>`;
+    return;
+  }
+  const splitAB = (max * (100 - rA) / 100).toFixed(1);
+  const splitBC = (max * (100 - rA - rB) / 100).toFixed(1);
+  const splitCD = (max * (100 - rA - rB - rC) / 100).toFixed(1);
+  el.innerHTML = `<div class="calc-result-title">분할점수 (A/B/C/D 경계)</div>
+    <div style="font-size:14px;font-weight:800;color:var(--primary);line-height:2;">
+      A↔B 경계: <strong>${splitAB}점</strong><br>
+      B↔C 경계: <strong>${splitBC}점</strong><br>
+      C↔D 경계: <strong>${splitCD}점</strong>
+    </div>
+    <div class="calc-result-sub">D 비율: ${rD.toFixed(1)}% / E(미이수) 제외 기준</div>`;
+}
+
+function calcPerformance() {
+  const w  = parseFloat(document.getElementById('perfWritten').value);
+  const wr = parseFloat(document.getElementById('perfWrittenRatio').value);
+  const p  = parseFloat(document.getElementById('perfPerform').value);
+  const pr = parseFloat(document.getElementById('perfPerformRatio').value);
+  const el = document.getElementById('perfResult');
+  if (isNaN(w) || isNaN(wr) || isNaN(p) || isNaN(pr)) return;
+  const total = w * (wr / 100) + p * (pr / 100);
+  let grade = 'E', color = '#7f8c8d';
+  if (total >= 90) { grade = 'A'; color = '#3a5bd9'; }
+  else if (total >= 80) { grade = 'B'; color = '#1e8a5a'; }
+  else if (total >= 70) { grade = 'C'; color = '#c96a00'; }
+  else if (total >= 60) { grade = 'D'; color = '#c0392b'; }
+  el.innerHTML = `<div class="calc-result-title">합산 원점수 / 추정 성취도</div>
+    <div class="calc-result-value" style="color:${color};">${total.toFixed(1)}점 → ${grade}</div>
+    <div class="calc-result-sub">지필 ${w}×${wr}% + 수행 ${p}×${pr}% = ${total.toFixed(1)}점</div>`;
+}
+
+/* ─────────────────────────────────────────
+   실습실 예약
+───────────────────────────────────────── */
+let resState = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  selectedDate: null,
+  selectedRoom: null,
+  reservations: JSON.parse(localStorage.getItem('labReservations') || '[]')
+};
+
+const ROOMS = ['컴퓨터실 1','컴퓨터실 2','컴퓨터실 3','과학실험실','음악실','미술실','체육관','시청각실'];
+const PERIODS = [
+  {p:'1교시', t:'08:40~09:30'},
+  {p:'2교시', t:'09:40~10:30'},
+  {p:'3교시', t:'10:40~11:30'},
+  {p:'4교시', t:'11:40~12:30'},
+  {p:'5교시', t:'13:40~14:30'},
+  {p:'6교시', t:'14:40~15:30'},
+  {p:'7교시', t:'15:40~16:30'}
+];
+
+function initReservation() {
+  renderResRoomBtns();
+  renderResCal();
+  renderMyResList();
+  const today = new Date();
+  document.getElementById('resFormDate').value = today.toISOString().split('T')[0];
+}
+
+function renderResRoomBtns() {
+  const el = document.getElementById('resRoomBtns');
+  if (!el) return;
+  el.innerHTML = ROOMS.map(r =>
+    `<button class="res-room-btn${resState.selectedRoom===r?' active':''}" onclick="selectResRoom('${r}')">${r}</button>`
+  ).join('');
+}
+
+function selectResRoom(room) {
+  resState.selectedRoom = room;
+  renderResRoomBtns();
+  renderResTable();
+  document.getElementById('resFormRoom').value = room;
+}
+
+function resCalPrev() { resState.month--; if(resState.month<0){resState.month=11;resState.year--;} renderResCal(); }
+function resCalNext() { resState.month++; if(resState.month>11){resState.month=0;resState.year++;} renderResCal(); }
+
+function renderResCal() {
+  const el = document.getElementById('resCalGrid');
+  const title = document.getElementById('resCalTitle');
+  if (!el) return;
+  const y = resState.year, m = resState.month;
+  title.textContent = `${y}년 ${m+1}월`;
+  const days = ['일','월','화','수','목','금','토'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const first = new Date(y, m, 1);
+  const last  = new Date(y, m+1, 0);
+  let html = days.map((d,i) => `<div class="res-cal-day-name${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('');
+  for (let i=0; i<first.getDay(); i++) html += `<div class="res-cal-cell other-month"></div>`;
+  for (let d=1; d<=last.getDate(); d++) {
+    const dt = new Date(y, m, d);
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dt.getTime() === today.getTime();
+    const isSel   = resState.selectedDate === dateStr;
+    const isSun   = dt.getDay() === 0;
+    const isSat   = dt.getDay() === 6;
+    const hasRes  = resState.reservations.some(r => r.date === dateStr);
+    let cls = 'res-cal-cell';
+    if (isSel) cls += ' selected';
+    else if (isToday) cls += ' today';
+    if (isSun) cls += ' weekend-sun';
+    if (isSat) cls += ' weekend-sat';
+    if (hasRes) cls += ' has-reservation';
+    html += `<div class="${cls}" onclick="selectResDate('${dateStr}')">${d}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+function selectResDate(dateStr) {
+  resState.selectedDate = dateStr;
+  document.getElementById('resFormDate').value = dateStr;
+  renderResCal();
+  renderResTable();
+}
+
+function renderResTable() {
+  const tbody = document.getElementById('resTimeTableBody');
+  const title = document.getElementById('resTableTitle');
+  if (!tbody) return;
+  if (!resState.selectedDate || !resState.selectedRoom) {
+    title.textContent = '날짜와 실습실을 선택해주세요';
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:30px;color:var(--txt-light);">날짜와 실습실을 선택해주세요</td></tr>';
+    return;
+  }
+  title.textContent = `${resState.selectedDate} · ${resState.selectedRoom}`;
+  tbody.innerHTML = PERIODS.map(({p, t}) => {
+    const res = resState.reservations.find(r => r.date===resState.selectedDate && r.room===resState.selectedRoom && r.period===p);
+    if (res) {
+      return `<tr><td class="period-label">${p}</td><td style="color:var(--txt-mid);">${t}</td>
+        <td class="booked">${res.teacher}</td>
+        <td class="booked">${res.purpose}</td>
+        <td class="booked"><span style="font-size:11px;">예약완료</span></td></tr>`;
+    }
+    return `<tr><td class="period-label">${p}</td><td style="color:var(--txt-mid);">${t}</td>
+      <td class="available" colspan="3" onclick="quickBook('${p}')">
+        <span style="font-size:12px;color:#1e8a5a;"><i class="fas fa-plus"></i> 예약 가능 (클릭하여 예약)</span>
+      </td></tr>`;
+  }).join('');
+}
+
+function quickBook(period) {
+  document.getElementById('resFormPeriod').value = period.replace('교시','');
+  document.querySelector('.res-form').scrollIntoView({behavior:'smooth'});
+}
+
+function submitReservation() {
+  const room    = document.getElementById('resFormRoom').value;
+  const date    = document.getElementById('resFormDate').value;
+  const period  = document.getElementById('resFormPeriod').value;
+  const teacher = document.getElementById('resFormTeacher').value.trim();
+  const purpose = document.getElementById('resFormPurpose').value.trim();
+  const cls     = document.getElementById('resFormClass').value.trim();
+  if (!room || !date || !period || !teacher || !purpose) {
+    alert('실습실, 날짜, 교시, 신청자, 사용 목적을 모두 입력해주세요.');
+    return;
+  }
+  const periodLabel = period + '교시';
+  const dup = resState.reservations.find(r => r.date===date && r.room===room && r.period===periodLabel);
+  if (dup) { alert(`이미 예약된 시간입니다.\n예약자: ${dup.teacher}`); return; }
+  resState.reservations.push({ room, date, period: periodLabel, teacher, purpose, class: cls, id: Date.now() });
+  localStorage.setItem('labReservations', JSON.stringify(resState.reservations));
+  clearResForm();
+  renderResCal();
+  renderResTable();
+  renderMyResList();
+  alert('예약이 완료되었습니다!');
+}
+
+function clearResForm() {
+  ['resFormRoom','resFormPeriod','resFormTeacher','resFormPurpose','resFormClass'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+function renderMyResList() {
+  const el = document.getElementById('myResList');
+  if (!el) return;
+  if (resState.reservations.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><h3>예약 내역이 없습니다</h3></div>';
+    return;
+  }
+  const sorted = [...resState.reservations].sort((a,b) => a.date.localeCompare(b.date));
+  el.innerHTML = sorted.map(r => `
+    <div class="res-item">
+      <span class="res-item-badge confirmed">${r.room}</span>
+      <div class="res-item-info">
+        <strong>${r.date}</strong> · ${r.period} · ${r.teacher}
+        ${r.class ? `(${r.class})` : ''} — ${r.purpose}
+      </div>
+      <button class="res-item-del" onclick="deleteReservation(${r.id})"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+}
+
+function deleteReservation(id) {
+  if (!confirm('예약을 취소하시겠습니까?')) return;
+  resState.reservations = resState.reservations.filter(r => r.id !== id);
+  localStorage.setItem('labReservations', JSON.stringify(resState.reservations));
+  renderResCal();
+  renderResTable();
+  renderMyResList();
+}
+
+function clearMyReservations() {
+  if (!confirm('모든 예약 내역을 삭제하시겠습니까?')) return;
+  resState.reservations = [];
+  localStorage.setItem('labReservations', JSON.stringify(resState.reservations));
+  renderResCal();
+  renderResTable();
+  renderMyResList();
+}
+
+/* ─────────────────────────────────────────
+   생기부 점검
+───────────────────────────────────────── */
+const FORBIDDEN_WORDS = [
+  '최고','최우수','탁월한','뛰어난','훌륭한','완벽한','천재','영재',
+  '1등','1위','수석','수위','전교 1등',
+  '착한','착하고','착하며','착하여',
+  '성실한','성실하고','성실하며',
+  '노력하는','노력하였으며','노력하고',
+  '열심히','열심인','열심히 하는',
+  '잠재력','가능성이 있는','발전 가능성',
+  '앞으로','미래에','장래에',
+  '~것 같다','~것 같음','~것으로 보임','~것으로 생각됨',
+  '반드시','꼭','틀림없이',
+  '부모님','학부모','가정환경','가정 형편',
+  '장애','질병','건강','병원','치료',
+  '종교','신앙','교회','절','성당',
+  '정치','이념','사상'
+];
+
+const SPACING_RULES = [
+  { pattern: /([가-힣])이다([가-힣])/g, msg: '"이다" 뒤 띄어쓰기 확인' },
+  { pattern: /([가-힣])하여([가-힣])/g, msg: '"하여" 뒤 띄어쓰기 확인' },
+  { pattern: /([가-힣])으로([가-힣])/g, msg: '"으로" 뒤 띄어쓰기 확인' },
+];
+
+function initForbiddenList() {
+  const el = document.getElementById('forbiddenList');
+  if (!el) return;
+  el.innerHTML = FORBIDDEN_WORDS.map(w => `<span class="forbidden-tag">${w}</span>`).join('');
+}
+
+function updateRecordCount() {
+  const text = document.getElementById('recordInput').value;
+  const bytes = new TextEncoder().encode(text).length;
+  const el = document.getElementById('recordCharCount');
+  el.textContent = `${text.length}자 / ${bytes} bytes`;
+  el.className = 'record-char-count' + (bytes > 1500 ? ' over' : '');
+}
+
+function checkRecord() {
+  const text = document.getElementById('recordInput').value.trim();
+  const el = document.getElementById('recordResultBody');
+  if (!text) { el.innerHTML = '<div class="empty-state"><div class="empty-icon">✏️</div><h3>내용을 먼저 입력해주세요</h3></div>'; return; }
+
+  const bytes = new TextEncoder().encode(text).length;
+  const charCount = text.length;
+  const issues = [];
+
+  // 1. 글자수 체크
+  if (bytes > 1500) {
+    issues.push({ type:'error', icon:'⚠️', title:`글자수 초과 (${charCount}자 / ${bytes} bytes)`, detail:`학생부 기재 가능 용량은 1,500 bytes입니다. 현재 ${bytes - 1500} bytes 초과되었습니다.` });
+  } else if (bytes > 1200) {
+    issues.push({ type:'warning', icon:'⚡', title:`글자수 주의 (${charCount}자 / ${bytes} bytes)`, detail:`1,500 bytes 한도에 근접했습니다. 여유 공간: ${1500 - bytes} bytes` });
+  } else {
+    issues.push({ type:'ok', icon:'✅', title:`글자수 정상 (${charCount}자 / ${bytes} bytes)`, detail:`여유 공간: ${1500 - bytes} bytes` });
+  }
+
+  // 2. 금지어 체크
+  const foundForbidden = FORBIDDEN_WORDS.filter(w => text.includes(w));
+  if (foundForbidden.length > 0) {
+    issues.push({ type:'error', icon:'🚫', title:`기재 금지 용어 ${foundForbidden.length}개 발견`, detail:`발견된 용어: ${foundForbidden.map(w=>`<span class="forbidden-word">${w}</span>`).join(', ')}` });
+  } else {
+    issues.push({ type:'ok', icon:'✅', title:'기재 금지 용어 없음', detail:'금지 용어가 발견되지 않았습니다.' });
+  }
+
+  // 3. 주관적 표현 체크
+  const subjective = ['것 같다','것 같음','것으로 보임','것으로 생각됨','것으로 판단됨'];
+  const foundSubj = subjective.filter(w => text.includes(w));
+  if (foundSubj.length > 0) {
+    issues.push({ type:'warning', icon:'⚡', title:'주관적 표현 발견', detail:`"${foundSubj.join('", "')}" — 객관적 서술로 수정을 권장합니다.` });
+  }
+
+  // 4. 문장 종결 체크
+  const lastChar = text.trim().slice(-1);
+  if (lastChar !== '.' && lastChar !== '음' && lastChar !== '함' && lastChar !== '임') {
+    issues.push({ type:'warning', icon:'⚡', title:'문장 종결 확인', detail:'마지막 문장이 명사형 종결(~함, ~음, ~임)로 끝나는지 확인해주세요.' });
+  } else {
+    issues.push({ type:'ok', icon:'✅', title:'문장 종결 정상', detail:'명사형 종결로 마무리되었습니다.' });
+  }
+
+  // 5. 미래 시제 체크
+  const futurePhrases = ['할 것이다','할 것임','할 예정','하게 될','하게 될 것'];
+  const foundFuture = futurePhrases.filter(w => text.includes(w));
+  if (foundFuture.length > 0) {
+    issues.push({ type:'warning', icon:'⚡', title:'미래 시제 발견', detail:`"${foundFuture.join('", "')}" — 학생부는 과거·현재 사실 기반으로 작성해야 합니다.` });
+  }
+
+  // 6. 개인정보 체크
+  const privateInfo = ['주민등록','전화번호','주소','이메일','SNS','인스타','카카오'];
+  const foundPrivate = privateInfo.filter(w => text.includes(w));
+  if (foundPrivate.length > 0) {
+    issues.push({ type:'error', icon:'🔒', title:'개인정보 포함 가능성', detail:`"${foundPrivate.join('", "')}" — 개인정보 기재 여부를 확인해주세요.` });
+  }
+
+  // 요약
+  const errCount = issues.filter(i=>i.type==='error').length;
+  const warnCount = issues.filter(i=>i.type==='warning').length;
+  const okCount = issues.filter(i=>i.type==='ok').length;
+
+  el.innerHTML = `
+    <div class="check-summary">
+      <span class="check-summary-badge error">오류 ${errCount}건</span>
+      <span class="check-summary-badge warning">주의 ${warnCount}건</span>
+      <span class="check-summary-badge ok">정상 ${okCount}건</span>
+    </div>
+    ${issues.map(i => `
+      <div class="check-item ${i.type}">
+        <div class="check-item-icon">${i.icon}</div>
+        <div class="check-item-content">
+          <div class="check-item-title">${i.title}</div>
+          <div class="check-item-detail">${i.detail}</div>
+        </div>
+      </div>`).join('')}`;
+}
+
+function clearRecord() {
+  document.getElementById('recordInput').value = '';
+  document.getElementById('recordResultBody').innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><h3>내용을 입력하고 점검을 시작해주세요</h3><p>맞춤법, 띄어쓰기, 금지어, 글자수를 자동으로 확인합니다</p></div>';
+  updateRecordCount();
+}
+
+function copyRecord() {
+  const text = document.getElementById('recordInput').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => alert('복사되었습니다!'));
+}
+
+/* ─────────────────────────────────────────
+   세특 데이터
+───────────────────────────────────────── */
+const SETECH_DATA = {
+  '정보': {
+    icon: '💻',
+    keywords: ['알고리즘','자료구조','파이썬','인공지능','데이터 분석','머신러닝','딥러닝','코딩','프로그래밍','문제 해결','컴퓨팅 사고','자율주행','IoT','빅데이터','시각화','디버깅','변수','함수','조건문','반복문'],
+    templates: [
+      { title: '알고리즘 이해', preview: '알고리즘의 개념을 이해하고 순서도를 활용하여 문제 해결 과정을 논리적으로 표현함.' },
+      { title: '파이썬 프로그래밍', preview: '파이썬을 활용하여 데이터를 처리하고 시각화하는 프로그램을 작성함.' },
+      { title: 'AI 프로젝트', preview: '인공지능 기반 프로젝트에서 데이터 수집·전처리·모델 학습 과정에 주도적으로 참여함.' },
+      { title: '문제 해결', preview: '주어진 문제를 분석하여 효율적인 알고리즘을 설계하고 코드로 구현하는 역량을 보임.' },
+    ]
+  },
+  '국어': {
+    icon: '📖',
+    keywords: ['문학','비문학','독해','논술','토론','발표','글쓰기','어휘','문법','독서','시','소설','수필','비평','분석','요약','추론','적용'],
+    templates: [
+      { title: '문학 감상', preview: '작품의 주제와 표현 방식을 분석하고 자신의 감상을 논리적으로 서술함.' },
+      { title: '토론 참여', preview: '토론 활동에서 근거를 제시하며 자신의 주장을 명확하게 표현함.' },
+      { title: '글쓰기', preview: '다양한 자료를 수집·분석하여 논리적 구조를 갖춘 글을 작성함.' },
+    ]
+  },
+  '수학': {
+    icon: '📐',
+    keywords: ['함수','미적분','통계','확률','수열','벡터','행렬','방정식','부등식','도형','증명','논리','추론','계산','그래프'],
+    templates: [
+      { title: '개념 이해', preview: '수학적 개념을 정확히 이해하고 다양한 문제에 적용하는 능력을 보임.' },
+      { title: '문제 해결', preview: '복잡한 문제를 단계적으로 분석하여 체계적인 풀이 과정을 제시함.' },
+      { title: '통계 활용', preview: '실생활 데이터를 수집하고 통계적 방법으로 분석하여 의미 있는 결론을 도출함.' },
+    ]
+  },
+  '영어': {
+    icon: '🌍',
+    keywords: ['독해','듣기','말
+하기','쓰기','어휘','문법','번역','발표','토론','에세이','요약','추론'],
+    templates: [
+      { title: '독해 능력', preview: '다양한 장르의 영어 지문을 정확히 이해하고 핵심 내용을 파악함.' },
+      { title: '말하기·쓰기', preview: '영어로 자신의 의견을 논리적으로 표현하고 다양한 어휘를 활용함.' },
+    ]
+  },
+  '과학': {
+    icon: '🔬',
+    keywords: ['실험','탐구','가설','검증','물리','화학','생물','지구과학','에너지','물질','생명','환경','기후','탄소','원소','반응'],
+    templates: [
+      { title: '탐구 실험', preview: '과학적 탐구 방법에 따라 실험을 설계하고 결과를 분석하여 결론을 도출함.' },
+      { title: '개념 적용', preview: '과학적 개념을 실생활 현상과 연결하여 설명하는 능력을 보임.' },
+    ]
+  },
+  '사회': {
+    icon: '🌏',
+    keywords: ['민주주의','인권','경제','문화','지리','역사','사회문제','공동체','시민','참여','다양성','세계화','환경'],
+    templates: [
+      { title: '사회 탐구', preview: '사회 현상을 다양한 관점에서 분석하고 비판적으로 사고하는 역량을 보임.' },
+      { title: '시민 의식', preview: '민주주의 가치를 이해하고 사회 구성원으로서의 책임감을 실천함.' },
+    ]
+  },
+  '역사': {
+    icon: '📜',
+    keywords: ['역사적 사고','시대','사건','인물','문화','전통','근현대','세계사','한국사','비교','분석','해석'],
+    templates: [
+      { title: '역사 이해', preview: '역사적 사건의 배경과 영향을 다각도로 분석하고 현재와 연결하여 사고함.' },
+    ]
+  },
+  '체육': {
+    icon: '⚽',
+    keywords: ['체력','기술','협동','스포츠','건강','운동','경기','규칙','팀워크','리더십','페어플레이'],
+    templates: [
+      { title: '체육 활동', preview: '다양한 스포츠 활동에 적극적으로 참여하며 기본 기능과 전술을 익힘.' },
+      { title: '협동 정신', preview: '팀 스포츠에서 협동심과 배려심을 발휘하며 팀의 목표 달성에 기여함.' },
+    ]
+  },
+  '음악': {
+    icon: '🎵',
+    keywords: ['음악 이론','악기','연주','합창','감상','리듬','화음','창작','표현','음악사'],
+    templates: [
+      { title: '음악 감상', preview: '다양한 장르의 음악을 감상하고 음악적 요소를 분석하여 표현함.' },
+    ]
+  },
+  '미술': {
+    icon: '🎨',
+    keywords: ['조형','색채','표현','감상','디자인','창작','미술사','재료','기법','시각','소통'],
+    templates: [
+      { title: '미술 창작', preview: '다양한 재료와 기법을 활용하여 창의적인 작품을 제작함.' },
+    ]
+  },
+  '기술·가정': {
+    icon: '🔧',
+    keywords: ['기술','가정','제작','설계','생활','안전','환경','식생활','의생활','주생활','발명'],
+    templates: [
+      { title: '기술 제작', preview: '설계 과정을 체계적으로 수행하고 안전하게 제작 활동에 참여함.' },
+    ]
+  },
+  '진로': {
+    icon: '🎯',
+    keywords: ['진로 탐색','직업','자기 이해','목표','계획','역량','관심','탐방','체험','포트폴리오'],
+    templates: [
+      { title: '진로 탐색', preview: '자신의 흥미와 적성을 파악하고 관련 직업 세계를 탐색함.' },
+      { title: '목표 설정', preview: '진로 목표를 구체적으로 설정하고 이를 위한 실천 계획을 수립함.' },
+    ]
+  }
+};
+
+/* ─────────────────────────────────────────
+   창체·행특 데이터
+───────────────────────────────────────── */
+const ACTIVITY_DATA = {
+  '자율활동': {
+    icon: '🏫',
+    keywords: ['학급 임원','학교 행사','캠페인','자치 활동','토론','발표','봉사','리더십','협동','소통','공동체','규칙','책임'],
+    templates: [
+      { title: '학급 임원 활동', preview: '학급 회장(부회장)으로서 학급 구성원의 의견을 수렴하고 학급 운영에 적극 기여함.' },
+      { title: '학교 행사 참여', preview: '학교 행사에 자발적으로 참여하여 공동체 의식을 함양하고 협동심을 발휘함.' },
+      { title: '자치 활동', preview: '학생 자치 활동에 주도적으로 참여하여 민주적 의사 결정 과정을 경험함.' },
+    ]
+  },
+  '동아리활동': {
+    icon: '🎭',
+    keywords: ['동아리','탐구','발표','협력','창작','공연','대회','프로젝트','보고서','실험','제작','기획'],
+    templates: [
+      { title: '동아리 탐구', preview: '동아리 활동에서 관심 분야를 심층 탐구하고 그 결과를 보고서로 정리하여 발표함.' },
+      { title: '동아리 협력', preview: '동아리 구성원들과 협력하여 공동 프로젝트를 기획하고 성공적으로 수행함.' },
+    ]
+  },
+  '진로활동': {
+    icon: '🎯',
+    keywords: ['진로 탐색','직업 체험','멘토링','강연','탐방','인터뷰','포트폴리오','자기 소개서','목표','계획'],
+    templates: [
+      { title: '진로 탐색', preview: '다양한 진로 탐색 활동을 통해 자신의 흥미와 적성을 파악하고 진로 방향을 구체화함.' },
+      { title: '직업 체험', preview: '직업 체험 활동에 참여하여 관심 직종의 실무를 경험하고 진로 목표를 명확히 함.' },
+    ]
+  },
+  '봉사활동': {
+    icon: '🤝',
+    keywords: ['봉사','나눔','배려','공동체','환경','복지','돌봄','캠페인','지역사회','인식 개선'],
+    templates: [
+      { title: '봉사 활동', preview: '지역사회 봉사 활동에 자발적으로 참여하여 나눔과 배려의 가치를 실천함.' },
+      { title: '환경 봉사', preview: '환경 보호 캠페인에 참여하여 환경의 소중함을 인식하고 실천 의지를 다짐.' },
+    ]
+  },
+  '행동특성·종합의견': {
+    icon: '📋',
+    keywords: ['성실','책임감','협동','배려','창의','탐구','리더십','소통','공감','자기 관리','긍정','도전','성장'],
+    templates: [
+      { title: '학업 태도', preview: '모든 교과에서 성실한 태도로 임하며 스스로 학습 계획을 세워 실천하는 자기 주도 학습 역량을 보임.' },
+      { title: '대인 관계', preview: '친구들과의 관계에서 배려와 공감 능력을 발휘하며 갈등 상황에서도 원만하게 해결하는 모습을 보임.' },
+      { title: '리더십', preview: '학급 활동에서 리더십을 발휘하여 구성원들을 이끌고 공동 목표 달성에 기여함.' },
+      { title: '성장 가능성', preview: '다양한 경험을 통해 자신을 성찰하고 꾸준히 성장하는 모습이 인상적임.' },
+    ]
+  }
+};
+
+/* ─────────────────────────────────────────
+   세특 UI 함수
+───────────────────────────────────────── */
+let currentSetechSubject = '정보';
+let currentActivityArea  = '자율활동';
+
+function selectSetechSubject(el, subject) {
+  document.querySelectorAll('#setechSubjectList .setech-side-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  currentSetechSubject = subject;
+  const data = SETECH_DATA[subject] || {};
+  document.getElementById('setechMainHeader').innerHTML = `<i class="${getSubjectIcon(subject)}" style="color:#1e8a5a;"></i> ${subject} 세특 작성`;
+  renderSetechKeywords(data.keywords || []);
+  renderSetechTemplates(data.templates || []);
+}
+
+function selectActivityArea(el, area) {
+  document.querySelectorAll('#activityAreaList .setech-side-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  currentActivityArea = area;
+  const data = ACTIVITY_DATA[area] || {};
+  document.getElementById('activityMainHeader').innerHTML = `<i class="fas fa-star" style="color:#f9a825;"></i> ${area} 작성`;
+  renderActivityKeywords(data.keywords || []);
+  renderActivityTemplates(data.templates || []);
+}
+
+function getSubjectIcon(subject) {
+  const icons = {'정보':'fas fa-laptop-code','국어':'fas fa-book-open','수학':'fas fa-square-root-alt','영어':'fas fa-globe','과학':'fas fa-flask','사회':'fas fa-globe-asia','역사':'fas fa-scroll','체육':'fas fa-running','음악':'fas fa-music','미술':'fas fa-palette','기술·가정':'fas fa-tools','진로':'fas fa-bullseye'};
+  return icons[subject] || 'fas fa-book';
+}
+
+function renderSetechKeywords(keywords) {
+  const el = document.getElementById('setechKeywords');
+  if (!el) return;
+  el.innerHTML = keywords.map(k => `<span class="setech-chip" onclick="insertSetechKeyword('${k}')">${k}</span>`).join('');
+}
+
+function renderSetechTemplates(templates) {
+  const el = document.getElementById('setechTemplates');
+  if (!el) return;
+  el.innerHTML = templates.map(t => `
+    <div class="setech-template-card" onclick="insertSetechTemplate('${t.preview.replace(/'/g,"\\'")}')">
+      <div class="setech-template-title">${t.title}</div>
+      <div class="setech-template-preview">${t.preview}</div>
+    </div>`).join('');
+}
+
+function insertSetechKeyword(kw) {
+  const el = document.getElementById('setechEditor');
+  const pos = el.selectionStart;
+  el.value = el.value.slice(0, pos) + kw + el.value.slice(pos);
+  el.selectionStart = el.selectionEnd = pos + kw.length;
+  el.focus();
+  updateSetechCount();
+}
+
+function insertSetechTemplate(text) {
+  const el = document.getElementById('setechEditor');
+  if (el.value && !el.value.endsWith('\n')) el.value += '\n';
+  el.value += text;
+  el.focus();
+  updateSetechCount();
+}
+
+function updateSetechCount() {
+  const text = document.getElementById('setechEditor').value;
+  const bytes = new TextEncoder().encode(text).length;
+  const el = document.getElementById('setechCharInfo');
+  el.textContent = `${text.length}자 / ${bytes} bytes`;
+  el.className = 'setech-char-info' + (bytes > 1500 ? ' over' : '');
+}
+
+function clearSetechEditor() { document.getElementById('setechEditor').value = ''; updateSetechCount(); }
+function copySetechEditor() {
+  const text = document.getElementById('setechEditor').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => alert('복사되었습니다!'));
+}
+function checkSetechRecord() {
+  const text = document.getElementById('setechEditor').value;
+  document.getElementById('recordInput').value = text;
+  updateRecordCount();
+  switchTab('recordCheck');
+  setTimeout(checkRecord, 100);
+}
+
+/* ─────────────────────────────────────────
+   창체·행특 UI 함수
+───────────────────────────────────────── */
+function renderActivityKeywords(keywords) {
+  const el = document.getElementById('activityKeywords');
+  if (!el) return;
+  el.innerHTML = keywords.map(k => `<span class="setech-chip" onclick="insertActivityKeyword('${k}')">${k}</span>`).join('');
+}
+
+function renderActivityTemplates(templates) {
+  const el = document.getElementById('activityTemplates');
+  if (!el) return;
+  el.innerHTML = templates.map(t => `
+    <div class="setech-template-card" onclick="insertActivityTemplate('${t.preview.replace(/'/g,"\\'")}')">
+      <div class="setech-template-title">${t.title}</div>
+      <div class="setech-template-preview">${t.preview}</div>
+    </div>`).join('');
+}
+
+function insertActivityKeyword(kw) {
+  const el = document.getElementById('activityEditor');
+  const pos = el.selectionStart;
+  el.value = el.value.slice(0, pos) + kw + el.value.slice(pos);
+  el.selectionStart = el.selectionEnd = pos + kw.length;
+  el.focus();
+  updateActivityCount();
+}
+
+function insertActivityTemplate(text) {
+  const el = document.getElementById('activityEditor');
+  if (el.value && !el.value.endsWith('\n')) el.value += '\n';
+  el.value += text;
+  el.focus();
+  updateActivityCount();
+}
+
+function updateActivityCount() {
+  const text = document.getElementById('activityEditor').value;
+  const bytes = new TextEncoder().encode(text).length;
+  const el = document.getElementById('activityCharInfo');
+  el.textContent = `${text.length}자 / ${bytes} bytes`;
+  el.className = 'setech-char-info' + (bytes > 1500 ? ' over' : '');
+}
+
+function clearActivityEditor() { document.getElementById('activityEditor').value = ''; updateActivityCount(); }
+function copyActivityEditor() {
+  const text = document.getElementById('activityEditor').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => alert('복사되었습니다!'));
+}
+function checkActivityRecord() {
+  const text = document.getElementById('activityEditor').value;
+  document.getElementById('recordInput').value = text;
+  updateRecordCount();
+  switchTab('recordCheck');
+  setTimeout(checkRecord, 100);
+}
+
+/* ─────────────────────────────────────────
+   새 탭 초기화 (app.js 로드 후 실행)
+───────────────────────────────────────── */
+window.addEventListener('load', function() {
+  // 새 탭 초기화
+  if (typeof initForbiddenList === 'function') initForbiddenList();
+  if (typeof initReservation === 'function') initReservation();
+
+  // 세특 초기 렌더
+  const initSubjectData = SETECH_DATA['정보'];
+  if (initSubjectData) {
+    renderSetechKeywords(initSubjectData.keywords || []);
+    renderSetechTemplates(initSubjectData.templates || []);
+  }
+
+  // 창체 초기 렌더
+  const initActivityData = ACTIVITY_DATA['자율활동'];
+  if (initActivityData) {
+    renderActivityKeywords(initActivityData.keywords || []);
+    renderActivityTemplates(initActivityData.templates || []);
+  }
+});
+</script>
 </body>
 </html>
