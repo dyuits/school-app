@@ -640,97 +640,6 @@
         문항을 <strong>쉬움·보통·어려움</strong> 3개 난이도로 분류하고, 각 난이도 범주에서 성취수준별 최소 능력자가 맞힐 것으로 예상되는 정답률(%)을 입력합니다. 동일 난이도 범주가 하나의 성취수준 목표 문항으로만 구성되면 약 <strong>65%</strong>를 기준으로 추정합니다. 예상 정답률은 A~D는 5% 단위, E는 1% 단위로 입력합니다.
       </div>
 
-      <!-- 사용방법 설명서 -->
-      <div style="margin-bottom:16px;border:1.5px solid #90caf9;border-radius:10px;overflow:hidden;">
-        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#1565c0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span><i class="fas fa-book-open"></i> 사용방법 — 정기시험 추정분할점수 입력 가이드</span>
-          <span class="guide-arrow" style="font-size:14px;transition:transform 0.2s;">▼</span>
-        </div>
-        <div style="display:none;padding:14px;background:#f8fbff;">
-          <!-- STEP 1 -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 1. 문항을 난이도로 분류하기</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
-              출제된 문항 전체를 <strong>쉬움 / 보통 / 어려움</strong> 3가지 난이도로 분류합니다.<br>
-              분류 기준은 교과 협의에서 정하며, 일반적으로 아래 기준을 참고합니다.
-              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-                <div style="flex:1;min-width:120px;background:#fff;border-radius:6px;padding:8px;border:1px solid #bbdefb;">
-                  <div style="font-weight:700;color:#2196f3;font-size:12px;">🟢 쉬움</div>
-                  <div style="font-size:11px;color:#546e7a;margin-top:3px;">기초 개념 확인 문항<br>대부분 학생이 맞힐 수 있는 문항</div>
-                </div>
-                <div style="flex:1;min-width:120px;background:#fff;border-radius:6px;padding:8px;border:1px solid #ffe082;">
-                  <div style="font-weight:700;color:#ff9800;font-size:12px;">🟡 보통</div>
-                  <div style="font-size:11px;color:#546e7a;margin-top:3px;">핵심 개념 적용 문항<br>중간 수준 학생이 맞힐 수 있는 문항</div>
-                </div>
-                <div style="flex:1;min-width:120px;background:#fff;border-radius:6px;padding:8px;border:1px solid #ef9a9a;">
-                  <div style="font-weight:700;color:#f44336;font-size:12px;">🔴 어려움</div>
-                  <div style="font-size:11px;color:#546e7a;margin-top:3px;">심화·응용 문항<br>상위 수준 학생 대상 변별 문항</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- STEP 2 -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 2. 선택형·논술형 배점합 입력</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
-              각 난이도별로 <strong>선택형(객관식) 배점 합계</strong>와 <strong>논술형(서술·단답형) 배점 합계</strong>를 따로 입력합니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #bbdefb;">
-                <div style="font-size:11.5px;color:#1565c0;"><strong>예시:</strong> 100점 만점 시험</div>
-                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
-                  쉬움: 선택형 21점 + 논술형 0점<br>
-                  보통: 선택형 34점 + 논술형 15점<br>
-                  어려움: 선택형 16점 + 논술형 14점<br>
-                  <span style="color:#2e7d32;">→ 합계: 선택형 71점 + 논술형 29점 = 100점</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- STEP 3 -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 3. 성취수준별 예상 정답률(%) 입력</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
-              각 성취수준(A~E)의 <strong>최소 능력자(MCP)</strong>가 해당 난이도 문항을 맞힐 것으로 예상되는 정답률을 입력합니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #bbdefb;">
-                <div style="font-size:11.5px;color:#1565c0;"><strong>입력 규칙:</strong></div>
-                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
-                  • A~D 성취수준: <strong>5% 단위</strong>로 입력 (예: 90, 85, 80…)<br>
-                  • E 성취수준: <strong>1% 단위</strong>로 입력 (예: 55, 48, 32…)<br>
-                  • 반드시 <strong>A &gt; B &gt; C &gt; D &gt; E</strong> 순서 유지<br>
-                  • 쉬운 문항일수록 정답률이 높게, 어려운 문항일수록 낮게 설정
-                </div>
-              </div>
-              <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #c8e6c9;">
-                <div style="font-size:11.5px;color:#2e7d32;"><strong>참고 예시 (쉬움 문항):</strong></div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
-                  <span style="padding:3px 8px;background:#e3f2fd;color:#1565c0;border-radius:4px;font-size:11px;">A: 90%</span>
-                  <span style="padding:3px 8px;background:#e8f5e9;color:#2e7d32;border-radius:4px;font-size:11px;">B: 80%</span>
-                  <span style="padding:3px 8px;background:#fffde7;color:#f57f17;border-radius:4px;font-size:11px;">C: 70%</span>
-                  <span style="padding:3px 8px;background:#fff3e0;color:#e65100;border-radius:4px;font-size:11px;">D: 60%</span>
-                  <span style="padding:3px 8px;background:#fce4ec;color:#c62828;border-radius:4px;font-size:11px;">E: 55%</span>
-                </div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
-                  <span style="font-size:11px;color:#546e7a;">어려움 문항 예시:</span>
-                  <span style="padding:3px 8px;background:#e3f2fd;color:#1565c0;border-radius:4px;font-size:11px;">A: 75%</span>
-                  <span style="padding:3px 8px;background:#e8f5e9;color:#2e7d32;border-radius:4px;font-size:11px;">B: 55%</span>
-                  <span style="padding:3px 8px;background:#fffde7;color:#f57f17;border-radius:4px;font-size:11px;">C: 40%</span>
-                  <span style="padding:3px 8px;background:#fff3e0;color:#e65100;border-radius:4px;font-size:11px;">D: 25%</span>
-                  <span style="padding:3px 8px;background:#fce4ec;color:#c62828;border-radius:4px;font-size:11px;">E: 15%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- STEP 4 -->
-          <div style="margin-bottom:6px;">
-            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 4. 결과 확인 및 나이스 입력</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
-              입력값을 넣으면 <strong>A~E 분할점수</strong>와 <strong>점수 영역</strong>이 자동 계산됩니다.<br>
-              결과를 교과 협의에서 검토 후 나이스에 입력합니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;">
-                <div style="font-size:11.5px;color:#2e7d32;"><strong>나이스 입력 경로:</strong></div>
-                <div style="font-size:11px;color:#546e7a;margin-top:3px;">교과담임 → 성적처리 → 분할점수 → <strong>정기시험추정분할점수산출관리</strong></div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -892,7 +801,99 @@
         <div style="font-size:11px;color:#795548;line-height:1.6;"><i class="fas fa-exclamation-triangle" style="color:#f57f17;"></i> <strong>주의:</strong> 본 계산기는 교과협의 및 나이스 입력 전 검토를 돕는 보조 도구입니다. 실제 분할점수는 교과 협의를 통해 결정하고 나이스에 입력해야 합니다. 분할점수를 의도적으로 높이거나 낮춰 특정 성적 분포를 만드는 것은 금지됩니다.</div>
       </div>
     </div>
-  </div>
+
+      <!-- 사용방법 설명서 -->
+      <div style="margin-bottom:16px;border:1.5px solid #90caf9;border-radius:10px;overflow:hidden;">
+        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#1565c0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span><i class="fas fa-book-open"></i> 사용방법 — 정기시험 추정분할점수 입력 가이드</span>
+          <span class="guide-arrow" style="font-size:14px;transition:transform 0.2s;">▼</span>
+        </div>
+        <div style="display:none;padding:14px;background:#f8fbff;">
+          <!-- STEP 1 -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 1. 문항을 난이도로 분류하기</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
+              출제된 문항 전체를 <strong>쉬움 / 보통 / 어려움</strong> 3가지 난이도로 분류합니다.<br>
+              분류 기준은 교과 협의에서 정하며, 일반적으로 아래 기준을 참고합니다.
+              <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+                <div style="flex:1;min-width:120px;background:#fff;border-radius:6px;padding:8px;border:1px solid #bbdefb;">
+                  <div style="font-weight:700;color:#2196f3;font-size:12px;">🟢 쉬움</div>
+                  <div style="font-size:11px;color:#546e7a;margin-top:3px;">기초 개념 확인 문항<br>대부분 학생이 맞힐 수 있는 문항</div>
+                </div>
+                <div style="flex:1;min-width:120px;background:#fff;border-radius:6px;padding:8px;border:1px solid #ffe082;">
+                  <div style="font-weight:700;color:#ff9800;font-size:12px;">🟡 보통</div>
+                  <div style="font-size:11px;color:#546e7a;margin-top:3px;">핵심 개념 적용 문항<br>중간 수준 학생이 맞힐 수 있는 문항</div>
+                </div>
+                <div style="flex:1;min-width:120px;background:#fff;border-radius:6px;padding:8px;border:1px solid #ef9a9a;">
+                  <div style="font-weight:700;color:#f44336;font-size:12px;">🔴 어려움</div>
+                  <div style="font-size:11px;color:#546e7a;margin-top:3px;">심화·응용 문항<br>상위 수준 학생 대상 변별 문항</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- STEP 2 -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 2. 선택형·논술형 배점합 입력</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
+              각 난이도별로 <strong>선택형(객관식) 배점 합계</strong>와 <strong>논술형(서술·단답형) 배점 합계</strong>를 따로 입력합니다.<br>
+              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #bbdefb;">
+                <div style="font-size:11.5px;color:#1565c0;"><strong>예시:</strong> 100점 만점 시험</div>
+                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
+                  쉬움: 선택형 21점 + 논술형 0점<br>
+                  보통: 선택형 34점 + 논술형 15점<br>
+                  어려움: 선택형 16점 + 논술형 14점<br>
+                  <span style="color:#2e7d32;">→ 합계: 선택형 71점 + 논술형 29점 = 100점</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- STEP 3 -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 3. 성취수준별 예상 정답률(%) 입력</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
+              각 성취수준(A~E)의 <strong>최소 능력자(MCP)</strong>가 해당 난이도 문항을 맞힐 것으로 예상되는 정답률을 입력합니다.<br>
+              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #bbdefb;">
+                <div style="font-size:11.5px;color:#1565c0;"><strong>입력 규칙:</strong></div>
+                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
+                  • A~D 성취수준: <strong>5% 단위</strong>로 입력 (예: 90, 85, 80…)<br>
+                  • E 성취수준: <strong>1% 단위</strong>로 입력 (예: 55, 48, 32…)<br>
+                  • 반드시 <strong>A &gt; B &gt; C &gt; D &gt; E</strong> 순서 유지<br>
+                  • 쉬운 문항일수록 정답률이 높게, 어려운 문항일수록 낮게 설정
+                </div>
+              </div>
+              <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #c8e6c9;">
+                <div style="font-size:11.5px;color:#2e7d32;"><strong>참고 예시 (쉬움 문항):</strong></div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                  <span style="padding:3px 8px;background:#e3f2fd;color:#1565c0;border-radius:4px;font-size:11px;">A: 90%</span>
+                  <span style="padding:3px 8px;background:#e8f5e9;color:#2e7d32;border-radius:4px;font-size:11px;">B: 80%</span>
+                  <span style="padding:3px 8px;background:#fffde7;color:#f57f17;border-radius:4px;font-size:11px;">C: 70%</span>
+                  <span style="padding:3px 8px;background:#fff3e0;color:#e65100;border-radius:4px;font-size:11px;">D: 60%</span>
+                  <span style="padding:3px 8px;background:#fce4ec;color:#c62828;border-radius:4px;font-size:11px;">E: 55%</span>
+                </div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                  <span style="font-size:11px;color:#546e7a;">어려움 문항 예시:</span>
+                  <span style="padding:3px 8px;background:#e3f2fd;color:#1565c0;border-radius:4px;font-size:11px;">A: 75%</span>
+                  <span style="padding:3px 8px;background:#e8f5e9;color:#2e7d32;border-radius:4px;font-size:11px;">B: 55%</span>
+                  <span style="padding:3px 8px;background:#fffde7;color:#f57f17;border-radius:4px;font-size:11px;">C: 40%</span>
+                  <span style="padding:3px 8px;background:#fff3e0;color:#e65100;border-radius:4px;font-size:11px;">D: 25%</span>
+                  <span style="padding:3px 8px;background:#fce4ec;color:#c62828;border-radius:4px;font-size:11px;">E: 15%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- STEP 4 -->
+          <div style="margin-bottom:6px;">
+            <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:6px;">📌 STEP 4. 결과 확인 및 나이스 입력</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e3f2fd;padding:10px;border-radius:8px;">
+              입력값을 넣으면 <strong>A~E 분할점수</strong>와 <strong>점수 영역</strong>이 자동 계산됩니다.<br>
+              결과를 교과 협의에서 검토 후 나이스에 입력합니다.<br>
+              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;">
+                <div style="font-size:11.5px;color:#2e7d32;"><strong>나이스 입력 경로:</strong></div>
+                <div style="font-size:11px;color:#546e7a;margin-top:3px;">교과담임 → 성적처리 → 분할점수 → <strong>정기시험추정분할점수산출관리</strong></div>
+              </div>
+            </div>
+          </div>
+      </div>
 
   <!-- ④ 수행평가 추정분할점수 -->
   <div id="estPanel2" style="display:none;">
@@ -902,58 +903,6 @@
         채점기준표의 각 평가요소에서 성취수준별 최소 능력자에게 부여되는 배점을 입력합니다. 각 성취수준의 배점 합계가 해당 성취수준의 분할점수(최소 점수)가 됩니다. 점수 영역은 해당 성취수준 최소점수 ~ 바로 위 성취수준 최소점수 -1 로 자동 설정됩니다.
       </div>
 
-      <!-- 수행평가 사용방법 설명서 -->
-      <div style="margin-bottom:16px;border:1.5px solid #ce93d8;border-radius:10px;overflow:hidden;">
-        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow2').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#6a1b9a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span><i class="fas fa-book-open"></i> 사용방법 — 수행평가 추정분할점수 입력 가이드</span>
-          <span class="guide-arrow2" style="font-size:14px;transition:transform 0.2s;">▼</span>
-        </div>
-        <div style="display:none;padding:14px;background:#fdf8ff;">
-          <!-- STEP 1 -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:6px;">📌 STEP 1. 채점기준표에서 평가요소 확인</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#f3e5f5;padding:10px;border-radius:8px;">
-              수행평가 <strong>채점기준표</strong>를 펼치고 평가요소를 확인합니다.<br>
-              평가요소는 대개 <strong>2~5개</strong>로 구성되며, 각 요소마다 성취수준별 배점이 정해져 있습니다.<br>
-              <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #ce93d8;">
-                <div style="font-size:11.5px;color:#6a1b9a;"><strong>예시: 코딩 수행평가 채점기준표</strong></div>
-                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
-                  평가요소 1: 코드 정확성 (A:4점 / B:3점 / C:2점 / D:1점 / E:1점, 만점 4)<br>
-                  평가요소 2: 문제 해결 능력 (A:4점 / B:2점 / C:2점 / D:1점 / E:1점, 만점 4)<br>
-                  평가요소 3: 설명 능력 (A:2점 / B:1점 / C:1점 / D:1점 / E:1점, 만점 2)
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- STEP 2 -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:6px;">📌 STEP 2. MCP(최소 능력자) 배점 입력</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#f3e5f5;padding:10px;border-radius:8px;">
-              각 평가요소에서 <strong>해당 성취수준에 가시소로 도달한 학생(MCP)</strong>에게 부여되는 배점을 입력합니다.<br>
-              표에서 <strong>A 배점 &gt; B 배점 &gt; C 배점 &gt; D 배점 &gt; E 배점</strong> 순서를 유지해야 합니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #ce93d8;">
-                <div style="font-size:11.5px;color:#6a1b9a;"><strong>주의사항:</strong></div>
-                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
-                  • 만점은 해당 평가요소의 실제 만점 점수를 입력<br>
-                  • A 배점은 만점과 같거나 만점에 가까운 값으로 설정<br>
-                  • E 배점은 가장 낙은 점수 (0점도 가능)
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- STEP 3 -->
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:6px;">📌 STEP 3. 결과 확인 — 자동 계산</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#f3e5f5;padding:10px;border-radius:8px;">
-              배점을 입력하면 <strong>성취수준별 분할점수 = 각 평가요소 MCP 배점의 합계</strong>가 자동 계산됩니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;">
-                <div style="font-size:11.5px;color:#2e7d32;"><strong>나이스 입력 경로:</strong></div>
-                <div style="font-size:11px;color:#546e7a;margin-top:3px;">교과담임 → 성적처리 → 분할점수 → <strong>수행평가추정분할점수산출관리</strong></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- 평가요소 입력 (최대 5개) -->
       <div style="margin-bottom:12px;">
@@ -1010,13 +959,165 @@
         <div style="text-align:center;color:#aaa;font-size:13px;">배점을 입력하면 자동 계산됩니다</div>
       </div>
     </div>
-  </div>
+
+      <!-- 수행평가 사용방법 설명서 -->
+      <div style="margin-bottom:16px;border:1.5px solid #ce93d8;border-radius:10px;overflow:hidden;">
+        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow2').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#6a1b9a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span><i class="fas fa-book-open"></i> 사용방법 — 수행평가 추정분할점수 입력 가이드</span>
+          <span class="guide-arrow2" style="font-size:14px;transition:transform 0.2s;">▼</span>
+        </div>
+        <div style="display:none;padding:14px;background:#fdf8ff;">
+          <!-- STEP 1 -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:6px;">📌 STEP 1. 채점기준표에서 평가요소 확인</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#f3e5f5;padding:10px;border-radius:8px;">
+              수행평가 <strong>채점기준표</strong>를 펼치고 평가요소를 확인합니다.<br>
+              평가요소는 대개 <strong>2~5개</strong>로 구성되며, 각 요소마다 성취수준별 배점이 정해져 있습니다.<br>
+              <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #ce93d8;">
+                <div style="font-size:11.5px;color:#6a1b9a;"><strong>예시: 코딩 수행평가 채점기준표</strong></div>
+                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
+                  평가요소 1: 코드 정확성 (A:4점 / B:3점 / C:2점 / D:1점 / E:1점, 만점 4)<br>
+                  평가요소 2: 문제 해결 능력 (A:4점 / B:2점 / C:2점 / D:1점 / E:1점, 만점 4)<br>
+                  평가요소 3: 설명 능력 (A:2점 / B:1점 / C:1점 / D:1점 / E:1점, 만점 2)
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- STEP 2 -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:6px;">📌 STEP 2. MCP(최소 능력자) 배점 입력</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#f3e5f5;padding:10px;border-radius:8px;">
+              각 평가요소에서 <strong>해당 성취수준에 가시소로 도달한 학생(MCP)</strong>에게 부여되는 배점을 입력합니다.<br>
+              표에서 <strong>A 배점 &gt; B 배점 &gt; C 배점 &gt; D 배점 &gt; E 배점</strong> 순서를 유지해야 합니다.<br>
+              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #ce93d8;">
+                <div style="font-size:11.5px;color:#6a1b9a;"><strong>주의사항:</strong></div>
+                <div style="font-size:11px;color:#546e7a;margin-top:4px;">
+                  • 만점은 해당 평가요소의 실제 만점 점수를 입력<br>
+                  • A 배점은 만점과 같거나 만점에 가까운 값으로 설정<br>
+                  • E 배점은 가장 낙은 점수 (0점도 가능)
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- STEP 3 -->
+          <div style="margin-bottom:14px;">
+            <div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:6px;">📌 STEP 3. 결과 확인 — 자동 계산</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#f3e5f5;padding:10px;border-radius:8px;">
+              배점을 입력하면 <strong>성취수준별 분할점수 = 각 평가요소 MCP 배점의 합계</strong>가 자동 계산됩니다.<br>
+              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;">
+                <div style="font-size:11.5px;color:#2e7d32;"><strong>나이스 입력 경로:</strong></div>
+                <div style="font-size:11px;color:#546e7a;margin-top:3px;">교과담임 → 성적처리 → 분할점수 → <strong>수행평가추정분할점수산출관리</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
 
   <!-- ⑤ 지필+수행 합산 -->
   <div id="estPanel3" style="display:none;">
     <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
       <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:4px;"><i class="fas fa-calculator"></i> 학기말 추정분할점수산출 결과</div>
       <div style="font-size:11.5px;color:#546e7a;margin-bottom:14px;line-height:1.6;background:#e8f5e9;padding:8px 12px;border-radius:8px;">나이스 <strong>학기말 추정분할점수산출</strong> 화면과 동일한 결과표 형식입니다. 정기시험 + 수행평가 반영비율을 입력하면 성취수준별 추정분할점수와 평균점수가 자동 산출됩니다.</div>
+
+
+      <!-- 나이스 학기말 추정분할점수산출 화면 동일 구조 -->
+
+      <!-- 행 추가/삭제 버튼 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:12.5px;font-weight:700;color:#2e7d32;">📋 정기시험/수행평가 목록 입력</div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="addFinalRow()" style="padding:5px 12px;background:#2e7d32;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">+ 행 추가</button>
+          <button onclick="resetFinalRows()" style="padding:5px 12px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:12px;cursor:pointer;">전체 지우기</button>
+        </div>
+      </div>
+
+      <!-- 입력 테이블 -->
+      <div style="overflow-x:auto;border:1.5px solid #a5d6a7;border-radius:8px;margin-bottom:12px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;">
+          <thead>
+            <tr style="background:#2e7d32;color:#fff;">
+              <th style="padding:7px;text-align:center;min-width:50px;">구분</th>
+              <th style="padding:7px;text-align:center;min-width:160px;">고사/영역 명</th>
+              <th style="padding:7px;text-align:center;min-width:70px;">반영비율(%)</th>
+              <th style="padding:7px;text-align:center;min-width:60px;">배점</th>
+              <th style="padding:7px;text-align:center;min-width:60px;background:#1a237e;">A/B</th>
+              <th style="padding:7px;text-align:center;min-width:60px;background:#1b5e20;">B/C</th>
+              <th style="padding:7px;text-align:center;min-width:60px;background:#e65100;">C/D</th>
+              <th style="padding:7px;text-align:center;min-width:60px;background:#880e4f;">D/E</th>
+              <th style="padding:7px;text-align:center;min-width:40px;">삭제</th>
+            </tr>
+          </thead>
+          <tbody id="finalRows">
+            <!-- 정기시험 기본 행 -->
+            <tr id="finalRow_0" style="background:#f8f9fa;">
+              <td style="padding:5px;">
+                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
+                  <option value="written">정기시험</option>
+                  <option value="perf">수행평가</option>
+                </select>
+              </td>
+              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 2차 정기시험" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="50" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="60.80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="47.20" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="34.80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="21.20" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
+              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(0)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+            </tr>
+            <!-- 수행평가 기본 행 1 -->
+            <tr id="finalRow_1">
+              <td style="padding:5px;">
+                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
+                  <option value="written">정기시험</option>
+                  <option value="perf" selected>수행평가</option>
+                </select>
+              </td>
+              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 수행평가명 1" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
+              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(1)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+            </tr>
+            <!-- 수행평가 기본 행 2 -->
+            <tr id="finalRow_2" style="background:#f8f9fa;">
+              <td style="padding:5px;">
+                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
+                  <option value="written">정기시험</option>
+                  <option value="perf" selected>수행평가</option>
+                </select>
+              </td>
+              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 수행평가명 2" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
+              <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
+              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(2)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 과목명 입력 -->
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+        <label style="font-size:12.5px;font-weight:700;color:#2e7d32;">과목명:</label>
+        <input type="text" id="subjectName" placeholder="예: 정보(3)" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:12.5px;width:140px;" oninput="calcFinal()">
+        <button onclick="calcFinal()" style="padding:7px 18px;background:#2e7d32;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-calculator"></i> 산출하기</button>
+      </div>
+
+      <!-- 결과표 -->
+      <div id="calcPerfResult" style="margin-top:4px;"><div style="text-align:center;color:#aaa;font-size:13px;padding:20px;">[반영비율] 및 [분할점수]를 입력하면 나이스 학기말 추정분할점수산출 결과표가 자동 생성됩니다</div></div>
+
+      <div style="margin-top:10px;padding:8px 12px;background:#fff8e1;border-radius:8px;border:1px solid #ffe082;">
+        <div style="font-size:11px;color:#795548;line-height:1.6;">⚠️ <strong>나이스 입력 경로:</strong> 교과담임 → 성적처리 → 분할점수 → <strong>학기말 추정분할점수산출</strong></div>
+      </div>
+    </div>
 
       <!-- 학기말 추정분할 사용방법 설명서 - 초등학생도 이해 가능 -->
       <div style="margin-bottom:16px;border:2px solid #a5d6a7;border-radius:12px;overflow:hidden;">
@@ -1122,105 +1223,7 @@
 
         </div>
       </div>
-
-      <!-- 나이스 학기말 추정분할점수산출 화면 동일 구조 -->
-
-      <!-- 행 추가/삭제 버튼 -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:12.5px;font-weight:700;color:#2e7d32;">📋 정기시험/수행평가 목록 입력</div>
-        <div style="display:flex;gap:6px;">
-          <button onclick="addFinalRow()" style="padding:5px 12px;background:#2e7d32;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">+ 행 추가</button>
-          <button onclick="resetFinalRows()" style="padding:5px 12px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:12px;cursor:pointer;">전체 지우기</button>
-        </div>
       </div>
-
-      <!-- 입력 테이블 -->
-      <div style="overflow-x:auto;border:1.5px solid #a5d6a7;border-radius:8px;margin-bottom:12px;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;">
-          <thead>
-            <tr style="background:#2e7d32;color:#fff;">
-              <th style="padding:7px;text-align:center;min-width:50px;">구분</th>
-              <th style="padding:7px;text-align:center;min-width:160px;">고사/영역 명</th>
-              <th style="padding:7px;text-align:center;min-width:70px;">반영비율(%)</th>
-              <th style="padding:7px;text-align:center;min-width:60px;">배점</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#1a237e;">A/B</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#1b5e20;">B/C</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#e65100;">C/D</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#880e4f;">D/E</th>
-              <th style="padding:7px;text-align:center;min-width:40px;">삭제</th>
-            </tr>
-          </thead>
-          <tbody id="finalRows">
-            <!-- 정기시험 기본 행 -->
-            <tr id="finalRow_0" style="background:#f8f9fa;">
-              <td style="padding:5px;">
-                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
-                  <option value="written">정기시험</option>
-                  <option value="perf">수행평가</option>
-                </select>
-              </td>
-              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 2차 정기시험" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="50" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="60.80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="47.20" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="34.80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="21.20" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(0)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
-            </tr>
-            <!-- 수행평가 기본 행 1 -->
-            <tr id="finalRow_1">
-              <td style="padding:5px;">
-                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
-                  <option value="written">정기시험</option>
-                  <option value="perf" selected>수행평가</option>
-                </select>
-              </td>
-              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 수행평가명 1" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(1)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
-            </tr>
-            <!-- 수행평가 기본 행 2 -->
-            <tr id="finalRow_2" style="background:#f8f9fa;">
-              <td style="padding:5px;">
-                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
-                  <option value="written">정기시험</option>
-                  <option value="perf" selected>수행평가</option>
-                </select>
-              </td>
-              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 수행평가명 2" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(2)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 과목명 입력 -->
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-        <label style="font-size:12.5px;font-weight:700;color:#2e7d32;">과목명:</label>
-        <input type="text" id="subjectName" placeholder="예: 정보(3)" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:12.5px;width:140px;" oninput="calcFinal()">
-        <button onclick="calcFinal()" style="padding:7px 18px;background:#2e7d32;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-calculator"></i> 산출하기</button>
-      </div>
-
-      <!-- 결과표 -->
-      <div id="calcPerfResult" style="margin-top:4px;"><div style="text-align:center;color:#aaa;font-size:13px;padding:20px;">[반영비율] 및 [분할점수]를 입력하면 나이스 학기말 추정분할점수산출 결과표가 자동 생성됩니다</div></div>
-
-      <div style="margin-top:10px;padding:8px 12px;background:#fff8e1;border-radius:8px;border:1px solid #ffe082;">
-        <div style="font-size:11px;color:#795548;line-height:1.6;">⚠️ <strong>나이스 입력 경로:</strong> 교과담임 → 성적처리 → 분할점수 → <strong>학기말 추정분할점수산출</strong></div>
-      </div>
-    </div>
-  </div>
 </section>
 
 <section id="recordCheckTab" class="tab-panel" style="display:none;padding:16px;">
