@@ -676,16 +676,9 @@
     <div>
       <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">생기부 내용 입력</div>
       <textarea id="recordInput" rows="12" placeholder="학생부 기재 내용을 붙여넣기 하세요...&#10;&#10;예) 수업 시간에 알고리즘 개념을 학습하고 직접 코드를 작성하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <!-- AI API 키 입력 영역 -->
-      <div id="apiKeyArea" style="margin-top:10px;padding:10px 12px;background:#f3e5f5;border-radius:10px;border:1.5px solid #ce93d8;">
-        <div style="font-size:12px;font-weight:700;color:#6a1b9a;margin-bottom:6px;"><i class="fas fa-key"></i> AI 맞춤법 검사용 OpenAI API 키</div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <input id="openaiApiKey" type="password" placeholder="sk-..." style="flex:1;min-width:200px;padding:6px 10px;border:1.5px solid #ce93d8;border-radius:7px;font-size:12.5px;font-family:monospace;" oninput="saveApiKey()" />
-          <button onclick="toggleApiKeyVisibility()" style="padding:6px 10px;background:#e1bee7;color:#6a1b9a;border:none;border-radius:7px;font-size:12px;cursor:pointer;" id="apiKeyToggleBtn"><i class="fas fa-eye"></i></button>
-          <button onclick="clearApiKey()" style="padding:6px 10px;background:#fce4ec;color:#c62828;border:none;border-radius:7px;font-size:12px;cursor:pointer;">삭제</button>
-        </div>
-        <div style="font-size:11px;color:#9c27b0;margin-top:5px;">🔒 키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다. <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#7b1fa2;font-weight:700;">API 키 발급 →</a></div>
-        <div id="apiKeyStatus" style="font-size:11.5px;margin-top:4px;"></div>
+      <!-- 맞춤법 검사 안내 (API 키 불필요) -->
+      <div style="margin-top:10px;padding:8px 12px;background:#e8f5e9;border-radius:10px;border:1.5px solid #a5d6a7;">
+        <div style="font-size:12px;color:#2e7d32;"><i class="fas fa-check-circle"></i> <strong>Daum 맞춤법 검사기</strong> 연동 — API 키 없이 바로 사용 가능합니다.</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
         <button onclick="checkRecord()" style="padding:8px 18px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i> 점검 시작</button>
@@ -1221,85 +1214,30 @@ async function checkSpelling() {
     return;
   }
 
-  const apiKey = (document.getElementById('openaiApiKey').value || '').trim()
-                 || localStorage.getItem('openai_api_key') || '';
-
-  if (!apiKey || !apiKey.startsWith('sk-')) {
-    switchResultTab(2);
-    resultEl.innerHTML = `
-      <div style="padding:14px;background:#fff3e0;border-radius:10px;border-left:4px solid #f57f17;">
-        <div style="font-weight:800;color:#e65100;margin-bottom:8px;">🔑 OpenAI API 키를 입력해주세요</div>
-        <div style="font-size:12.5px;color:#666;line-height:1.8;">
-          1. 위 보라색 박스에 <strong>sk-...</strong> 형식의 API 키 입력<br>
-          2. <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#7b1fa2;font-weight:700;">platform.openai.com</a>에서 무료로 발급 가능<br>
-          3. 키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다
-        </div>
-        <div style="margin-top:10px;padding:8px;background:#fff;border-radius:8px;font-size:12px;color:#888;">
-          💡 API 키 없이 사용하려면 아래 외부 검사기를 이용해주세요:
-          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
-            <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:5px 10px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
-            <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:5px 10px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
-          </div>
-        </div>
-      </div>`;
-    return;
-  }
-
   switchResultTab(2);
   resultEl.innerHTML = `
     <div style="padding:20px;text-align:center;">
       <i class="fas fa-spinner fa-spin" style="color:#7b1fa2;font-size:22px;"></i>
-      <div style="color:#888;font-size:13px;margin-top:10px;">AI가 맞춤법·띄어쓰기·오타를 분석 중...</div>
-      <div style="color:#bbb;font-size:11.5px;margin-top:4px;">잠시만 기다려주세요 (5~15초)</div>
+      <div style="color:#888;font-size:13px;margin-top:10px;">Daum 맞춤법 검사기로 분석 중...</div>
+      <div style="color:#bbb;font-size:11.5px;margin-top:4px;">잠시만 기다려주세요 (3~10초)</div>
     </div>`;
 
-  const systemPrompt = `당신은 한국어 학생부(생기부) 전문 교정 AI입니다.
-주어진 텍스트에서 맞춤법, 오타, 띄어쓰기 오류를 모두 찾아주세요.
-특히 다음을 꼼꼼히 확인하세요:
-- 쉼표(,) 뒤 띄어쓰기 누락
-- 조사·어미 붙여쓰기 오류
-- 단어 사이 띄어쓰기 누락 (예: '지도학습과비지도학습을구분해' → '지도학습과 비지도학습을 구분해')
-- 맞춤법 오류 (예: 됬→됐, 역활→역할)
-- 문장 부호 사용 오류
-
-반드시 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
-{"errors": [{"original": "틀린부분", "corrected": "올바른부분", "type": "맞춤법|오타|띄어쓰기", "reason": "이유", "position": 위치숫자}], "corrected_full": "전체교정문"}
-
-오류가 없으면: {"errors": [], "corrected_full": "원문그대로"}`;
+  const PROXY_URL = 'https://school-spell-proxy.kakarote50501101.workers.dev';
 
   try {
-    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+    const resp = await fetch(PROXY_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `다음 학생부 내용의 맞춤법·띄어쓰기·오타 오류를 모두 찾아주세요:\n\n${text}` }
-        ],
-        temperature: 0.1,
-        max_tokens: 2000
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
     });
 
-    if (resp.status === 401) {
-      resultEl.innerHTML = `<div style="padding:14px;background:#fce4ec;border-radius:10px;border-left:4px solid #c62828;">
-        <div style="font-weight:800;color:#c62828;">❌ API 키 오류</div>
-        <div style="font-size:12.5px;color:#666;margin-top:6px;">API 키가 유효하지 않습니다. 올바른 키를 입력해주세요.</div>
-      </div>`;
-      return;
-    }
-    if (!resp.ok) throw new Error('API 오류: ' + resp.status);
+    if (!resp.ok) throw new Error('서버 오류: ' + resp.status);
 
     const data = await resp.json();
-    const raw = data.choices[0].message.content.trim();
-    const jsonStr = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
-    const parsed = JSON.parse(jsonStr);
-    const errors = parsed.errors || [];
-    const correctedFull = parsed.corrected_full || text;
+    if (data.error) throw new Error(data.error);
+
+    const errors = data.errors || [];
+    const correctedFull = data.correctedText || text;
 
     if (errors.length === 0) {
       resultEl.innerHTML = `
@@ -1341,7 +1279,7 @@ async function checkSpelling() {
               <span style="color:#888;">→</span>
               <span style="color:#2e7d32;font-weight:700;">${(e.corrected||'').replace(/</g,'&lt;')}</span>
             </div>
-            <div style="color:#888;font-size:11.5px;">${e.reason||''}</div>
+            <div style="color:#888;font-size:11.5px;">${e.help||e.reason||''}</div>
           </div>
         `).join('')}
       </div>
@@ -1353,7 +1291,7 @@ async function checkSpelling() {
 
       <div style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <div style="font-size:12.5px;font-weight:700;color:#333;">✅ AI 교정 후 전체 텍스트</div>
+          <div style="font-size:12.5px;font-weight:700;color:#333;">✅ Daum 교정 후 전체 텍스트</div>
           <div style="display:flex;gap:6px;">
             <button onclick="document.getElementById('recordInput').value=document.getElementById('aiCorrectedText').textContent;updateRecordCount()" style="padding:4px 10px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 적용</button>
             <button onclick="navigator.clipboard.writeText(document.getElementById('aiCorrectedText').textContent)" style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
