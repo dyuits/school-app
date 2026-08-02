@@ -678,6 +678,7 @@
       <textarea id="recordInput" rows="12" placeholder="학생부 기재 내용을 붙여넣기 하세요...&#10;&#10;예) 수업 시간에 알고리즘 개념을 학습하고 직접 코드를 작성하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
         <button onclick="checkRecord()" style="padding:8px 18px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i> 점검 시작</button>
+        <button onclick="checkSpelling()" style="padding:8px 18px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-spell-check"></i> 맞춤법 검사</button>
         <button onclick="clearRecord()" style="padding:8px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">삭제</button>
         <button onclick="navigator.clipboard.writeText(document.getElementById('recordInput').value)" style="padding:8px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:13px;cursor:pointer;">복사</button>
         <span id="recordCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자 / 0 bytes</span>
@@ -701,8 +702,16 @@
     <!-- 오른쪽: 결과 -->
     <div>
       <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">점검 결과</div>
-      <div id="recordResult" style="min-height:220px;padding:14px;background:#f8f9fa;border-radius:10px;font-size:13px;line-height:1.7;">
+      <!-- 탭: 점검결과 / 맞춤법 -->
+      <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e0e0e0;">
+        <button id="resultTabBtn1" onclick="switchResultTab(1)" style="padding:7px 16px;background:#1565c0;color:#fff;border:none;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:700;cursor:pointer;margin-right:4px;">📋 점검 결과</button>
+        <button id="resultTabBtn2" onclick="switchResultTab(2)" style="padding:7px 16px;background:#e0e0e0;color:#666;border:none;border-radius:8px 8px 0 0;font-size:12.5px;font-weight:700;cursor:pointer;">✏️ 맞춤법·오타</button>
+      </div>
+      <div id="recordResult" style="min-height:220px;padding:14px;background:#f8f9fa;border-radius:0 0 10px 10px;font-size:13px;line-height:1.7;">
         <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 점검을 시작해주세요</div>
+      </div>
+      <div id="spellResult" style="display:none;min-height:220px;padding:14px;background:#f8f9fa;border-radius:0 0 10px 10px;font-size:13px;line-height:1.7;">
+        <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 맞춤법 검사를 시작해주세요</div>
       </div>
 
       <!-- 추상어 → 증거어 변환 안내 -->
@@ -1020,6 +1029,245 @@ function updateRecordCount() {
   if (!el || !cnt) return;
   const v = el.value;
   cnt.textContent = v.length + '자 / ' + new TextEncoder().encode(v).length + ' bytes';
+}
+
+
+// 결과 탭 전환
+function switchResultTab(n) {
+  const r1 = document.getElementById('recordResult');
+  const r2 = document.getElementById('spellResult');
+  const b1 = document.getElementById('resultTabBtn1');
+  const b2 = document.getElementById('resultTabBtn2');
+  if (n === 1) {
+    r1.style.display = 'block'; r2.style.display = 'none';
+    b1.style.background = '#1565c0'; b1.style.color = '#fff';
+    b2.style.background = '#e0e0e0'; b2.style.color = '#666';
+  } else {
+    r1.style.display = 'none'; r2.style.display = 'block';
+    b1.style.background = '#e0e0e0'; b1.style.color = '#666';
+    b2.style.background = '#7b1fa2'; b2.style.color = '#fff';
+  }
+}
+
+// 규칙 기반 맞춤법 검사 데이터 (학생부 자주 틀리는 표현 중심)
+const SPELL_RULES = [
+  // ── 맞춤법 ──
+  {w:'어떡해 되', c:'어떻게 되', t:'맞춤법', r:"'어떡해'는 '어떻게 해'의 준말. '되다' 앞에는 '어떻게'"},
+  {w:'어떡해야', c:'어떻게 해야', t:'맞춤법', r:"'어떡해야'→'어떻게 해야'"},
+  {w:'됬', c:'됐', t:'맞춤법', r:"'되었'의 준말은 '됐'"},
+  {w:'됬다', c:'됐다', t:'맞춤법', r:"'됐다'가 올바른 표기"},
+  {w:'했슴니다', c:'했습니다', t:'맞춤법', r:"'-슴니다'는 비표준어, '-습니다'가 올바름"},
+  {w:'했읍니다', c:'했습니다', t:'맞춤법', r:"'-읍니다'는 구형 표기, '-습니다'가 현행 맞춤법"},
+  {w:'하였읍니다', c:'하였습니다', t:'맞춤법', r:"'-읍니다'는 구형 표기"},
+  {w:'이예요', c:'이에요', t:'맞춤법', r:"받침 없는 명사 뒤에는 '-이에요'"},
+  {w:'아니예요', c:'아니에요', t:'맞춤법', r:"'아니에요'가 올바른 표기"},
+  {w:'맞추다', c:'맞히다', t:'맞춤법', r:"정답을 '맞히다', 크기를 '맞추다' 구분"},
+  {w:'틀리다', c:'다르다', t:'맞춤법', r:"비교할 때는 '다르다', 오류가 있을 때 '틀리다'"},
+  {w:'로서', c:'로써', t:'맞춤법', r:"수단·도구에는 '로써', 자격·신분에는 '로서'"},
+  {w:'로써', c:'로서', t:'맞춤법', r:"자격·신분에는 '로서', 수단·도구에는 '로써'"},
+  {w:'왠지', c:'웬지', t:'맞춤법', r:"'왠지'가 올바른 표기 ('왜인지'의 준말)"},
+  {w:'웬일', c:'웬일', t:'맞춤법', r:"'웬일'이 올바른 표기"},
+  {w:'왠만하면', c:'웬만하면', t:'맞춤법', r:"'웬만하면'이 올바른 표기"},
+  {w:'어의없', c:'어이없', t:'맞춤법', r:"'어이없다'가 올바른 표기"},
+  {w:'금새', c:'금세', t:'맞춤법', r:"'금세'가 올바른 표기 ('금시에'의 준말)"},
+  {w:'어떻해', c:'어떻게 해', t:'맞춤법', r:"'어떻게 해'로 띄어 써야 함"},
+  {w:'않되', c:'안 되', t:'맞춤법', r:"'안 되다'가 올바른 표기"},
+  {w:'않돼', c:'안 돼', t:'맞춤법', r:"'안 돼'가 올바른 표기"},
+  {w:'않해', c:'안 해', t:'맞춤법', r:"'안 해'가 올바른 표기"},
+  {w:'않하', c:'안 하', t:'맞춤법', r:"'안 하'가 올바른 표기"},
+  {w:'잖아', c:'잖아', t:'맞춤법', r:"'-잖아'는 '-지 않아'의 준말로 올바름"},
+  {w:'할께', c:'할게', t:'맞춤법', r:"'할게'가 올바른 표기 (약속·의지)"},
+  {w:'할껄', c:'할걸', t:'맞춤법', r:"'할걸'이 올바른 표기"},
+  {w:'먹을께', c:'먹을게', t:'맞춤법', r:"'-ㄹ게'가 올바른 표기"},
+  {w:'갈께', c:'갈게', t:'맞춤법', r:"'-ㄹ게'가 올바른 표기"},
+  {w:'있을께', c:'있을게', t:'맞춤법', r:"'-ㄹ게'가 올바른 표기"},
+  {w:'되요', c:'돼요', t:'맞춤법', r:"'돼요'가 올바른 표기 ('되어요'의 준말)"},
+  {w:'되서', c:'돼서', t:'맞춤법', r:"'돼서'가 올바른 표기 ('되어서'의 준말)"},
+  {w:'되어서', c:'돼서', t:'맞춤법', r:"'돼서'로 줄여 쓸 수 있음"},
+  {w:'뵈요', c:'봬요', t:'맞춤법', r:"'봬요'가 올바른 표기 ('뵈어요'의 준말)"},
+  {w:'뵈었', c:'봬었', t:'맞춤법', r:"'봬었'이 올바른 표기"},
+  {w:'설레임', c:'설렘', t:'맞춤법', r:"'설렘'이 올바른 표기"},
+  {w:'설레이는', c:'설레는', t:'맞춤법', r:"'설레는'이 올바른 표기"},
+  {w:'설레임이', c:'설렘이', t:'맞춤법', r:"'설렘이'가 올바른 표기"},
+  {w:'오랫만에', c:'오랜만에', t:'맞춤법', r:"'오랜만에'가 올바른 표기"},
+  {w:'오랫만', c:'오랜만', t:'맞춤법', r:"'오랜만'이 올바른 표기"},
+  {w:'역활', c:'역할', t:'맞춤법', r:"'역할'이 올바른 표기"},
+  {w:'역활을', c:'역할을', t:'맞춤법', r:"'역할을'이 올바른 표기"},
+  {w:'역활이', c:'역할이', t:'맞춤법', r:"'역할이'가 올바른 표기"},
+  {w:'역활의', c:'역할의', t:'맞춤법', r:"'역할의'가 올바른 표기"},
+  {w:'역활로', c:'역할로', t:'맞춤법', r:"'역할로'가 올바른 표기"},
+  {w:'몇일', c:'며칠', t:'맞춤법', r:"'며칠'이 올바른 표기"},
+  {w:'몇일간', c:'며칠간', t:'맞춤법', r:"'며칠간'이 올바른 표기"},
+  {w:'어떻게요', c:'어떻게요', t:'맞춤법', r:"'어떻게요'가 올바른 표기"},
+  {w:'어떻케', c:'어떻게', t:'맞춤법', r:"'어떻게'가 올바른 표기"},
+  {w:'이따가', c:'이따가', t:'맞춤법', r:"'이따가'가 올바른 표기 (잠시 후)"},
+  {w:'있다가', c:'이따가', t:'맞춤법', r:"'잠시 후'의 의미라면 '이따가'가 올바름"},
+  {w:'낳다', c:'낫다', t:'맞춤법', r:"'더 좋다'의 의미는 '낫다', 아이를 '낳다' 구분"},
+  {w:'나았다', c:'나았다', t:'맞춤법', r:"'낫다'의 과거형 '나았다'가 올바름"},
+  {w:'틀렸다', c:'달랐다', t:'맞춤법', r:"비교 맥락에서는 '달랐다'가 올바름"},
+  {w:'부딪히다', c:'부딪히다', t:'맞춤법', r:"'부딪히다'가 올바른 표기"},
+  {w:'부딪치다', c:'부딪치다', t:'맞춤법', r:"'부딪치다'도 올바른 표기"},
+  {w:'흐뭇하다', c:'흐뭇하다', t:'맞춤법', r:"'흐뭇하다'가 올바른 표기"},
+  {w:'흐믓하다', c:'흐뭇하다', t:'맞춤법', r:"'흐뭇하다'가 올바른 표기"},
+  {w:'짜집기', c:'짜깁기', t:'맞춤법', r:"'짜깁기'가 올바른 표기"},
+  {w:'어떡하지', c:'어떡하지', t:'맞춤법', r:"'어떡하지'가 올바른 표기"},
+  {w:'어떻하지', c:'어떡하지', t:'맞춤법', r:"'어떡하지'가 올바른 표기"},
+  {w:'어떻하면', c:'어떻게 하면', t:'맞춤법', r:"'어떻게 하면'이 올바른 표기"},
+  {w:'어떻하든', c:'어떻게 하든', t:'맞춤법', r:"'어떻게 하든'이 올바른 표기"},
+  {w:'어떻하여', c:'어떻게 하여', t:'맞춤법', r:"'어떻게 하여'가 올바른 표기"},
+  {w:'어떻하고', c:'어떻게 하고', t:'맞춤법', r:"'어떻게 하고'가 올바른 표기"},
+  // ── 학생부 자주 쓰는 표현 ──
+  {w:'발휘하였음', c:'발휘함', t:'맞춤법', r:"학생부는 간결하게 '~함' 형식 권장"},
+  {w:'수행하였음', c:'수행함', t:'맞춤법', r:"학생부는 간결하게 '~함' 형식 권장"},
+  {w:'참여하였음', c:'참여함', t:'맞춤법', r:"학생부는 간결하게 '~함' 형식 권장"},
+  {w:'완성하였음', c:'완성함', t:'맞춤법', r:"학생부는 간결하게 '~함' 형식 권장"},
+  {w:'제출하였음', c:'제출함', t:'맞춤법', r:"학생부는 간결하게 '~함' 형식 권장"},
+  {w:'발표하였음', c:'발표함', t:'맞춤법', r:"학생부는 간결하게 '~함' 형식 권장"},
+  // ── 띄어쓰기 ──
+  {w:'뿐만아니라', c:'뿐만 아니라', t:'띄어쓰기', r:"'뿐만 아니라' 띄어 써야 함"},
+  {w:'뿐아니라', c:'뿐 아니라', t:'띄어쓰기', r:"'뿐 아니라' 띄어 써야 함"},
+  {w:'것같다', c:'것 같다', t:'띄어쓰기', r:"'것 같다' 띄어 써야 함"},
+  {w:'것같아', c:'것 같아', t:'띄어쓰기', r:"'것 같아' 띄어 써야 함"},
+  {w:'것같은', c:'것 같은', t:'띄어쓰기', r:"'것 같은' 띄어 써야 함"},
+  {w:'것같이', c:'것 같이', t:'띄어쓰기', r:"'것 같이' 띄어 써야 함"},
+  {w:'수있다', c:'수 있다', t:'띄어쓰기', r:"'수 있다' 띄어 써야 함"},
+  {w:'수있는', c:'수 있는', t:'띄어쓰기', r:"'수 있는' 띄어 써야 함"},
+  {w:'수없다', c:'수 없다', t:'띄어쓰기', r:"'수 없다' 띄어 써야 함"},
+  {w:'수없는', c:'수 없는', t:'띄어쓰기', r:"'수 없는' 띄어 써야 함"},
+  {w:'할수', c:'할 수', t:'띄어쓰기', r:"'할 수' 띄어 써야 함"},
+  {w:'할수있', c:'할 수 있', t:'띄어쓰기', r:"'할 수 있' 띄어 써야 함"},
+  {w:'할수없', c:'할 수 없', t:'띄어쓰기', r:"'할 수 없' 띄어 써야 함"},
+  {w:'것이다', c:'것이다', t:'띄어쓰기', r:"'것이다'는 붙여 써도 됨"},
+  {w:'뿐이다', c:'뿐이다', t:'띄어쓰기', r:"'뿐이다'는 붙여 써도 됨"},
+  {w:'때문에', c:'때문에', t:'띄어쓰기', r:"'때문에'는 앞 명사와 띄어 써야 함"},
+  {w:'에대해', c:'에 대해', t:'띄어쓰기', r:"'에 대해' 띄어 써야 함"},
+  {w:'에대한', c:'에 대한', t:'띄어쓰기', r:"'에 대한' 띄어 써야 함"},
+  {w:'에대하여', c:'에 대하여', t:'띄어쓰기', r:"'에 대하여' 띄어 써야 함"},
+  {w:'와함께', c:'와 함께', t:'띄어쓰기', r:"'와 함께' 띄어 써야 함"},
+  {w:'과함께', c:'과 함께', t:'띄어쓰기', r:"'과 함께' 띄어 써야 함"},
+  {w:'을통해', c:'을 통해', t:'띄어쓰기', r:"'을 통해' 띄어 써야 함"},
+  {w:'를통해', c:'를 통해', t:'띄어쓰기', r:"'를 통해' 띄어 써야 함"},
+  {w:'을통하여', c:'을 통하여', t:'띄어쓰기', r:"'을 통하여' 띄어 써야 함"},
+  {w:'를통하여', c:'를 통하여', t:'띄어쓰기', r:"'를 통하여' 띄어 써야 함"},
+  {w:'에서의', c:'에서의', t:'띄어쓰기', r:"'에서의'는 붙여 써도 됨"},
+  {w:'이후에도', c:'이후에도', t:'띄어쓰기', r:"'이후에도'는 붙여 써도 됨"},
+  {w:'에있어', c:'에 있어', t:'띄어쓰기', r:"'에 있어' 띄어 써야 함"},
+  {w:'에있어서', c:'에 있어서', t:'띄어쓰기', r:"'에 있어서' 띄어 써야 함"},
+  {w:'로인해', c:'로 인해', t:'띄어쓰기', r:"'로 인해' 띄어 써야 함"},
+  {w:'으로인해', c:'으로 인해', t:'띄어쓰기', r:"'으로 인해' 띄어 써야 함"},
+  {w:'이라는것', c:'이라는 것', t:'띄어쓰기', r:"'이라는 것' 띄어 써야 함"},
+  {w:'라는것', c:'라는 것', t:'띄어쓰기', r:"'라는 것' 띄어 써야 함"},
+  {w:'하는것', c:'하는 것', t:'띄어쓰기', r:"'하는 것' 띄어 써야 함"},
+  {w:'하는데', c:'하는데', t:'띄어쓰기', r:"'하는데'는 연결어미로 붙여 씀"},
+  {w:'하는데에', c:'하는 데에', t:'띄어쓰기', r:"장소·경우의 '데'는 띄어 써야 함"},
+  {w:'하기위해', c:'하기 위해', t:'띄어쓰기', r:"'하기 위해' 띄어 써야 함"},
+  {w:'하기위한', c:'하기 위한', t:'띄어쓰기', r:"'하기 위한' 띄어 써야 함"},
+  {w:'이를통해', c:'이를 통해', t:'띄어쓰기', r:"'이를 통해' 띄어 써야 함"},
+  {w:'이를바탕', c:'이를 바탕', t:'띄어쓰기', r:"'이를 바탕' 띄어 써야 함"},
+  {w:'이를통하여', c:'이를 통하여', t:'띄어쓰기', r:"'이를 통하여' 띄어 써야 함"},
+];
+
+// 맞춤법 검사 함수 (규칙 기반)
+function checkSpelling() {
+  const text = document.getElementById('recordInput').value.trim();
+  const resultEl = document.getElementById('spellResult');
+  if (!text) {
+    switchResultTab(2);
+    resultEl.innerHTML = '<div style="color:#e53935;padding:12px;">내용을 입력해주세요.</div>';
+    return;
+  }
+  switchResultTab(2);
+
+  const errors = [];
+  const seen = new Set();
+  SPELL_RULES.forEach(rule => {
+    if (text.includes(rule.w) && !seen.has(rule.w)) {
+      seen.add(rule.w);
+      errors.push(rule);
+    }
+  });
+
+  if (errors.length === 0) {
+    resultEl.innerHTML = `
+      <div style="padding:16px;background:#e8f5e9;border-radius:10px;border-left:4px solid #2e7d32;margin-bottom:12px;">
+        <div style="font-weight:800;color:#2e7d32;font-size:14px;margin-bottom:4px;">✅ 규칙 기반 검사: 오류 없음</div>
+        <div style="font-size:12.5px;color:#388e3c;">자주 틀리는 맞춤법·띄어쓰기 패턴에서 오류가 발견되지 않았습니다.</div>
+      </div>
+      <div style="padding:12px;background:#f3e5f5;border-radius:10px;font-size:12.5px;color:#6a1b9a;">
+        <strong>💡 더 정밀한 검사를 원하면:</strong>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:6px 12px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
+          <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:6px 12px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
+          <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="padding:6px 12px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">국립국어원</a>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // 오류 하이라이트
+  let highlighted = text;
+  errors.forEach(e => {
+    highlighted = highlighted.split(e.w).join(
+      `<mark style="background:#ffeb3b;color:#c62828;font-weight:700;border-radius:3px;padding:0 2px;">${e.w}</mark>`
+    );
+  });
+
+  // 교정 후 텍스트
+  let corrected = text;
+  errors.forEach(e => {
+    corrected = corrected.split(e.w).join(e.c);
+  });
+
+  const typeColors = {'맞춤법':'#c62828','오타':'#e65100','띄어쓰기':'#1565c0'};
+  const typeBg = {'맞춤법':'#fce4ec','오타':'#fff3e0','띄어쓰기':'#e3f2fd'};
+
+  resultEl.innerHTML = `
+    <div style="margin-bottom:12px;padding:10px 14px;background:#fce4ec;border-radius:8px;border-left:4px solid #c62828;">
+      <strong style="color:#c62828;">⚠️ ${errors.length}개의 오류 발견</strong>
+      <span style="font-size:11.5px;color:#888;margin-left:8px;">(규칙 기반 검사)</span>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:8px;">📋 오류 목록</div>
+      ${errors.map(e => `
+        <div style="margin-bottom:8px;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee;font-size:12.5px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+            <span style="font-size:11px;padding:2px 8px;background:${typeBg[e.t]||'#f5f5f5'};color:${typeColors[e.t]||'#333'};border-radius:10px;font-weight:700;">${e.t}</span>
+            <span style="color:#c62828;font-weight:700;text-decoration:line-through;">${e.w}</span>
+            <span style="color:#888;">→</span>
+            <span style="color:#2e7d32;font-weight:700;">${e.c}</span>
+          </div>
+          <div style="color:#888;font-size:11.5px;">${e.r}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:6px;">🔍 원문 (오류 표시)</div>
+      <div style="padding:12px;background:#fff;border-radius:8px;border:1.5px solid #ffe082;font-size:13px;line-height:1.8;">${highlighted}</div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-size:12.5px;font-weight:700;color:#333;">✅ 교정 후 텍스트</div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="document.getElementById('recordInput').value=document.getElementById('correctedText').textContent;updateRecordCount()" style="padding:4px 10px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 적용</button>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('correctedText').textContent)" style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
+        </div>
+      </div>
+      <div style="padding:12px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;font-size:13px;line-height:1.8;">
+        <div id="correctedText">${corrected}</div>
+      </div>
+    </div>
+
+    <div style="padding:12px;background:#f3e5f5;border-radius:10px;font-size:12.5px;color:#6a1b9a;">
+      <strong>💡 더 정밀한 검사를 원하면:</strong>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:6px 12px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
+        <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:6px 12px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
+        <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="padding:6px 12px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">국립국어원</a>
+      </div>
+    </div>`;
 }
 
 // 생기부 삭제
