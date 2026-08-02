@@ -1244,11 +1244,50 @@
   <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">세부능력 및 특기사항 작성 보조 · AI 세특 2안 자동 생성</p>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- B안: 풀옵션 AI 세특 생성 (상단) -->
+  <!-- 파일 업로드 영역 (항상 보임) -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div style="margin-bottom:14px;padding:14px 16px;background:#f8f9fa;border-radius:12px;border:1.5px solid #e0e0e0;">
+    <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:10px;"><i class="fas fa-folder-open"></i> 자료 업로드 <span style="font-weight:400;font-size:11px;color:#888;">(AI 세특 생성에 활용 · 선택사항)</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+      <!-- 평가계획서 PDF -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📋 평가계획서 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
+        <label style="display:block;padding:8px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#558b2f;font-weight:700;">
+          <i class="fas fa-upload"></i> 업로드
+          <input type="file" id="setechPlanFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'plan')">
+        </label>
+        <div id="setechPlanFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
+        <textarea id="setechPlanText" rows="2" placeholder="또는 성취기준·평가방법 직접 붙여넣기" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #dce775;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      </div>
+      <!-- 수행평가 학습지 PDF -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📝 수행평가·학습지 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
+        <label style="display:block;padding:8px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#558b2f;font-weight:700;">
+          <i class="fas fa-upload"></i> 업로드
+          <input type="file" id="setechActivityFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'activity')">
+        </label>
+        <div id="setechActivityFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
+        <textarea id="setechActivityText" rows="2" placeholder="또는 학생 활동 내용·결과물 직접 붙여넣기" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #dce775;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      </div>
+      <!-- 슈퍼스쿨 엑셀 -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#1565c0;margin-bottom:4px;">📊 슈퍼스쿨 활동지 <span style="font-weight:400;color:#aaa;">(엑셀 XLSX)</span></div>
+        <label style="display:block;padding:8px 10px;background:#fff;border:1.5px dashed #90caf9;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#1565c0;font-weight:700;">
+          <i class="fas fa-file-excel"></i> 엑셀 업로드
+          <input type="file" id="setechExcelFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleSetechExcel(this)">
+        </label>
+        <div id="setechExcelFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
+        <div id="setechExcelPreview" style="margin-top:5px;font-size:10.5px;color:#555;background:#e3f2fd;border-radius:6px;padding:5px 7px;display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- B안: AI 세특 생성 옵션 (접기/펼치기) -->
   <!-- ═══════════════════════════════════════════════════════════ -->
   <details id="setechBPanel" style="margin-bottom:16px;">
     <summary style="font-size:13px;font-weight:800;color:#1565c0;cursor:pointer;padding:11px 16px;background:linear-gradient(135deg,#e3f2fd,#ede7f6);border-radius:12px;border:1.5px solid #90caf9;list-style:none;display:flex;align-items:center;gap:8px;">
-      <i class="fas fa-magic" style="color:#7b1fa2;"></i> ✨ AI 세특 자동 생성 (풀옵션) &nbsp;<span style="font-size:11px;font-weight:400;color:#888;">학년·학과·PDF·엑셀 기반 2안 생성</span>
+      <i class="fas fa-magic" style="color:#7b1fa2;"></i> ✨ AI 세특 자동 생성 (풀옵션) &nbsp;<span style="font-size:11px;font-weight:400;color:#888;">학년·학과·교사총평 입력 → 2안 생성</span>
       <span style="margin-left:auto;font-size:11px;color:#aaa;">▼ 펼치기</span>
     </summary>
     <div style="margin-top:10px;padding:16px;background:#fafafa;border-radius:12px;border:1.5px solid #e0e0e0;">
@@ -1277,40 +1316,6 @@
             <button class="setech-dept-btn" data-val="금융비즈니스학과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">금융비즈니스</button>
             <button class="setech-dept-btn" data-val="문화콘텐츠학과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 11px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">문화콘텐츠</button>
           </div>
-        </div>
-      </div>
-
-      <!-- 파일 업로드 3종 -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
-        <!-- 평가계획서 PDF -->
-        <div>
-          <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📋 평가계획서 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
-          <label style="display:block;padding:7px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:11.5px;color:#558b2f;">
-            <i class="fas fa-upload"></i> 업로드
-            <input type="file" id="setechPlanFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'plan')">
-          </label>
-          <div id="setechPlanFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
-          <textarea id="setechPlanText" rows="2" placeholder="또는 성취기준·평가방법 직접 붙여넣기" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #dce775;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-        </div>
-        <!-- 수행평가 학습지 PDF -->
-        <div>
-          <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📝 수행평가·학습지 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
-          <label style="display:block;padding:7px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:11.5px;color:#558b2f;">
-            <i class="fas fa-upload"></i> 업로드
-            <input type="file" id="setechActivityFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'activity')">
-          </label>
-          <div id="setechActivityFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
-          <textarea id="setechActivityText" rows="2" placeholder="또는 학생 활동 내용·결과물 직접 붙여넣기" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #dce775;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-        </div>
-        <!-- 슈퍼스쿨 엑셀 -->
-        <div>
-          <div style="font-size:11.5px;font-weight:700;color:#1565c0;margin-bottom:4px;">📊 슈퍼스쿨 활동지 <span style="font-weight:400;color:#aaa;">(엑셀 XLSX)</span></div>
-          <label style="display:block;padding:7px 10px;background:#fff;border:1.5px dashed #90caf9;border-radius:8px;cursor:pointer;text-align:center;font-size:11.5px;color:#1565c0;">
-            <i class="fas fa-file-excel"></i> 엑셀 업로드
-            <input type="file" id="setechExcelFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleSetechExcel(this)">
-          </label>
-          <div id="setechExcelFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
-          <div id="setechExcelPreview" style="margin-top:5px;font-size:10.5px;color:#555;background:#e3f2fd;border-radius:6px;padding:5px 7px;min-height:36px;display:none;"></div>
         </div>
       </div>
 
@@ -1378,7 +1383,7 @@
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
         <button onclick="generateSetech()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> 기존 세특 보완</button>
         <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
-        <button onclick="navigator.clipboard.writeText(document.getElementById('setechEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
+        <button onclick="(function(btn){const txt=document.getElementById('setechEditor').value;if(!txt){alert('복사할 내용이 없습니다.');return;}if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent='복사';},1500);}).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent='복사';},1500);});}else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent='복사';},1500);}})(this)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
         <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('setechEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
         <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
       </div>
