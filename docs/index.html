@@ -1276,93 +1276,6 @@
         <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
       </div>
 
-      <!-- AI 세특 생성 패널 (접기/펼치기) -->
-      <details style="margin-top:14px;">
-        <summary style="font-size:13px;font-weight:800;color:#7b1fa2;cursor:pointer;padding:10px 14px;background:#f3e5f5;border-radius:10px;border:1.5px solid #ce93d8;list-style:none;display:flex;align-items:center;gap:6px;">
-          <i class="fas fa-magic"></i> AI 세특 자동 생성 (학년·학과·PDF 기반) ▾
-        </summary>
-        <div style="margin-top:10px;padding:14px;background:#fafafa;border-radius:10px;border:1.5px solid #e0e0e0;">
-
-          <!-- 학년/학기/학과 선택 -->
-          <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:flex-start;">
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">학년</div>
-              <div style="display:flex;gap:4px;">
-                <button class="setech-grade-btn" data-val="고1" onclick="selectSetechBtn(this,'grade')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고1</button>
-                <button class="setech-grade-btn" data-val="고2" onclick="selectSetechBtn(this,'grade')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고2</button>
-                <button class="setech-grade-btn" data-val="고3" onclick="selectSetechBtn(this,'grade')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고3</button>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">학기</div>
-              <div style="display:flex;gap:4px;">
-                <button class="setech-semester-btn" data-val="1학기" onclick="selectSetechBtn(this,'semester')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">1학기</button>
-                <button class="setech-semester-btn" data-val="2학기" onclick="selectSetechBtn(this,'semester')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">2학기</button>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">학과</div>
-              <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                <button class="setech-dept-btn" data-val="보통과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">보통과</button>
-                <button class="setech-dept-btn" data-val="금융비즈니스학과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">금융비즈니스</button>
-                <button class="setech-dept-btn" data-val="문화콘텐츠학과" onclick="selectSetechBtn(this,'dept')" style="padding:5px 10px;border-radius:6px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">문화콘텐츠</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- PDF 업로드 -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📋 평가계획서 <span style="font-weight:400;color:#aaa;">(선택)</span></div>
-              <label style="display:block;padding:7px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:7px;cursor:pointer;text-align:center;font-size:11.5px;color:#558b2f;">
-                <i class="fas fa-upload"></i> PDF/TXT 업로드
-                <input type="file" id="setechPlanFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'plan')">
-              </label>
-              <div id="setechPlanFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
-              <textarea id="setechPlanText" rows="3" placeholder="또는 성취기준·평가방법 직접 붙여넣기" style="width:100%;margin-top:5px;padding:7px;border:1.5px solid #dce775;border-radius:6px;font-size:11.5px;line-height:1.6;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-            </div>
-            <div>
-              <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📝 수행평가·학습지 <span style="font-weight:400;color:#aaa;">(선택)</span></div>
-              <label style="display:block;padding:7px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:7px;cursor:pointer;text-align:center;font-size:11.5px;color:#558b2f;">
-                <i class="fas fa-upload"></i> PDF/TXT 업로드
-                <input type="file" id="setechActivityFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'activity')">
-              </label>
-              <div id="setechActivityFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
-              <textarea id="setechActivityText" rows="3" placeholder="또는 학생 활동 내용·결과물 직접 붙여넣기" style="width:100%;margin-top:5px;padding:7px;border:1.5px solid #dce775;border-radius:6px;font-size:11.5px;line-height:1.6;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-            </div>
-          </div>
-
-          <!-- 교사 총평 -->
-          <div style="margin-bottom:10px;">
-            <div style="font-size:11.5px;font-weight:700;color:#c62828;margin-bottom:4px;">✏️ 교사 총평 및 관찰 의견 <span style="color:#c62828;">(필수)</span></div>
-            <textarea id="setechTeacherComment" rows="3" placeholder="예) 수업 중 질문이 많고 탐구 의지가 강함. 모둠 활동에서 리더 역할을 자처하며 의견을 조율함. 피드백을 수용하여 보고서를 3차례 수정함." style="width:100%;padding:9px;border:1.5px solid #f48fb1;border-radius:7px;font-size:12px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-          </div>
-
-          <!-- API Key -->
-          <div style="margin-bottom:10px;padding:8px 12px;background:#ede7f6;border-radius:8px;border:1px solid #b39ddb;">
-            <div style="font-size:11.5px;font-weight:700;color:#4a148c;margin-bottom:5px;">🔑 OpenAI API Key <span style="font-weight:400;color:#888;">(없으면 내장 AI로 자동 생성)</span></div>
-            <div style="display:flex;gap:5px;align-items:center;">
-              <div style="position:relative;flex:1;">
-                <input type="password" id="openaiApiKey" placeholder="sk-..." autocomplete="off" style="width:100%;padding:6px 32px 6px 9px;border:1.5px solid #b39ddb;border-radius:6px;font-size:12px;box-sizing:border-box;">
-                <button id="apiKeyToggleBtn" onclick="toggleApiKeyVisibility()" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#888;font-size:13px;"><i class="fas fa-eye"></i></button>
-              </div>
-              <button onclick="saveApiKey()" style="padding:6px 10px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">저장</button>
-              <button onclick="clearApiKey()" style="padding:6px 10px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">삭제</button>
-              <span id="apiKeyStatus" style="font-size:11px;color:#888;"></span>
-            </div>
-          </div>
-
-          <!-- 생성 버튼 -->
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-            <button onclick="generateSetechNew()" style="padding:9px 22px;background:linear-gradient(135deg,#7b1fa2,#1565c0);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(123,31,162,0.3);"><i class="fas fa-magic"></i> 세특 AI 생성</button>
-            <button onclick="clearSetechForm()" style="padding:9px 14px;background:#e0e0e0;color:#666;border:none;border-radius:9px;font-size:12px;cursor:pointer;">초기화</button>
-            <span style="font-size:11px;color:#888;">※ 교사 총평 필수</span>
-          </div>
-
-          <!-- 결과 영역 -->
-          <div id="setechAIResult" style="display:none;margin-top:12px;"></div>
-        </div>
-      </details>
     </div>
   </div>
 </section>
@@ -1506,8 +1419,16 @@ window.addEventListener('load', function() {
 
   // 세특 교과 목록 초기화
   const SUBJECTS = [
+    // ── 정보 교과 ──
     {name:'정보',icon:'💻',keywords:['알고리즘','데이터 분석','코딩','파이썬','인공지능','머신러닝','데이터베이스','네트워크','정보보안','프로그래밍'],
       templates:['알고리즘의 원리를 이해하고 실생활 문제에 적용하는 능력을 보임.','데이터 분석 도구를 활용하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함.','코딩 실습을 통해 문제 해결 능력과 창의적 사고력을 기름.']},
+    {name:'인공지능기초',icon:'🤖',keywords:['인공지능','머신러닝','딥러닝','데이터','알고리즘','모델','학습','분류','예측','윤리'],
+      templates:['인공지능의 기본 원리를 이해하고 실생활 문제에 적용하는 능력을 보임.','머신러닝 모델을 직접 구성하고 데이터를 분석하는 과정에서 논리적 사고력을 발휘함.','AI 윤리 문제를 탐구하며 기술의 사회적 영향을 비판적으로 성찰하는 태도를 기름.']},
+    {name:'소프트웨어와 생활',icon:'📱',keywords:['소프트웨어','앱','자동화','디지털 리터러시','알고리즘','문제 해결','코딩','생활 속 SW'],
+      templates:['소프트웨어가 일상에 미치는 영향을 탐구하며 디지털 리터러시를 함양함.','생활 속 문제를 소프트웨어로 해결하는 과정에서 컴퓨팅 사고력을 발휘함.']},
+    {name:'데이터과학',icon:'📊',keywords:['데이터 수집','데이터 분석','시각화','통계','파이썬','판다스','머신러닝','패턴','예측','인사이트'],
+      templates:['데이터를 수집·분석·시각화하는 전 과정을 직접 수행하며 데이터 기반 사고력을 기름.','통계적 방법과 프로그래밍 도구를 활용하여 실제 데이터에서 의미 있는 패턴을 도출함.']},
+    // ── 일반 교과 ──
     {name:'국어',icon:'📖',keywords:['의사소통','독해력','작문','문학','말하기','듣기','표현','문법'],
       templates:['다양한 문학 작품을 읽고 자신의 생각을 논리적으로 표현하는 능력을 기름.','토론 수업에서 적극적으로 의견을 제시하고 다른 학생의 의견을 존중하는 태도를 보임.']},
     {name:'수학',icon:'📐',keywords:['논리적 사고','문제 해결','수학적 사고','연산','증명','통계'],
@@ -1517,19 +1438,38 @@ window.addEventListener('load', function() {
     {name:'과학',icon:'🔬',keywords:['관찰','실험','탐구','가설','결론','자연현상'],
       templates:['과학적 탐구 과정에서 가설을 세우고 실험을 통해 검증하는 연구 역량을 기름.']},
     {name:'사회',icon:'🌏',keywords:['사회현상','시사이슈','시민의식','통합적 사고','지역사회'],
-      templates:['사회 \ud604상을 다양한 관점에서 분석하고 자신의 의견을 논리적으로 제시하는 능력을 보임.']},
+      templates:['사회 현상을 다양한 관점에서 분석하고 자신의 의견을 논리적으로 제시하는 능력을 보임.']},
     {name:'역사',icon:'📜',keywords:['역사적 사고','시대적 배경','인물','사건','역사의식'],
       templates:['역사적 사건을 다양한 시각에서 분석하는 역사적 사고력을 기름.']},
     {name:'체육',icon:'⚽',keywords:['체력','팀워크','스포츠맨십','건강','안전'],
       templates:['체육 활동에 적극적으로 참여하며 팀워크와 스포츠맨십을 발휘하는 모습을 보임.']},
     {name:'음악',icon:'🎵',keywords:['음악적 표현','연주','음악 감상','리듬','선율'],
       templates:['음악적 개념을 이해하고 연주를 통해 음악적 표현력을 기름.']},
-    {name:'미술',icon:'🎨',keywords:['조형','색치','디자인','예술적 표현','시각적'],
+    {name:'미술',icon:'🎨',keywords:['조형','색채','디자인','예술적 표현','시각적'],
       templates:['예술적 감수성을 바탕으로 다양한 재료와 기법으로 작품을 완성하는 능력을 보임.']},
     {name:'기술·가정',icon:'🔧',keywords:['설계','제작','안전','환경','실습'],
       templates:['기술적 원리를 이해하고 실습을 통해 실제 문제를 해결하는 능력을 기름.']},
     {name:'진로',icon:'🎯',keywords:['진로 탐색','직업 조사','자기이해','맹점관리','진로 설계'],
-      templates:['진로 탐색 활동에 적극적으로 참여하며 자신의 장단점을 파악하는 자기이해 능력을 기름.']}
+      templates:['진로 탐색 활동에 적극적으로 참여하며 자신의 장단점을 파악하는 자기이해 능력을 기름.']},
+    // ── 상업 교과 ──
+    {name:'사무관리',icon:'🗂️',keywords:['문서 작성','사무 자동화','오피스','데이터 관리','업무 효율','보고서','스프레드시트'],
+      templates:['사무 관리의 원리를 이해하고 실무 중심의 문서 작성 능력을 함양함.','사무 자동화 도구를 활용하여 업무 효율을 높이는 방법을 탐구하고 적용함.']},
+    {name:'마케팅일반',icon:'📣',keywords:['마케팅','소비자 분석','브랜드','광고','시장 조사','SNS 마케팅','4P','포지셔닝'],
+      templates:['마케팅의 기본 개념을 이해하고 실제 사례에 적용하는 능력을 보임.','소비자 행동 분석을 통해 효과적인 마케팅 전략을 수립하는 과정에서 논리적 사고력을 발휘함.']},
+    {name:'전자상거래',icon:'🛒',keywords:['e커머스','온라인 쇼핑몰','결제 시스템','물류','디지털 마케팅','플랫폼','빅데이터','고객 관리'],
+      templates:['전자상거래의 구조와 운영 방식을 이해하고 실제 플랫폼 분석에 적용하는 능력을 보임.','온라인 비즈니스 환경에서 디지털 마케팅 전략을 탐구하며 실무 역량을 기름.']},
+    {name:'상업경제',icon:'💹',keywords:['경제 원리','수요와 공급','시장','기업','소비','생산','무역','금융'],
+      templates:['경제의 기본 원리를 이해하고 실생활 경제 현상을 분석하는 능력을 보임.','시장 경제의 작동 원리를 탐구하며 합리적 의사결정 역량을 기름.']},
+    {name:'금융일반',icon:'🏦',keywords:['금융','투자','저축','보험','주식','채권','리스크','재무 계획','금융 상품'],
+      templates:['금융의 기본 개념을 이해하고 다양한 금융 상품의 특성을 분석하는 능력을 보임.','재무 계획 수립 과정을 통해 합리적 금융 의사결정 역량을 함양함.']},
+    // ── 디자인 교과 ──
+    {name:'미디어콘텐츠일반',icon:'🎬',keywords:['미디어','콘텐츠 기획','영상 제작','스토리텔링','SNS','디지털 미디어','편집','유튜브','인포그래픽'],
+      templates:['미디어 콘텐츠의 기획·제작·배포 과정을 이해하고 실제 콘텐츠를 제작하는 능력을 보임.','디지털 미디어 환경에서 효과적인 스토리텔링 전략을 탐구하며 창의적 표현력을 기름.']},
+    // ── NCS 교과 ──
+    {name:'캐릭터제작',icon:'🐱',keywords:['캐릭터 디자인','컨셉 아트','스케치','색채','세계관','스토리','2D','3D','모델링','일러스트'],
+      templates:['캐릭터의 개성과 세계관을 반영한 디자인 작업을 통해 창의적 표현력을 발휘함.','스케치부터 채색까지 캐릭터 제작의 전 과정을 수행하며 조형 감각을 기름.']},
+    {name:'애니메이션',icon:'🎞️',keywords:['애니메이션','프레임','스토리보드','모션','2D 애니메이션','3D 애니메이션','연출','편집','캐릭터 무빙'],
+      templates:['애니메이션 제작의 기본 원리를 이해하고 스토리보드 구성부터 최종 편집까지 전 과정을 수행함.','프레임 단위의 움직임을 설계하고 구현하는 과정에서 섬세한 표현력과 기술적 역량을 기름.']}
   ];
 
   const subjList = document.getElementById('setechSubjectList');
