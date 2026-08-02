@@ -2745,16 +2745,30 @@ function renderSetechSimpleResult(el, text) {
   const parts = text.split(/\[2안\]/);
   const p1 = (parts[0]||'').replace(/\[1안\]/,'').trim();
   const p2 = (parts[1]||'').trim();
+  const b1 = new TextEncoder().encode(p1).length;
+  const b2 = new TextEncoder().encode(p2).length;
   el.innerHTML = `
-    <div style="margin-bottom:10px;">
-      <div style="font-size:12px;font-weight:800;color:#1565c0;margin-bottom:4px;">[1안] 성실한 과정 강조형</div>
-      <div style="background:#e3f2fd;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.8;white-space:pre-wrap;">${p1}</div>
-      <button onclick="document.getElementById('setechEditor').value='${p1.replace(/'/g,"\\'").replace(/\n/g,'\\n')}';document.getElementById('setechEditor').dispatchEvent(new Event('input'));" style="margin-top:5px;padding:5px 12px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 에디터에 적용</button>
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <span style="font-size:12.5px;font-weight:800;color:#1565c0;">[1안] 성실한 과정 강조형</span>
+        <span style="font-size:11px;color:${b1>1500?'#c62828':'#888'}">${p1.length}자 / ${b1}bytes${b1>1500?' ⚠️':''}</span>
+      </div>
+      <div id="simpleResult_plan1" style="background:#e3f2fd;border-radius:8px;padding:12px;font-size:13px;line-height:1.85;white-space:pre-wrap;">${p1}</div>
+      <div style="display:flex;gap:6px;margin-top:7px;">
+        <button onclick="(function(btn){const txt=document.getElementById('simpleResult_plan1').textContent;const orig=btn.textContent;if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);}).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);});}else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);}})(this)" style="padding:7px 18px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;">📋 복사</button>
+        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('simpleResult_plan1').textContent;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
+      </div>
     </div>
     <div>
-      <div style="font-size:12px;font-weight:800;color:#7b1fa2;margin-bottom:4px;">[2안] 학업 역량 중심형</div>
-      <div style="background:#f3e5f5;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.8;white-space:pre-wrap;">${p2}</div>
-      <button onclick="document.getElementById('setechEditor').value='${p2.replace(/'/g,"\\'").replace(/\n/g,'\\n')}';document.getElementById('setechEditor').dispatchEvent(new Event('input'));" style="margin-top:5px;padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 에디터에 적용</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+        <span style="font-size:12.5px;font-weight:800;color:#7b1fa2;">[2안] 학업 역량 중심형</span>
+        <span style="font-size:11px;color:${b2>1500?'#c62828':'#888'}">${p2.length}자 / ${b2}bytes${b2>1500?' ⚠️':''}</span>
+      </div>
+      <div id="simpleResult_plan2" style="background:#f3e5f5;border-radius:8px;padding:12px;font-size:13px;line-height:1.85;white-space:pre-wrap;">${p2}</div>
+      <div style="display:flex;gap:6px;margin-top:7px;">
+        <button onclick="(function(btn){const txt=document.getElementById('simpleResult_plan2').textContent;const orig=btn.textContent;if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);}).catch(()=>{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);});}else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);}})(this)" style="padding:7px 18px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;">📋 복사</button>
+        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('simpleResult_plan2').textContent;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
+      </div>
     </div>`;
 }
 
@@ -2982,9 +2996,8 @@ function renderSetechResult(plan1, plan2, resultEl, isGPT) {
         </div>
         <div id="setechResult_plan1" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.85;white-space:pre-wrap;border:1px solid #e0e0e0;">${plan1.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
         <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">
-          <button onclick="applySetechPlan('setechResult_plan1')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">← 에디터에 적용</button>
-          <button onclick="copySetechPlan('setechResult_plan1')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">📋 복사</button>
-          <button onclick="sendToRecordCheck('setechResult_plan1')" style="padding:5px 12px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:6px;font-size:11.5px;cursor:pointer;">생기부 점검</button>
+          <button onclick="copySetechPlan('setechResult_plan1',this)" style="padding:7px 18px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;">📋 복사</button>
+          <button onclick="sendToRecordCheck('setechResult_plan1')" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
         </div>
       </div>
       <!-- 2안 -->
@@ -2995,13 +3008,12 @@ function renderSetechResult(plan1, plan2, resultEl, isGPT) {
         </div>
         <div id="setechResult_plan2" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.85;white-space:pre-wrap;border:1px solid #e0e0e0;">${plan2.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
         <div style="display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;">
-          <button onclick="applySetechPlan('setechResult_plan2')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;font-weight:700;">← 에디터에 적용</button>
-          <button onclick="copySetechPlan('setechResult_plan2')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">📋 복사</button>
-          <button onclick="sendToRecordCheck('setechResult_plan2')" style="padding:5px 12px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:6px;font-size:11.5px;cursor:pointer;">생기부 점검</button>
+          <button onclick="copySetechPlan('setechResult_plan2',this)" style="padding:7px 18px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;">📋 복사</button>
+          <button onclick="sendToRecordCheck('setechResult_plan2')" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
         </div>
       </div>
       <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:6px;font-size:11.5px;color:#7a5c00;">
-        💡 생성된 내용을 수정하여 실제 수업 내용과 학생 특성을 반영하세요. '에디터에 적용' 버튼으로 하단 에디터에 바로 적용됩니다.
+        💡 원하는 안의 📋 복사 버튼을 눌러 생기부에 붙여넣기 하세요.
       </div>
     </div>`;
 }
@@ -3020,14 +3032,19 @@ function applySetechPlan(divId) {
   }
 }
 
-function copySetechPlan(divId) {
+function copySetechPlan(divId, btn) {
   const div = document.getElementById(divId);
-  if (div) navigator.clipboard.writeText(div.textContent).then(() => {
-    const btn = event.target;
-    const orig = btn.textContent;
-    btn.textContent = '✅ 복사됨';
-    setTimeout(() => { btn.textContent = orig; }, 1500);
-  });
+  if (!div) return;
+  const txt = div.textContent;
+  const orig = btn ? btn.textContent : '📋 복사';
+  const doFeedback = () => { if(btn){btn.textContent='✅ 복사됨';setTimeout(()=>{btn.textContent=orig;},1500);} };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(txt).then(doFeedback).catch(() => {
+      const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doFeedback();
+    });
+  } else {
+    const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);doFeedback();
+  }
 }
 
 function sendToRecordCheck(divId) {
