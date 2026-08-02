@@ -1018,42 +1018,108 @@
       <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:4px;"><i class="fas fa-calculator"></i> 학기말 추정분할점수산출 결과</div>
       <div style="font-size:11.5px;color:#546e7a;margin-bottom:14px;line-height:1.6;background:#e8f5e9;padding:8px 12px;border-radius:8px;">나이스 <strong>학기말 추정분할점수산출</strong> 화면과 동일한 결과표 형식입니다. 정기시험 + 수행평가 반영비율을 입력하면 성취수준별 추정분할점수와 평균점수가 자동 산출됩니다.</div>
 
-      <!-- 지필+수행 사용방법 설명서 -->
-      <div style="margin-bottom:16px;border:1.5px solid #a5d6a7;border-radius:10px;overflow:hidden;">
-        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.guide-arrow3').style.transform=this.nextElementSibling.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:10px 14px;background:#2e7d32;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
-          <span><i class="fas fa-book-open"></i> 사용방법 — 지필+수행 합산 계산 가이드</span>
-          <span class="guide-arrow3" style="font-size:14px;transition:transform 0.2s;">▼</span>
+      <!-- 학기말 추정분할 사용방법 설명서 - 초등학생도 이해 가능 -->
+      <div style="margin-bottom:16px;border:2px solid #a5d6a7;border-radius:12px;overflow:hidden;">
+        <div onclick="var c=this.nextElementSibling;c.style.display=c.style.display==='none'?'block':'none';this.querySelector('.ga3').style.transform=c.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:11px 14px;background:#2e7d32;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+          <span>📖 이렇게 입력하면 돼요! (클릭하면 접혀요)</span>
+          <span class="ga3" style="font-size:14px;transition:transform 0.2s;transform:rotate(180deg);">▼</span>
         </div>
-        <div style="display:none;padding:14px;background:#f1f8f2;">
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#2e7d32;margin-bottom:6px;">📌 STEP 1. 지필평가 점수와 비율 입력</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e8f5e9;padding:10px;border-radius:8px;">
-              학생의 <strong>지필평가 원점수</strong>와 지필평가가 전체 성적에서 차지하는 <strong>비율(%)</strong>을 입력합니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;font-size:11px;color:#546e7a;">
-                예시: 지필 점수 85점 / 지필 비율 70% → 기여점수 = 85 × 0.7 = <strong>59.5점</strong>
-              </div>
+        <div style="display:block;padding:16px;background:#f1f8f2;">
+
+          <!-- 전체 흐름 한눈에 -->
+          <div style="background:#fff;border:2px solid #2e7d32;border-radius:10px;padding:12px;margin-bottom:14px;">
+            <div style="font-size:13px;font-weight:800;color:#2e7d32;margin-bottom:8px;">🗺️ 전체 흐름 한눈에 보기</div>
+            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:12px;font-weight:700;">
+              <span style="background:#e3f2fd;color:#1565c0;padding:5px 10px;border-radius:20px;">① 정기시험 탭</span>
+              <span style="color:#888;">→</span>
+              <span style="background:#e8f5e9;color:#2e7d32;padding:5px 10px;border-radius:20px;">② 수행평가 탭</span>
+              <span style="color:#888;">→</span>
+              <span style="background:#fff3e0;color:#e65100;padding:5px 10px;border-radius:20px;">③ 여기(학기말 합산)</span>
+              <span style="color:#888;">→</span>
+              <span style="background:#fce4ec;color:#880e4f;padding:5px 10px;border-radius:20px;">나이스 입력</span>
+            </div>
+            <div style="font-size:11.5px;color:#546e7a;margin-top:8px;line-height:1.7;">
+              ① 정기시험 탭에서 A/B, B/C, C/D, D/E 분할점수를 먼저 구하고,<br>
+              ② 수행평가 탭에서 각 수행평가의 분할점수를 구한 다음,<br>
+              ③ 이 탭에 모두 모아서 입력하면 → 나이스에 넣을 최종 평균 분할점수가 나와요!
             </div>
           </div>
-          <div style="margin-bottom:14px;">
-            <div style="font-size:12.5px;font-weight:800;color:#2e7d32;margin-bottom:6px;">📌 STEP 2. 수행평가 점수와 비율 입력</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e8f5e9;padding:10px;border-radius:8px;">
-              학생의 <strong>수행평가 점수</strong>와 <strong>비율(%)</strong>을 입력합니다. 지필 비율 + 수행 비율 = 100%가 되도록 설정하세요.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;font-size:11px;color:#546e7a;">
-                예시: 수행 점수 90점 / 수행 비율 30% → 기여점수 = 90 × 0.3 = <strong>27점</strong><br>
-                <span style="color:#2e7d32;">→ 합산 원점수 = 59.5 + 27 = <strong>86.5점</strong></span>
+
+          <!-- 각 칸 설명 -->
+          <div style="font-size:13px;font-weight:800;color:#2e7d32;margin-bottom:10px;">✏️ 각 칸에 뭘 넣어야 하나요?</div>
+
+          <div style="display:grid;gap:8px;">
+
+            <div style="background:#fff;border-radius:8px;padding:10px 12px;border-left:4px solid #1565c0;">
+              <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:4px;">📌 구분</div>
+              <div style="font-size:12px;color:#37474f;line-height:1.7;">
+                이 줄이 <strong>시험인지 수행평가인지</strong> 선택하는 칸이에요.<br>
+                시험 → <strong>정기시험</strong> 선택 / 수행평가 → <strong>수행평가</strong> 선택
               </div>
             </div>
-          </div>
-          <div style="margin-bottom:6px;">
-            <div style="font-size:12.5px;font-weight:800;color:#2e7d32;margin-bottom:6px;">📌 STEP 3. 추정분할점수 입력 (선택)</div>
-            <div style="font-size:12px;color:#37474f;line-height:1.7;background:#e8f5e9;padding:10px;border-radius:8px;">
-              ①정기시험 또는 ②수행평가 탭에서 산출한 <strong>A~E 분할점수</strong>를 입력하면 합산 원점수를 기준으로 성취도를 자동 판정합니다.<br>
-              분할점수를 입력하지 않으면 고정분할점수(90/80/70/60)를 기준으로 성취도를 판정합니다.<br>
-              <div style="margin-top:6px;padding:8px;background:#fff;border-radius:6px;border:1px solid #a5d6a7;font-size:11px;color:#546e7a;">
-                Tip: 지필+수행 합산 성적은 100점 기준으로 환산된 점수이므로, 분할점수도 100점 기준으로 설정하세요.
+
+            <div style="background:#fff;border-radius:8px;padding:10px 12px;border-left:4px solid #546e7a;">
+              <div style="font-size:12.5px;font-weight:800;color:#546e7a;margin-bottom:4px;">📌 고사/영역 명</div>
+              <div style="font-size:12px;color:#37474f;line-height:1.7;">
+                이 평가의 <strong>이름</strong>을 적는 칸이에요.<br>
+                <span style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px;">예: [정보] 2차 정기시험 &nbsp;/&nbsp; [정보] 인공지능 프로젝트 수행평가</span>
               </div>
             </div>
+
+            <div style="background:#fff;border-radius:8px;padding:10px 12px;border-left:4px solid #e65100;">
+              <div style="font-size:12.5px;font-weight:800;color:#e65100;margin-bottom:4px;">📌 반영비율(%)</div>
+              <div style="font-size:12px;color:#37474f;line-height:1.7;">
+                이 평가가 최종 성적에서 <strong>몇 %를 차지하는지</strong> 적는 칸이에요.<br>
+                <span style="background:#fff3e0;padding:2px 6px;border-radius:4px;font-size:11px;">예: 정기시험 50% + 수행평가A 25% + 수행평가B 25% = 합계 100%</span><br>
+                <span style="color:#c62828;font-size:11.5px;font-weight:700;">⚠️ 모든 줄의 반영비율을 더하면 반드시 100이 되어야 해요!</span>
+              </div>
+            </div>
+
+            <div style="background:#fff;border-radius:8px;padding:10px 12px;border-left:4px solid #546e7a;">
+              <div style="font-size:12.5px;font-weight:800;color:#546e7a;margin-bottom:4px;">📌 배점</div>
+              <div style="font-size:12px;color:#37474f;line-height:1.7;">
+                이 평가의 <strong>만점</strong>이에요. 보통 100점이에요.<br>
+                <span style="background:#f5f5f5;padding:2px 6px;border-radius:4px;font-size:11px;">예: 100</span>
+              </div>
+            </div>
+
+            <div style="background:#e3f2fd;border-radius:8px;padding:10px 12px;border-left:4px solid #1565c0;">
+              <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:4px;">📌 A/B, B/C, C/D, D/E (파란/초록/주황/보라 칸)</div>
+              <div style="font-size:12px;color:#37474f;line-height:1.7;">
+                이게 핵심이에요! 앞에서 계산한 <strong>추정분할점수</strong>를 여기에 옮겨 적어요.<br>
+                <div style="margin-top:6px;background:#fff;padding:8px;border-radius:6px;font-size:11.5px;color:#546e7a;line-height:1.8;">
+                  <strong>A/B</strong> = A와 B의 경계점수 (이 점수 이상이면 A)<br>
+                  <strong>B/C</strong> = B와 C의 경계점수 (이 점수 이상이면 B)<br>
+                  <strong>C/D</strong> = C와 D의 경계점수 (이 점수 이상이면 C)<br>
+                  <strong>D/E</strong> = D와 E의 경계점수 (이 점수 이상이면 D)<br>
+                  <span style="color:#1565c0;">👉 ①정기시험 탭 결과에서 복사해서 붙여넣기 하면 돼요!</span>
+                </div>
+              </div>
+            </div>
+
           </div>
+
+          <!-- 실제 예시 -->
+          <div style="margin-top:14px;background:#fff9c4;border-radius:10px;padding:12px;border:1.5px solid #f9a825;">
+            <div style="font-size:13px;font-weight:800;color:#f57f17;margin-bottom:8px;">🌟 실제 예시 (정보 과목, 정기시험50% + 수행평가 2개 각25%)</div>
+            <div style="font-size:11.5px;color:#37474f;line-height:1.9;">
+              <strong>1번 줄:</strong> 구분=정기시험 / 이름=[정보] 2차 정기시험 / 반영비율=50 / 배점=100 / A/B=60.80 / B/C=47.20 / C/D=34.80 / D/E=21.20<br>
+              <strong>2번 줄:</strong> 구분=수행평가 / 이름=[정보] 인공지능프로젝트 / 반영비율=25 / 배점=100 / A/B=90 / B/C=80 / C/D=70 / D/E=60<br>
+              <strong>3번 줄:</strong> 구분=수행평가 / 이름=[정보] 컴퓨팅사고력 / 반영비율=25 / 배점=100 / A/B=90 / B/C=80 / C/D=70 / D/E=60<br>
+              <span style="color:#2e7d32;font-weight:700;">→ 과목명에 "정보(3)" 입력 후 [산출하기] 클릭!</span><br>
+              <span style="color:#1565c0;font-weight:700;">→ 결과: 정보(3) 평균 A/B=75.40, B/C=63.80, C/D=52.20, D/E=40.60</span>
+            </div>
+          </div>
+
+          <!-- 산출 후 할 일 -->
+          <div style="margin-top:12px;background:#e8eaf6;border-radius:10px;padding:12px;border:1.5px solid #7986cb;">
+            <div style="font-size:13px;font-weight:800;color:#3949ab;margin-bottom:6px;">📲 산출 후 나이스에 입력하는 방법</div>
+            <div style="font-size:12px;color:#37474f;line-height:1.9;">
+              나이스 접속 → 교과담임 → 성적처리 → 분할점수 → <strong>학기말 추정분할점수산출</strong><br>
+              → 학년도/학기/계열/과목 선택 후 [조회] → 결과 확인 후 [추정분할점수산출] 클릭 → [마감]
+            </div>
+          </div>
+
         </div>
       </div>
 
