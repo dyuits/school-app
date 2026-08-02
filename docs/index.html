@@ -1538,6 +1538,7 @@ window.addEventListener('load', function() {
       const btn = document.createElement('button');
       btn.textContent = s.icon + ' ' + s.name;
       btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-lt,#e0e0e0);background:#fff;font-size:12.5px;cursor:pointer;text-align:left;';
+      btn.dataset.name = s.name;
       btn.onclick = () => {
         document.querySelectorAll('#setechSubjectList button').forEach(b => b.style.background = '#fff');
         btn.style.background = '#e3f2fd';
@@ -2607,7 +2608,7 @@ function clearSetechForm() {
   document.querySelectorAll('.setech-grade-btn,.setech-semester-btn,.setech-dept-btn').forEach(b => {
     b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#c5cae9';
   });
-  document.getElementById('setechSubjectSel').value = '';
+  // setechSubjectSel은 새 레이아웃에 없음 (교과는 좌측 버튼으로 선택)
   document.getElementById('setechPlanText').value = '';
   document.getElementById('setechActivityText').value = '';
   document.getElementById('setechTeacherComment').value = '';
@@ -2638,7 +2639,9 @@ async function generateSetechNew() {
   const grade = (document.querySelector('.setech-grade-btn[style*="3949ab"]') || {}).dataset?.val || '';
   const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '';
   const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '';
-  const subject = document.getElementById('setechSubjectSel').value;
+  // 교과명: 좌측 목록에서 선택된 버튼의 data-name, 없으면 setechTitle 텍스트에서 추출
+  const activeSubjectBtn = document.querySelector('#setechSubjectList button[style*="e3f2fd"]');
+  const subject = activeSubjectBtn ? (activeSubjectBtn.dataset.name || activeSubjectBtn.textContent.replace(/[^\w가-힣·]/g,'').trim()) : (document.getElementById('setechTitle')?.textContent?.replace(/\s*세특.*$/,'').replace(/[^\w가-힣·\s]/g,'').trim() || '');
   const planText = document.getElementById('setechPlanText').value.trim();
   const activityText = document.getElementById('setechActivityText').value.trim();
   const teacherComment = document.getElementById('setechTeacherComment').value.trim();
