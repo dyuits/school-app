@@ -1288,6 +1288,14 @@
   <!-- 학년/학기/학과 + 교과 선택 (한 줄 배치) -->
   <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;margin-bottom:16px;padding:14px 16px;background:#f8f9fa;border-radius:12px;border:1.5px solid #e0e0e0;">
     <div>
+      <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학년 <span style="font-weight:400;color:#888;font-size:10.5px;">(선택한 학년부터 생성)</span></div>
+      <div style="display:flex;gap:4px;">
+        <button class="setech-grade-btn" data-val="고1" onclick="selectSetechBtn(this,'grade')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고1</button>
+        <button class="setech-grade-btn" data-val="고2" onclick="selectSetechBtn(this,'grade')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고2</button>
+        <button class="setech-grade-btn" data-val="고3" onclick="selectSetechBtn(this,'grade')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고3</button>
+      </div>
+    </div>
+    <div>
       <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:5px;">학기</div>
       <div style="display:flex;gap:4px;">
         <button class="setech-semester-btn" data-val="1학기" onclick="selectSetechBtn(this,'semester')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">1학기</button>
@@ -3024,6 +3032,13 @@ function sendToRecordCheck(divId) {
 async function generateSetechAllGrades() {
   const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '1학기';
   const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '보통과';
+  // 선택된 학년 버튼에서 시작 학년 결정
+  const selectedGradeBtn = document.querySelector('.setech-grade-btn[style*="3949ab"]');
+  const startGrade = selectedGradeBtn ? selectedGradeBtn.dataset.val : '고1';
+  const allGrades = ['고1', '고2', '고3'];
+  const startIdx = allGrades.indexOf(startGrade);
+  const grades = allGrades.slice(startIdx >= 0 ? startIdx : 0); // 고1 선택시 고1~고3, 고2 선택시 고2~고3, 고3 선택시 고3만
+
   const subjectDropdown = document.getElementById('setechSubjectDropdown');
   const subject = subjectDropdown ? subjectDropdown.value : '';
   const planText = (document.getElementById('setechPlanText') || {}).value?.trim() || '';
@@ -3041,21 +3056,42 @@ async function generateSetechAllGrades() {
   resultEl.style.display = 'block';
 
   const apiKey = localStorage.getItem('openai_api_key') || '';
-  const grades = ['고1', '고2', '고3'];
   const gradeLabels = { '고1': '🟡 고1 (학습법 체득)', '고2': '🟠 고2 (연결과 응용)', '고3': '🔴 고3 (확장과 심화)' };
   const results = {};
 
-  for (let i = 0; i < grades.length; i++) {
-    const grade = grades[i];
-    resultEl.innerHTML = `<div style="padding:20px;background:#f3e5f5;border-radius:10px;text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:22px;color:#7b1fa2;"></i><div style="margin-top:10px;font-size:13px;color:#7b1fa2;font-weight:700;">${grade} 세특 생성 중... (${i+1}/3)</div><div style="font-size:11px;color:#aaa;margin-top:4px;">GPT 토큰 한도 방지를 위해 학년사이 10초 대기 중</div></div>`;
-    if (apiKey) {
+  // GPT 호출 헬퍼 (오류 시 자동 재시도)
+  async function callGPTWithRetry(grade, retries=3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
       const tmpEl = document.createElement('div');
       await generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, tmpEl, apiKey);
-      results[grade] = tmpEl.innerHTML;
-      // 다음 학년이 있으면 10초 대기 (Rate limit 방지)
+      // 오류 메시지 확인
+      if (tmpEl.innerHTML.includes('Rate limit') && attempt < retries) {
+        // 대기 시간: 오류 메시지에서 "try again in Xs" 파싱
+        const waitMatch = tmpEl.innerHTML.match(/try again in (\d+\.?\d*)s/);
+        const waitSec = waitMatch ? Math.ceil(parseFloat(waitMatch[1])) + 3 : 15;
+        for (let s = waitSec; s > 0; s--) {
+          resultEl.innerHTML = `<div style="padding:20px;background:#fff8e1;border-radius:10px;text-align:center;"><i class="fas fa-clock" style="font-size:22px;color:#e65100;"></i><div style="margin-top:10px;font-size:13px;color:#e65100;font-weight:700;">${grade} 토큰 한도 초과 — ${s}초 후 재시도 (${attempt}/${retries})</div></div>`;
+          await new Promise(r => setTimeout(r, 1000));
+        }
+        continue;
+      }
+      return tmpEl.innerHTML;
+    }
+    // 최대 재시도 후에도 실패하면 로컈 AI로 대체
+    const fallbackEl = document.createElement('div');
+    generateSetechLocal(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, fallbackEl);
+    return fallbackEl.innerHTML;
+  }
+
+  for (let i = 0; i < grades.length; i++) {
+    const grade = grades[i];
+    resultEl.innerHTML = `<div style="padding:20px;background:#f3e5f5;border-radius:10px;text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:22px;color:#7b1fa2;"></i><div style="margin-top:10px;font-size:13px;color:#7b1fa2;font-weight:700;">${grade} 세특 생성 중... (${i+1}/${grades.length})</div></div>`;
+    if (apiKey) {
+      results[grade] = await callGPTWithRetry(grade);
+      // 다음 학년이 있으면 15초 대기 (Rate limit 방지)
       if (i < grades.length - 1) {
-        for (let s = 10; s > 0; s--) {
-          resultEl.innerHTML = `<div style="padding:20px;background:#f3e5f5;border-radius:10px;text-align:center;"><i class="fas fa-clock" style="font-size:22px;color:#7b1fa2;"></i><div style="margin-top:10px;font-size:13px;color:#7b1fa2;font-weight:700;">${grade} 완료 ✔️ — ${grades[i+1]} 생성 대기 중... ${s}초</div></div>`;
+        for (let s = 15; s > 0; s--) {
+          resultEl.innerHTML = `<div style="padding:20px;background:#f3e5f5;border-radius:10px;text-align:center;"><i class="fas fa-clock" style="font-size:22px;color:#7b1fa2;"></i><div style="margin-top:10px;font-size:13px;color:#7b1fa2;font-weight:700;">${grade} 완료 ✔️ — ${grades[i+1]} 생성 대기 ${s}초</div></div>`;
           await new Promise(r => setTimeout(r, 1000));
         }
       }
@@ -3067,7 +3103,8 @@ async function generateSetechAllGrades() {
   }
 
   // 전체 결과 렌더링
-  let html = `<div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:14px;"><i class="fas fa-magic"></i> 세특 AI 생성 결과 — ${subject||'(교과 미선택)'} / ${semester} / ${dept}</div>`;
+  const gradeRangeLabel = grades.length === 3 ? '고1~고3' : grades.length === 2 ? '고2~고3' : '고3';
+  let html = `<div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:14px;"><i class="fas fa-magic"></i> 세특 AI 생성 결과 — ${subject||'(교과 미선택)'} / ${semester} / ${dept} / ${gradeRangeLabel}</div>`;
   for (const grade of grades) {
     html += `
     <div style="margin-bottom:20px;border-radius:12px;overflow:hidden;border:2px solid #ce93d8;">
