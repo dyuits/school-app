@@ -676,9 +676,20 @@
     <div>
       <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">생기부 내용 입력</div>
       <textarea id="recordInput" rows="12" placeholder="학생부 기재 내용을 붙여넣기 하세요...&#10;&#10;예) 수업 시간에 알고리즘 개념을 학습하고 직접 코드를 작성하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <!-- AI API 키 입력 영역 -->
+      <div id="apiKeyArea" style="margin-top:10px;padding:10px 12px;background:#f3e5f5;border-radius:10px;border:1.5px solid #ce93d8;">
+        <div style="font-size:12px;font-weight:700;color:#6a1b9a;margin-bottom:6px;"><i class="fas fa-key"></i> AI 맞춤법 검사용 OpenAI API 키</div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <input id="openaiApiKey" type="password" placeholder="sk-..." style="flex:1;min-width:200px;padding:6px 10px;border:1.5px solid #ce93d8;border-radius:7px;font-size:12.5px;font-family:monospace;" oninput="saveApiKey()" />
+          <button onclick="toggleApiKeyVisibility()" style="padding:6px 10px;background:#e1bee7;color:#6a1b9a;border:none;border-radius:7px;font-size:12px;cursor:pointer;" id="apiKeyToggleBtn"><i class="fas fa-eye"></i></button>
+          <button onclick="clearApiKey()" style="padding:6px 10px;background:#fce4ec;color:#c62828;border:none;border-radius:7px;font-size:12px;cursor:pointer;">삭제</button>
+        </div>
+        <div style="font-size:11px;color:#9c27b0;margin-top:5px;">🔒 키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다. <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#7b1fa2;font-weight:700;">API 키 발급 →</a></div>
+        <div id="apiKeyStatus" style="font-size:11.5px;margin-top:4px;"></div>
+      </div>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
         <button onclick="checkRecord()" style="padding:8px 18px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i> 점검 시작</button>
-        <button onclick="checkSpelling()" style="padding:8px 18px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-spell-check"></i> 맞춤법 검사</button>
+        <button onclick="checkSpelling()" style="padding:8px 18px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-spell-check"></i> AI 맞춤법 검사</button>
         <button onclick="clearRecord()" style="padding:8px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">삭제</button>
         <button onclick="navigator.clipboard.writeText(document.getElementById('recordInput').value)" style="padding:8px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:13px;cursor:pointer;">복사</button>
         <span id="recordCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자 / 0 bytes</span>
@@ -1167,8 +1178,41 @@ const SPELL_RULES = [
   {w:'이를통하여', c:'이를 통하여', t:'띄어쓰기', r:"'이를 통하여' 띄어 써야 함"},
 ];
 
-// 맞춤법 검사 함수 (규칙 기반)
-function checkSpelling() {
+// API 키 관리
+function saveApiKey() {
+  const key = document.getElementById('openaiApiKey').value.trim();
+  if (key) {
+    localStorage.setItem('openai_api_key', key);
+    document.getElementById('apiKeyStatus').innerHTML = '<span style="color:#2e7d32;">✅ 저장됨</span>';
+  }
+}
+function loadApiKey() {
+  const key = localStorage.getItem('openai_api_key') || '';
+  const input = document.getElementById('openaiApiKey');
+  if (input && key) {
+    input.value = key;
+    document.getElementById('apiKeyStatus').innerHTML = '<span style="color:#2e7d32;">✅ 저장된 키 로드됨</span>';
+  }
+}
+function clearApiKey() {
+  localStorage.removeItem('openai_api_key');
+  document.getElementById('openaiApiKey').value = '';
+  document.getElementById('apiKeyStatus').innerHTML = '<span style="color:#e53935;">🗑️ 삭제됨</span>';
+}
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('openaiApiKey');
+  const btn = document.getElementById('apiKeyToggleBtn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.innerHTML = '<i class="fas fa-eye-slash"></i>';
+  } else {
+    input.type = 'password';
+    btn.innerHTML = '<i class="fas fa-eye"></i>';
+  }
+}
+
+// AI 맞춤법 검사 함수
+async function checkSpelling() {
   const text = document.getElementById('recordInput').value.trim();
   const resultEl = document.getElementById('spellResult');
   if (!text) {
@@ -1176,99 +1220,163 @@ function checkSpelling() {
     resultEl.innerHTML = '<div style="color:#e53935;padding:12px;">내용을 입력해주세요.</div>';
     return;
   }
-  switchResultTab(2);
 
-  const errors = [];
-  const seen = new Set();
-  SPELL_RULES.forEach(rule => {
-    if (text.includes(rule.w) && !seen.has(rule.w)) {
-      seen.add(rule.w);
-      errors.push(rule);
-    }
-  });
+  const apiKey = (document.getElementById('openaiApiKey').value || '').trim()
+                 || localStorage.getItem('openai_api_key') || '';
 
-  if (errors.length === 0) {
+  if (!apiKey || !apiKey.startsWith('sk-')) {
+    switchResultTab(2);
     resultEl.innerHTML = `
-      <div style="padding:16px;background:#e8f5e9;border-radius:10px;border-left:4px solid #2e7d32;margin-bottom:12px;">
-        <div style="font-weight:800;color:#2e7d32;font-size:14px;margin-bottom:4px;">✅ 규칙 기반 검사: 오류 없음</div>
-        <div style="font-size:12.5px;color:#388e3c;">자주 틀리는 맞춤법·띄어쓰기 패턴에서 오류가 발견되지 않았습니다.</div>
-      </div>
-      <div style="padding:12px;background:#f3e5f5;border-radius:10px;font-size:12.5px;color:#6a1b9a;">
-        <strong>💡 더 정밀한 검사를 원하면:</strong>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-          <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:6px 12px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
-          <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:6px 12px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
-          <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="padding:6px 12px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">국립국어원</a>
+      <div style="padding:14px;background:#fff3e0;border-radius:10px;border-left:4px solid #f57f17;">
+        <div style="font-weight:800;color:#e65100;margin-bottom:8px;">🔑 OpenAI API 키를 입력해주세요</div>
+        <div style="font-size:12.5px;color:#666;line-height:1.8;">
+          1. 위 보라색 박스에 <strong>sk-...</strong> 형식의 API 키 입력<br>
+          2. <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#7b1fa2;font-weight:700;">platform.openai.com</a>에서 무료로 발급 가능<br>
+          3. 키는 이 브라우저에만 저장되며 외부로 전송되지 않습니다
+        </div>
+        <div style="margin-top:10px;padding:8px;background:#fff;border-radius:8px;font-size:12px;color:#888;">
+          💡 API 키 없이 사용하려면 아래 외부 검사기를 이용해주세요:
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+            <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:5px 10px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
+            <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:5px 10px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
+          </div>
         </div>
       </div>`;
     return;
   }
 
-  // 오류 하이라이트
-  let highlighted = text;
-  errors.forEach(e => {
-    highlighted = highlighted.split(e.w).join(
-      `<mark style="background:#ffeb3b;color:#c62828;font-weight:700;border-radius:3px;padding:0 2px;">${e.w}</mark>`
-    );
-  });
-
-  // 교정 후 텍스트
-  let corrected = text;
-  errors.forEach(e => {
-    corrected = corrected.split(e.w).join(e.c);
-  });
-
-  const typeColors = {'맞춤법':'#c62828','오타':'#e65100','띄어쓰기':'#1565c0'};
-  const typeBg = {'맞춤법':'#fce4ec','오타':'#fff3e0','띄어쓰기':'#e3f2fd'};
-
+  switchResultTab(2);
   resultEl.innerHTML = `
-    <div style="margin-bottom:12px;padding:10px 14px;background:#fce4ec;border-radius:8px;border-left:4px solid #c62828;">
-      <strong style="color:#c62828;">⚠️ ${errors.length}개의 오류 발견</strong>
-      <span style="font-size:11.5px;color:#888;margin-left:8px;">(규칙 기반 검사)</span>
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:8px;">📋 오류 목록</div>
-      ${errors.map(e => `
-        <div style="margin-bottom:8px;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee;font-size:12.5px;">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-            <span style="font-size:11px;padding:2px 8px;background:${typeBg[e.t]||'#f5f5f5'};color:${typeColors[e.t]||'#333'};border-radius:10px;font-weight:700;">${e.t}</span>
-            <span style="color:#c62828;font-weight:700;text-decoration:line-through;">${e.w}</span>
-            <span style="color:#888;">→</span>
-            <span style="color:#2e7d32;font-weight:700;">${e.c}</span>
-          </div>
-          <div style="color:#888;font-size:11.5px;">${e.r}</div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:6px;">🔍 원문 (오류 표시)</div>
-      <div style="padding:12px;background:#fff;border-radius:8px;border:1.5px solid #ffe082;font-size:13px;line-height:1.8;">${highlighted}</div>
-    </div>
-
-    <div style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <div style="font-size:12.5px;font-weight:700;color:#333;">✅ 교정 후 텍스트</div>
-        <div style="display:flex;gap:6px;">
-          <button onclick="document.getElementById('recordInput').value=document.getElementById('correctedText').textContent;updateRecordCount()" style="padding:4px 10px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 적용</button>
-          <button onclick="navigator.clipboard.writeText(document.getElementById('correctedText').textContent)" style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
-        </div>
-      </div>
-      <div style="padding:12px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;font-size:13px;line-height:1.8;">
-        <div id="correctedText">${corrected}</div>
-      </div>
-    </div>
-
-    <div style="padding:12px;background:#f3e5f5;border-radius:10px;font-size:12.5px;color:#6a1b9a;">
-      <strong>💡 더 정밀한 검사를 원하면:</strong>
-      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:6px 12px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
-        <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:6px 12px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
-        <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="padding:6px 12px;background:#f3e5f5;color:#6a1b9a;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">국립국어원</a>
-      </div>
+    <div style="padding:20px;text-align:center;">
+      <i class="fas fa-spinner fa-spin" style="color:#7b1fa2;font-size:22px;"></i>
+      <div style="color:#888;font-size:13px;margin-top:10px;">AI가 맞춤법·띄어쓰기·오타를 분석 중...</div>
+      <div style="color:#bbb;font-size:11.5px;margin-top:4px;">잠시만 기다려주세요 (5~15초)</div>
     </div>`;
+
+  const systemPrompt = `당신은 한국어 학생부(생기부) 전문 교정 AI입니다.
+주어진 텍스트에서 맞춤법, 오타, 띄어쓰기 오류를 모두 찾아주세요.
+특히 다음을 꼼꼼히 확인하세요:
+- 쉼표(,) 뒤 띄어쓰기 누락
+- 조사·어미 붙여쓰기 오류
+- 단어 사이 띄어쓰기 누락 (예: '지도학습과비지도학습을구분해' → '지도학습과 비지도학습을 구분해')
+- 맞춤법 오류 (예: 됬→됐, 역활→역할)
+- 문장 부호 사용 오류
+
+반드시 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
+{"errors": [{"original": "틀린부분", "corrected": "올바른부분", "type": "맞춤법|오타|띄어쓰기", "reason": "이유", "position": 위치숫자}], "corrected_full": "전체교정문"}
+
+오류가 없으면: {"errors": [], "corrected_full": "원문그대로"}`;
+
+  try {
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `다음 학생부 내용의 맞춤법·띄어쓰기·오타 오류를 모두 찾아주세요:\n\n${text}` }
+        ],
+        temperature: 0.1,
+        max_tokens: 2000
+      })
+    });
+
+    if (resp.status === 401) {
+      resultEl.innerHTML = `<div style="padding:14px;background:#fce4ec;border-radius:10px;border-left:4px solid #c62828;">
+        <div style="font-weight:800;color:#c62828;">❌ API 키 오류</div>
+        <div style="font-size:12.5px;color:#666;margin-top:6px;">API 키가 유효하지 않습니다. 올바른 키를 입력해주세요.</div>
+      </div>`;
+      return;
+    }
+    if (!resp.ok) throw new Error('API 오류: ' + resp.status);
+
+    const data = await resp.json();
+    const raw = data.choices[0].message.content.trim();
+    const jsonStr = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+    const parsed = JSON.parse(jsonStr);
+    const errors = parsed.errors || [];
+    const correctedFull = parsed.corrected_full || text;
+
+    if (errors.length === 0) {
+      resultEl.innerHTML = `
+        <div style="padding:16px;background:#e8f5e9;border-radius:10px;border-left:4px solid #2e7d32;margin-bottom:12px;">
+          <div style="font-weight:800;color:#2e7d32;font-size:14px;margin-bottom:4px;">✅ AI 검사 완료: 오류 없음</div>
+          <div style="font-size:12.5px;color:#388e3c;">맞춤법·띄어쓰기·오타 오류가 발견되지 않았습니다.</div>
+        </div>`;
+      return;
+    }
+
+    // 오류 하이라이트 (원문에서 오류 부분 표시)
+    let highlighted = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    errors.forEach(e => {
+      if (e.original) {
+        const escaped = e.original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        highlighted = highlighted.replace(
+          new RegExp(escaped, 'g'),
+          `<mark style="background:#ffeb3b;color:#c62828;font-weight:700;border-radius:3px;padding:0 2px;">${e.original}</mark>`
+        );
+      }
+    });
+
+    const typeColors = {'맞춤법':'#c62828','오타':'#e65100','띄어쓰기':'#1565c0'};
+    const typeBg = {'맞춤법':'#fce4ec','오타':'#fff3e0','띄어쓰기':'#e3f2fd'};
+
+    resultEl.innerHTML = `
+      <div style="margin-bottom:12px;padding:10px 14px;background:#fce4ec;border-radius:8px;border-left:4px solid #c62828;">
+        <strong style="color:#c62828;">⚠️ ${errors.length}개의 오류 발견</strong>
+        <span style="font-size:11.5px;color:#888;margin-left:8px;">(AI 분석 결과)</span>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:8px;">📋 오류 목록</div>
+        ${errors.map(e => `
+          <div style="margin-bottom:8px;padding:10px 12px;background:#fff;border-radius:8px;border:1px solid #eee;font-size:12.5px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+              <span style="font-size:11px;padding:2px 8px;background:${typeBg[e.type]||'#f5f5f5'};color:${typeColors[e.type]||'#333'};border-radius:10px;font-weight:700;">${e.type||'기타'}</span>
+              <span style="color:#c62828;font-weight:700;text-decoration:line-through;">${(e.original||'').replace(/</g,'&lt;')}</span>
+              <span style="color:#888;">→</span>
+              <span style="color:#2e7d32;font-weight:700;">${(e.corrected||'').replace(/</g,'&lt;')}</span>
+            </div>
+            <div style="color:#888;font-size:11.5px;">${e.reason||''}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12.5px;font-weight:700;color:#333;margin-bottom:6px;">🔍 원문 (오류 표시)</div>
+        <div style="padding:12px;background:#fff;border-radius:8px;border:1.5px solid #ffe082;font-size:13px;line-height:1.8;white-space:pre-wrap;">${highlighted}</div>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:12.5px;font-weight:700;color:#333;">✅ AI 교정 후 전체 텍스트</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="document.getElementById('recordInput').value=document.getElementById('aiCorrectedText').textContent;updateRecordCount()" style="padding:4px 10px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 적용</button>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('aiCorrectedText').textContent)" style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
+          </div>
+        </div>
+        <div style="padding:12px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;font-size:13px;line-height:1.8;white-space:pre-wrap;">
+          <div id="aiCorrectedText">${correctedFull.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        </div>
+      </div>`;
+
+  } catch(e) {
+    resultEl.innerHTML = `
+      <div style="padding:14px;background:#fff3e0;border-radius:8px;border-left:4px solid #f57f17;">
+        <div style="font-weight:700;color:#e65100;margin-bottom:6px;">⚠️ 검사 중 오류 발생</div>
+        <div style="font-size:12.5px;color:#666;">${e.message}</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="padding:6px 12px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">부산대 맞춤법 검사기</a>
+          <a href="https://alldic.daum.net/grammar_checker.do" target="_blank" style="padding:6px 12px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;">다음 맞춤법 검사기</a>
+        </div>
+      </div>`;
+  }
 }
+
 
 // 생기부 삭제
 function clearRecord() {
@@ -1610,6 +1718,11 @@ function cancelReservation(i) {
   localStorage.setItem('labReservations', JSON.stringify(reservations));
   renderReservations();
 }
+
+// 페이지 로드 시 저장된 API 키 불러오기
+document.addEventListener('DOMContentLoaded', function() {
+  loadApiKey();
+});
 </script>
 
 <!-- Firebase SDK (compat) -->
