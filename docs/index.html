@@ -982,98 +982,91 @@
     <div class="card" style="padding:14px 18px;border-radius:0 8px 8px 8px;background:#fff;border:1px solid #e0e0e0;">
 
 
-      <!-- 나이스 학기말 추정분할점수산출 화면 동일 구조 -->
+      <!-- 학기말 추정분할점수산출 - 자동 연동 방식 -->
 
-      <!-- 행 추가/삭제 버튼 -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:12.5px;font-weight:700;color:#37474f;">📋 정기시험/수행평가 목록 입력</div>
-        <div style="display:flex;gap:6px;">
-          <button onclick="addFinalRow()" style="padding:5px 12px;background:#2e7d32;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">+ 행 추가</button>
-          <button onclick="resetFinalRows()" style="padding:5px 12px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:12px;cursor:pointer;">전체 지우기</button>
+      <!-- 안내 박스 -->
+      <div style="padding:10px 14px;background:#e8f5e9;border-radius:8px;border:1.5px solid #a5d6a7;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;">
+        <div style="font-size:18px;">💡</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:3px;">정기시험·수행평가 탭 결과가 자동으로 연동됩니다</div>
+          <div style="font-size:12px;color:#546e7a;line-height:1.6;">① <strong>정기시험</strong> 탭에서 예상정답률 입력 → ② <strong>수행평가</strong> 탭에서 MCP 배점 입력 → ③ 여기서 <strong>반영비율(%)</strong>만 입력하면 최종 분할점수가 자동 계산됩니다</div>
         </div>
       </div>
 
-      <!-- 입력 테이블 -->
-      <div style="overflow-x:auto;border:1.5px solid #a5d6a7;border-radius:8px;margin-bottom:12px;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:600px;">
-          <thead>
-            <tr style="background:#2e7d32;color:#fff;">
-              <th style="padding:7px;text-align:center;min-width:50px;">구분</th>
-              <th style="padding:7px;text-align:center;min-width:160px;">고사/영역 명</th>
-              <th style="padding:7px;text-align:center;min-width:70px;">반영비율(%)</th>
-              <th style="padding:7px;text-align:center;min-width:60px;">배점</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#1a237e;">A/B</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#1b5e20;">B/C</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#e65100;">C/D</th>
-              <th style="padding:7px;text-align:center;min-width:60px;background:#880e4f;">D/E</th>
-              <th style="padding:7px;text-align:center;min-width:40px;">삭제</th>
-            </tr>
-          </thead>
-          <tbody id="finalRows">
-            <!-- 정기시험 기본 행 -->
-            <tr id="finalRow_0" style="background:#f8f9fa;">
-              <td style="padding:5px;">
-                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
-                  <option value="written">정기시험</option>
-                  <option value="perf">수행평가</option>
-                </select>
-              </td>
-              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 2차 정기시험" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="50" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="60.80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="47.20" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="34.80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="21.20" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(0)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
-            </tr>
-            <!-- 수행평가 기본 행 1 -->
-            <tr id="finalRow_1">
-              <td style="padding:5px;">
-                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
-                  <option value="written">정기시험</option>
-                  <option value="perf" selected>수행평가</option>
-                </select>
-              </td>
-              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 수행평가명 1" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(1)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
-            </tr>
-            <!-- 수행평가 기본 행 2 -->
-            <tr id="finalRow_2" style="background:#f8f9fa;">
-              <td style="padding:5px;">
-                <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
-                  <option value="written">정기시험</option>
-                  <option value="perf" selected>수행평가</option>
-                </select>
-              </td>
-              <td style="padding:5px;"><input type="text" placeholder="예: [정보] 수행평가명 2" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-              <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-              <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(2)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!-- 과목명 + 반영비율 입력 -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:700;color:#37474f;margin-bottom:8px;padding:6px 0;border-bottom:2px solid #e0e0e0;">📋 과목명 및 반영비율 입력</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+          <label style="font-size:12.5px;font-weight:700;color:#2e7d32;">과목명:</label>
+          <input type="text" id="subjectName" placeholder="예: 정보(3)" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:12.5px;width:140px;" oninput="calcFinal()">
+        </div>
 
-      <!-- 과목명 입력 -->
-      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-        <label style="font-size:12.5px;font-weight:700;color:#2e7d32;">과목명:</label>
-        <input type="text" id="subjectName" placeholder="예: 정보(3)" style="padding:6px 10px;border:1.5px solid #a5d6a7;border-radius:6px;font-size:12.5px;width:140px;" oninput="calcFinal()">
-        <button onclick="calcFinal()" style="padding:7px 18px;background:#2e7d32;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-calculator"></i> 산출하기</button>
+        <!-- 반영비율 입력 테이블 -->
+        <div style="overflow-x:auto;border:1.5px solid #a5d6a7;border-radius:8px;margin-bottom:10px;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:400px;">
+            <thead>
+              <tr style="background:#2e7d32;color:#fff;">
+                <th style="padding:8px;text-align:center;min-width:60px;">구분</th>
+                <th style="padding:8px;text-align:center;min-width:180px;">고사/영역 명</th>
+                <th style="padding:8px;text-align:center;min-width:90px;">반영비율(%)</th>
+                <th style="padding:8px;text-align:center;min-width:80px;">산출된 분할점수</th>
+                <th style="padding:8px;text-align:center;min-width:40px;">삭제</th>
+              </tr>
+            </thead>
+            <tbody id="finalRows">
+              <!-- 정기시험 기본 행 -->
+              <tr id="finalRow_0" style="background:#f8f9fa;">
+                <td style="padding:6px;text-align:center;">
+                  <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
+                    <option value="written">정기시험</option>
+                    <option value="perf">수행평가</option>
+                  </select>
+                </td>
+                <td style="padding:6px;"><input type="text" placeholder="예: [정보] 2차 정기시험" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+                <td style="padding:6px;"><input type="number" placeholder="50" min="0" max="100" style="width:100%;padding:4px 6px;border:1.5px solid #a5d6a7;border-radius:5px;font-size:12px;box-sizing:border-box;font-weight:700;" oninput="calcFinal()"></td>
+                <td style="padding:6px;text-align:center;font-size:11px;color:#888;" id="finalRow_0_preview">← 자동 연동</td>
+                <td style="padding:6px;text-align:center;"><button onclick="removeFinalRow(0)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+              </tr>
+              <!-- 수행평가 기본 행 1 -->
+              <tr id="finalRow_1">
+                <td style="padding:6px;text-align:center;">
+                  <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
+                    <option value="written">정기시험</option>
+                    <option value="perf" selected>수행평가</option>
+                  </select>
+                </td>
+                <td style="padding:6px;"><input type="text" placeholder="예: [정보] 수행평가명 1" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+                <td style="padding:6px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1.5px solid #a5d6a7;border-radius:5px;font-size:12px;box-sizing:border-box;font-weight:700;" oninput="calcFinal()"></td>
+                <td style="padding:6px;text-align:center;font-size:11px;color:#888;" id="finalRow_1_preview">← 자동 연동</td>
+                <td style="padding:6px;text-align:center;"><button onclick="removeFinalRow(1)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+              </tr>
+              <!-- 수행평가 기본 행 2 -->
+              <tr id="finalRow_2" style="background:#f8f9fa;">
+                <td style="padding:6px;text-align:center;">
+                  <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
+                    <option value="written">정기시험</option>
+                    <option value="perf" selected>수행평가</option>
+                  </select>
+                </td>
+                <td style="padding:6px;"><input type="text" placeholder="예: [정보] 수행평가명 2" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+                <td style="padding:6px;"><input type="number" placeholder="25" min="0" max="100" style="width:100%;padding:4px 6px;border:1.5px solid #a5d6a7;border-radius:5px;font-size:12px;box-sizing:border-box;font-weight:700;" oninput="calcFinal()"></td>
+                <td style="padding:6px;text-align:center;font-size:11px;color:#888;" id="finalRow_2_preview">← 자동 연동</td>
+                <td style="padding:6px;text-align:center;"><button onclick="removeFinalRow(2)" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button onclick="addFinalRow()" style="padding:6px 14px;background:#2e7d32;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;"><i class="fas fa-plus"></i> 수행평가 행 추가</button>
+          <button onclick="resetFinalRows()" style="padding:6px 14px;background:#e0e0e0;color:#666;border:none;border-radius:6px;font-size:12px;cursor:pointer;">전체 지우기</button>
+          <button onclick="calcFinal()" style="padding:6px 18px;background:#1565c0;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-calculator"></i> 산출하기</button>
+          <span id="ratioWarning" style="font-size:11.5px;color:#e53935;display:none;">⚠️ 반영비율 합계가 100%가 아닙니다</span>
+        </div>
       </div>
 
       <!-- 결과표 -->
-      <div id="calcPerfResult" style="margin-top:4px;"><div style="text-align:center;color:#aaa;font-size:13px;padding:20px;">[반영비율] 및 [분할점수]를 입력하면 나이스 학기말 추정분할점수산출 결과표가 자동 생성됩니다</div></div>
+      <div id="calcPerfResult" style="margin-top:8px;"><div style="text-align:center;color:#aaa;font-size:13px;padding:20px;">반영비율을 입력하면 나이스 학기말 추정분할점수산출 결과표가 자동 생성됩니다</div></div>
 
       <div style="margin-top:10px;padding:8px 12px;background:#fff8e1;border-radius:8px;border:1px solid #ffe082;">
         <div style="font-size:11px;color:#795548;line-height:1.6;">⚠️ <strong>나이스 입력 경로:</strong> 교과담임 → 성적처리 → 분할점수 → <strong>학기말 추정분할점수산출</strong></div>
@@ -2239,7 +2232,7 @@ function addPerfRow() {
   tbody.appendChild(row);
 }
 
-// ③ 지필+수행 합산 계산 (추정분할점수 적용)
+// ③ 지필+수행 합산 계산 (추정분할점수 자동 연동)
 // 학기말 추정분할점수산출 - 행 추가
 let finalRowCount = 3;
 function addFinalRow() {
@@ -2250,20 +2243,16 @@ function addFinalRow() {
   tr.id = 'finalRow_' + idx;
   tr.style.cssText = bg;
   tr.innerHTML = `
-    <td style="padding:5px;">
+    <td style="padding:6px;text-align:center;">
       <select onchange="calcFinal()" style="width:100%;padding:4px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;">
         <option value="written">정기시험</option>
         <option value="perf" selected>수행평가</option>
       </select>
     </td>
-    <td style="padding:5px;"><input type="text" placeholder="고사/영역명" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-    <td style="padding:5px;"><input type="number" placeholder="0" min="0" max="100" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-    <td style="padding:5px;"><input type="number" placeholder="100" min="0" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
-    <td style="padding:5px;"><input type="number" placeholder="90" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #bbdefb;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e3f2fd;" oninput="calcFinal()"></td>
-    <td style="padding:5px;"><input type="number" placeholder="80" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #c8e6c9;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#e8f5e9;" oninput="calcFinal()"></td>
-    <td style="padding:5px;"><input type="number" placeholder="70" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #fff9c4;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fffde7;" oninput="calcFinal()"></td>
-    <td style="padding:5px;"><input type="number" placeholder="60" step="0.01" style="width:100%;padding:4px 6px;border:1.5px solid #ffe0b2;border-radius:5px;font-size:11.5px;box-sizing:border-box;background:#fff3e0;" oninput="calcFinal()"></td>
-    <td style="padding:5px;text-align:center;"><button onclick="removeFinalRow(${idx})" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
+    <td style="padding:6px;"><input type="text" placeholder="고사/영역명" style="width:100%;padding:4px 6px;border:1px solid #e0e0e0;border-radius:5px;font-size:11.5px;box-sizing:border-box;" oninput="calcFinal()"></td>
+    <td style="padding:6px;"><input type="number" placeholder="0" min="0" max="100" style="width:100%;padding:4px 6px;border:1.5px solid #a5d6a7;border-radius:5px;font-size:12px;box-sizing:border-box;font-weight:700;" oninput="calcFinal()"></td>
+    <td style="padding:6px;text-align:center;font-size:11px;color:#888;" id="finalRow_${idx}_preview">← 자동 연동</td>
+    <td style="padding:6px;text-align:center;"><button onclick="removeFinalRow(${idx})" style="padding:3px 8px;background:#ffebee;color:#c62828;border:1px solid #ef9a9a;border-radius:4px;font-size:11px;cursor:pointer;">✕</button></td>
   `;
   tbody.appendChild(tr);
   calcFinal();
@@ -2280,7 +2269,65 @@ function resetFinalRows() {
   calcFinal();
 }
 
-// 학기말 추정분할점수산출 결과표 생성 (나이스 화면 동일)
+// 학기말 추정분할점수산출 결과표 생성 (정기시험·수행평가 결과 자동 연동)
+function getWrittenResult() {
+  // 정기시험 탭 결과 가져오기
+  const r = {ab:null, bc:null, cd:null, de:null, totalScore:0};
+  const result = {A:0,B:0,C:0,D:0};
+  const rows = ['easy','mid','hard'];
+  let hasInput = false;
+  let total = 0;
+  ['sel','ess'].forEach(type => {
+    rows.forEach(row => {
+      const scoreEl = document.getElementById(type+'_'+row+'_score');
+      if (!scoreEl) return;
+      const score = parseFloat(scoreEl.value) || 0;
+      total += score;
+      if (score > 0) {
+        ['A','B','C','D'].forEach(g => {
+          const rateEl = document.getElementById(type+'_'+row+'_'+g);
+          const rate = rateEl ? (parseFloat(rateEl.value) || 0) : 0;
+          result[g] += score * (rate / 100);
+          if (rate > 0) hasInput = true;
+        });
+      }
+    });
+  });
+  if (!hasInput) return null;
+  r.ab = parseFloat(result['A'].toFixed(2));
+  r.bc = parseFloat(result['B'].toFixed(2));
+  r.cd = parseFloat(result['C'].toFixed(2));
+  r.de = parseFloat(result['D'].toFixed(2));
+  r.totalScore = total;
+  return r;
+}
+
+function getPerfResult() {
+  // 수행평가 탭 결과 가져오기
+  const r = {ab:null, bc:null, cd:null, de:null, totalScore:0};
+  const result = {A:0,B:0,C:0,D:0,E:0};
+  let hasInput = false;
+  let totalMax = 0;
+  document.querySelectorAll('#perfEvalRows tr').forEach(row => {
+    ['A','B','C','D','E'].forEach(g => {
+      const inp = row.querySelector('.perf_'+g);
+      if (inp && inp.value !== '') {
+        result[g] += parseFloat(inp.value) || 0;
+        hasInput = true;
+      }
+    });
+    const maxInp = row.querySelector('.perf_max');
+    if (maxInp && maxInp.value !== '') totalMax += parseFloat(maxInp.value) || 0;
+  });
+  if (!hasInput) return null;
+  r.ab = result['A'];
+  r.bc = result['B'];
+  r.cd = result['C'];
+  r.de = result['D'];
+  r.totalScore = totalMax;
+  return r;
+}
+
 function calcFinal() {
   const el = document.getElementById('calcPerfResult');
   const subj = (document.getElementById('subjectName').value || '과목').trim();
@@ -2289,42 +2336,73 @@ function calcFinal() {
   let totalRatio = 0;
   let hasData = false;
 
-  rows.forEach(row => {
+  // 정기시험·수행평가 결과 자동 가져오기
+  const writtenRes = getWrittenResult();
+  const perfRes = getPerfResult();
+
+  rows.forEach((row, rowIdx) => {
     const inputs = row.querySelectorAll('input');
     const sel = row.querySelector('select');
     if (!inputs.length) return;
     const type = sel ? sel.value : 'perf';
     const name = inputs[0].value.trim();
     const ratio = parseFloat(inputs[1].value) || 0;
-    const score = parseFloat(inputs[2].value) || 100;
-    const ab = parseFloat(inputs[3].value);
-    const bc = parseFloat(inputs[4].value);
-    const cd = parseFloat(inputs[5].value);
-    const de = parseFloat(inputs[6].value);
-    if (ratio > 0 && !isNaN(ab)) { hasData = true; }
     totalRatio += ratio;
+
+    // 분할점수: 해당 탭 결과에서 자동 연동
+    let ab, bc, cd, de, score;
+    if (type === 'written' && writtenRes) {
+      ab = writtenRes.ab; bc = writtenRes.bc; cd = writtenRes.cd; de = writtenRes.de;
+      score = writtenRes.totalScore || 100;
+    } else if (type === 'perf' && perfRes) {
+      ab = perfRes.ab; bc = perfRes.bc; cd = perfRes.cd; de = perfRes.de;
+      score = perfRes.totalScore || 100;
+    } else {
+      ab = null; bc = null; cd = null; de = null; score = 100;
+    }
+
+    // 미리보기 셀 업데이트
+    const previewEl = document.getElementById('finalRow_' + row.id.replace('finalRow_','') + '_preview');
+    if (previewEl) {
+      if (ab !== null) {
+        previewEl.innerHTML = `<span style="font-size:10.5px;color:#1565c0;font-weight:700;">A/B:${ab}</span>`;
+      } else {
+        previewEl.innerHTML = `<span style="font-size:10.5px;color:#e53935;">${type==='written'?'정기시험':'수행평가'} 탭 먼저 입력</span>`;
+      }
+    }
+
+    if (ratio > 0 && ab !== null) { hasData = true; }
     data.push({type, name, ratio, score, ab, bc, cd, de});
   });
 
+  // 반영비율 합계 경고
+  const warnEl = document.getElementById('ratioWarning');
+  if (warnEl) {
+    warnEl.style.display = (totalRatio > 0 && Math.abs(totalRatio - 100) > 0.5) ? 'inline' : 'none';
+  }
+
   if (!hasData) {
-    el.innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;padding:20px;">[반영비율] 및 [분할점수]를 입력하면 나이스 학기말 추정분할점수산출 결과표가 자동 생성됩니다</div>';
+    el.innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;padding:20px;">① 정기시험 탭 → ② 수행평가 탭에서 값을 입력한 후, 반영비율을 입력하면 결과가 자동 생성됩니다</div>';
     return;
   }
 
-  // 가중평균 분할점수 산출
+  // 가중평균 분할점수 산출 (반영비율 기준)
   let sumAB = 0, sumBC = 0, sumCD = 0, sumDE = 0, sumRatio = 0;
   data.forEach(d => {
-    if (d.ratio > 0 && !isNaN(d.ab)) {
-      const w = d.ratio / 100;
-      sumAB += d.ab * w;
-      sumBC += (!isNaN(d.bc) ? d.bc : d.ab * 0.8) * w;
-      sumCD += (!isNaN(d.cd) ? d.cd : d.ab * 0.7) * w;
-      sumDE += (!isNaN(d.de) ? d.de : d.ab * 0.6) * w;
+    if (d.ratio > 0 && d.ab !== null) {
+      sumAB += d.ab * d.ratio;
+      sumBC += (d.bc !== null ? d.bc : d.ab * 0.8) * d.ratio;
+      sumCD += (d.cd !== null ? d.cd : d.ab * 0.7) * d.ratio;
+      sumDE += (d.de !== null ? d.de : d.ab * 0.6) * d.ratio;
       sumRatio += d.ratio;
     }
   });
 
   // 나이스 결과표 형식
+  const normAB2 = sumRatio > 0 ? (sumAB / sumRatio).toFixed(2) : '-';
+  const normBC2 = sumRatio > 0 ? (sumBC / sumRatio).toFixed(2) : '-';
+  const normCD2 = sumRatio > 0 ? (sumCD / sumRatio).toFixed(2) : '-';
+  const normDE2 = sumRatio > 0 ? (sumDE / sumRatio).toFixed(2) : '-';
   let html = '<div style="font-size:12.5px;font-weight:700;color:#2e7d32;margin-bottom:8px;">📊 추정분할점수산출결과 <span style="font-size:11px;font-weight:400;color:#888;">Total ' + data.length + '</span></div>';
   html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;border:1px solid #e0e0e0;">';
   html += '<tr style="background:#1565c0;color:#fff;">';
@@ -2355,10 +2433,10 @@ function calcFinal() {
 
   // 평균 행 (나이스 화면과 동일)
   if (sumRatio > 0) {
-    const normAB = (sumAB / sumRatio * 100).toFixed(2);
-    const normBC = (sumBC / sumRatio * 100).toFixed(2);
-    const normCD = (sumCD / sumRatio * 100).toFixed(2);
-    const normDE = (sumDE / sumRatio * 100).toFixed(2);
+    const normAB = normAB2;
+    const normBC = normBC2;
+    const normCD = normCD2;
+    const normDE = normDE2;
     html += `<tr style="background:#e8f5e9;font-weight:800;">`;
     html += `<td colspan="2" style="padding:7px;text-align:right;font-size:12px;color:#2e7d32;">${subj} 평균</td>`;
     html += `<td style="padding:7px;text-align:center;">${totalRatio}</td>`;
