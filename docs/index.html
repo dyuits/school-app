@@ -80,7 +80,7 @@
   </nav>
 
   <!-- ══════════ 메인 ══════════ -->
-  <main>
+  <main id="mainContent">
 
     <!-- ── 1. 교체/대체 시간표 ── -->
     <section id="swapTab" class="tab-panel active">
@@ -592,10 +592,8 @@
     </section>
 
   </main>
-</div>
 
-<!-- ════════ 새 탭 패널 ════════ -->
-<!-- 주의: 이 패널들은 .app-wrapper 밖에 위치하지만 tab-panel 클래스로 제어됨 -->
+  <!-- ════════ 새 탭 패널 (app-wrapper 안, main 다음) ════════ -->
 <section id="gradeCalcTab" class="tab-panel" style="display:none;padding:16px;">
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-calculator" style="color:#1565c0;"></i> 추정분할계산기</h2>
   <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">고교학점제 성취평가제 기반 추정 등급 및 분할점수 계산</p>
@@ -664,28 +662,65 @@
 
 <section id="recordCheckTab" class="tab-panel" style="display:none;padding:16px;">
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-spell-check" style="color:#1565c0;"></i> 생기부 점검</h2>
-  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">맞춤법·띄어쓰기·금지어·글자수 자동 점검</p>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">2026 기재요령 기반 · 맞춤법·띄어쓰기·금지어·추상어·글자수 자동 점검</p>
+
+  <!-- 상단 안내 링크 -->
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+    <a href="https://star.moe.go.kr/web/module/util_comm_pdfViewer.do?bdId=107752&fileIdx=HtLmn&bdTitle=2026%ED%95%99%EB%85%84%EB%8F%84%20%ED%95%99%EA%B5%90%EC%83%9D%ED%99%9C%EA%B8%B0%EB%A1%9D%EB%B6%80%20%EA%B8%B0%EC%9E%AC%EC%9A%94%EB%A0%B9(%EA%B3%A0%EB%93%B1%ED%95%99%EA%B5%90)" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12.5px;font-weight:700;text-decoration:none;"><i class="fas fa-book-open"></i> 2026학년도 생기부 기재요령</a>
+    <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#f3e5f5;color:#6a1b9a;border:1.5px solid #ce93d8;border-radius:8px;font-size:12.5px;font-weight:700;text-decoration:none;"><i class="fas fa-language"></i> 국립국어원 맞춤법·띄어쓰기</a>
+    <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12.5px;font-weight:700;text-decoration:none;"><i class="fas fa-check-circle"></i> 부산대 맞춤법 검사기</a>
+  </div>
+
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- 왼쪽: 입력 -->
     <div>
       <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">생기부 내용 입력</div>
-      <textarea id="recordInput" rows="10" placeholder="학생부 기재 내용을 입력하세요...
-
-예) 수업 시간에 적극적으로 참여하며 질문을 통해 개념을 심화하는 모습을 보임." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+      <textarea id="recordInput" rows="12" placeholder="학생부 기재 내용을 붙여넣기 하세요...&#10;&#10;예) 수업 시간에 알고리즘 개념을 학습하고 직접 코드를 작성하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
         <button onclick="checkRecord()" style="padding:8px 18px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i> 점검 시작</button>
-        <button onclick="document.getElementById('recordInput').value='';document.getElementById('recordResult').innerHTML='<div style=\'text-align:center;padding:30px;color:var(--txt-light,#aaa);\'>\uae30\ub85d\uc744 \uc785\ub825\ud558\uace0 \uc810\uac80\uc744 \uc2dc\uc791\ud574\uc8fc\uc138\uc694</div>';updateRecordCount()" style="padding:8px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">완전 삭제</button>
-        <button onclick="navigator.clipboard.writeText(document.getElementById('recordInput').value)" style="padding:8px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:13px;cursor:pointer;">클립보드 복사</button>
+        <button onclick="clearRecord()" style="padding:8px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">삭제</button>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('recordInput').value)" style="padding:8px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:13px;cursor:pointer;">복사</button>
         <span id="recordCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자 / 0 bytes</span>
       </div>
+
+      <!-- 기재 금지 사항 안내 -->
+      <div style="margin-top:16px;padding:12px;background:#fff8e1;border-radius:10px;border:1.5px solid #ffe082;">
+        <div style="font-size:12.5px;font-weight:800;color:#7a5c00;margin-bottom:8px;"><i class="fas fa-exclamation-triangle"></i> 2026 기재요령 기재 금지 사항</div>
+        <div style="font-size:12px;color:#7a5c00;line-height:1.8;">
+          <div>⛔ 교내·외 대회 참여 사실, 성적, 수상실적</div>
+          <div>⛔ 교외상 (표창장, 감사장, 공로상 등)</div>
+          <div>⛔ K-MOOC, MOOC, KOCW 등 온라인 강좌</div>
+          <div>⛔ 방과후학교 활동 내용</div>
+          <div>⛔ 연구보고서(소논문) 관련 사항</div>
+          <div>⛔ 정치활동 참여 관련 사항</div>
+          <div>⛔ 야간자율학습 관련 내용 기반 교내상</div>
+        </div>
+      </div>
     </div>
+
+    <!-- 오른쪽: 결과 -->
     <div>
       <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">점검 결과</div>
-      <div id="recordResult" style="min-height:200px;padding:14px;background:#f8f9fa;border-radius:10px;font-size:13px;line-height:1.7;">
+      <div id="recordResult" style="min-height:220px;padding:14px;background:#f8f9fa;border-radius:10px;font-size:13px;line-height:1.7;">
         <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 점검을 시작해주세요</div>
       </div>
+
+      <!-- 추상어 → 증거어 변환 안내 -->
+      <div style="margin-top:12px;padding:12px;background:#e8f5e9;border-radius:10px;border:1.5px solid #a5d6a7;">
+        <div style="font-size:12.5px;font-weight:800;color:#2e7d32;margin-bottom:8px;"><i class="fas fa-exchange-alt"></i> 추상어 → 증거어 변환 가이드</div>
+        <div style="font-size:11.5px;color:#2e7d32;line-height:1.8;">
+          <div>🔴 <strong>추상어</strong>: 창의적, 성실한, 적극적, 뛰어난, 우수한</div>
+          <div>🟢 <strong>증거어</strong>: 비교했다, 검증했다, 수정했다, 재정의했다</div>
+          <div style="margin-top:6px;padding:6px 8px;background:#fff;border-radius:6px;font-size:11px;">
+            💡 <strong>공식</strong>: [수업 장면]에서 [자료/문제]를 [행동동사]하여 [변화/산출물]을 만들었고, [평가 신호]가 드러남.
+          </div>
+        </div>
+      </div>
+
+      <!-- 금지 용어 태그 목록 -->
       <div style="margin-top:12px;">
-        <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">기재 금지 용어</div>
-        <div id="forbiddenList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        <div style="font-size:12.5px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:6px;">⛔ 기재 금지·추상어 목록 (클릭하면 검색)</div>
+        <div id="forbiddenList" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
       </div>
     </div>
   </div>
@@ -693,7 +728,7 @@
 
 <section id="setechTab" class="tab-panel" style="display:none;padding:16px;">
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-pencil-alt" style="color:#1565c0;"></i> 교과 수행평가(세특)</h2>
-  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">세부능력 및 특기사항 작성 보조 도구</p>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">세부능력 및 특기사항 작성 보조 · 붙여넣기 시 AI 보완 예시 1안/2안 생성</p>
   <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
     <div>
       <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">교과 선택</div>
@@ -709,21 +744,24 @@
         <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">문장 템플릿</div>
         <div id="setechTemplates" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
-      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">세특 작성</div>
-      <textarea id="setechEditor" rows="8" placeholder="위 키워드나 템플릿을 클릭하거나 직접 작성하세요..." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-        <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">완전 삭제</button>
+      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">세특 작성 <span style="font-weight:400;color:#888;">(직접 작성 또는 아래에 기존 세특 붙여넣기 → AI 보완)</span></div>
+      <textarea id="setechEditor" rows="8" placeholder="위 키워드/템플릿을 클릭하거나 직접 작성하세요.&#10;&#10;기존 세특을 붙여넣으면 AI 보완 예시 1안/2안이 자동 생성됩니다." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+        <button onclick="generateSetech()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> AI 보완 예시 생성</button>
+        <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
         <button onclick="navigator.clipboard.writeText(document.getElementById('setechEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
         <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('setechEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
         <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
       </div>
+      <!-- AI 보완 예시 결과 영역 -->
+      <div id="setechAIResult" style="display:none;margin-top:14px;"></div>
     </div>
   </div>
 </section>
 
 <section id="activityTab" class="tab-panel" style="display:none;padding:16px;">
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-star" style="color:#1565c0;"></i> 창체 및 행특</h2>
-  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">창의적 체험활동 및 행동특성·종합의견 작성 보조</p>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">창의적 체험활동 및 행동특성·종합의견 작성 보조 · 붙여넣기 시 AI 보완 예시 1안/2안 생성</p>
   <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
     <div>
       <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">영역 선택</div>
@@ -739,14 +777,17 @@
         <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">문장 템플릿</div>
         <div id="activityTemplates" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
-      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">내용 작성</div>
-      <textarea id="activityEditor" rows="8" placeholder="위 키워드나 템플릿을 클릭하거나 직접 작성하세요..." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
-        <button onclick="document.getElementById('activityEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">완전 삭제</button>
+      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">내용 작성 <span style="font-weight:400;color:#888;">(직접 작성 또는 기존 내용 붙여넣기 → AI 보완)</span></div>
+      <textarea id="activityEditor" rows="8" placeholder="위 키워드/템플릿을 클릭하거나 직접 작성하세요.&#10;&#10;기존 내용을 붙여넣으면 AI 보완 예시 1안/2안이 자동 생성됩니다." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+        <button onclick="generateActivity()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> AI 보완 예시 생성</button>
+        <button onclick="document.getElementById('activityEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
         <button onclick="navigator.clipboard.writeText(document.getElementById('activityEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
         <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('activityEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
         <span id="activityCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
       </div>
+      <!-- AI 보완 예시 결과 영역 -->
+      <div id="activityAIResult" style="display:none;margin-top:14px;"></div>
     </div>
   </div>
 </section>
@@ -809,20 +850,24 @@ function switchLabSub(sub) {
 
 // 새 탭 패널 표시/숨김 함수
 function showNewTab(tabId) {
-  // 모든 탭 패널 숨김
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => { if (p.style.display !== undefined) p.style.display = 'none'; });
-  // 새 탭 패널 표시
+  // 기존 main 숨김 (헤더/탭바는 유지)
+  const mainEl = document.getElementById('mainContent');
+  if (mainEl) mainEl.style.display = 'none';
+  // 모든 새 탭 패널 숨김
+  NEW_TABS.forEach(t => {
+    const p = document.getElementById(t + 'Tab');
+    if (p) p.style.display = 'none';
+  });
+  // 해당 탭 패널 표시
   const panel = document.getElementById(tabId + 'Tab');
   if (panel) { panel.style.display = 'block'; }
-  // 앱 래퍼 숨김
-  const wrapper = document.querySelector('.app-wrapper');
-  if (wrapper) wrapper.style.display = 'none';
 }
 
 function showMainWrapper() {
-  const wrapper = document.querySelector('.app-wrapper');
-  if (wrapper) wrapper.style.display = '';
+  // main 다시 표시
+  const mainEl = document.getElementById('mainContent');
+  if (mainEl) mainEl.style.display = '';
+  // 새 탭 패널 모두 숨김
   NEW_TABS.forEach(t => {
     const p = document.getElementById(t + 'Tab');
     if (p) p.style.display = 'none';
@@ -843,17 +888,11 @@ window.addEventListener('load', function() {
     }
   };
 
-  // 기재 금지 용어 목록 초기화
-  const FORBIDDEN = [
-    '우수한','뛰어난','구체적으로','적극적으로','매우','다양한','다방면적으로',
-    '매우 우수','전력을 다해','노력하는','열심히','성실한','찌라한','마른',
-    '마음이 따뜻한','인성이 바른','선함','착한','시스템적으로',
-    '열정적으로','헌신적으로','잠재력','미래가 기대되는'
-  ];
+  // 기재 금지 용어 목록 초기화 (FORBIDDEN_WORDS 상수 사용)
   const fl = document.getElementById('forbiddenList');
-  if (fl) {
-    fl.innerHTML = FORBIDDEN.map(w =>
-      `<span style="display:inline-block;padding:3px 10px;background:#fce4ec;color:#c62828;border-radius:12px;font-size:12px;font-weight:600;">${w}</span>`
+  if (fl && typeof FORBIDDEN_WORDS !== 'undefined') {
+    fl.innerHTML = FORBIDDEN_WORDS.map(w =>
+      `<span onclick="document.getElementById('recordInput').value+=' '+this.textContent;updateRecordCount()" style="display:inline-block;padding:3px 10px;background:#fce4ec;color:#c62828;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer;" title="클릭하면 입력상자에 추가">${w}</span>`
     ).join('');
   }
 
@@ -983,33 +1022,131 @@ function updateRecordCount() {
   cnt.textContent = v.length + '자 / ' + new TextEncoder().encode(v).length + ' bytes';
 }
 
-// 생기부 점검 함수
+// 생기부 삭제
+function clearRecord() {
+  document.getElementById('recordInput').value = '';
+  document.getElementById('recordResult').innerHTML = '<div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 점검을 시작해주세요</div>';
+  updateRecordCount();
+}
+
+// 2026 기재요령 기반 금지어 + 추상어 목록
+const FORBIDDEN_WORDS = [
+  // 추상적 수식어
+  '우수한','뛰어난','뛰어난 실력','매우 우수','다양한 뛰어난',
+  '적극적으로','열심히','성실한','성실성','노력하는','노력하여',
+  '열정적으로','헌신적으로','잠재력','미래가 기대되는',
+  '마음이 따뜻한','인성이 바른','선한 영향','착한 학생',
+  '다방면적으로','창의적인','시스템적으로','창의적',
+  '다양한 활동','다양한 경험','다양한 시도',
+  // 2026 기재요령 금지 키워드
+  '소논문','연구보고서','교외상','표창장','감사장','공로상',
+  'K-MOOC','MOOC','KOCW','온라인 강좌','방과후학교','대회 수상','대회 성적',
+  '대회 참가','교외 대회','수상 실적','교외 기관',
+  // 매우 주의해야 할 표현
+  '매우','구체적으로','다양한','미래의 인재','무한한 가능성'
+];
+
+// 맞춤법 패턴 점검 데이터
+const SPELLING_PATTERNS = [
+  { wrong: '되어지다', right: '되다 (각 동사에 맞게 활용)', type: '맞춤법' },
+  { wrong: '열심히', right: '열심히 → 성실하게 / 구체적 행동 기술', type: '추상어' },
+  { wrong: '적극적으로', right: '적극적으로 → 스스로 질문하며 / 직접 실험하며', type: '추상어' },
+  { wrong: '다양한', right: '다양한 → 구체적 예시 나열 (예: A, B, C 세 가지)', type: '추상어' },
+  { wrong: '창의적', right: '창의적 → 스스로 문제를 정의하고 / 독자적 방법으로', type: '추상어' },
+  { wrong: '우수한', right: '우수한 → 수산물 제시 / 점수 언급 / 동료와 비교', type: '추상어' },
+  { wrong: '뛰어난', right: '뛰어난 → 구체적 증거 제시 (실험 결과, 수산물)', type: '추상어' },
+  { wrong: '성실한', right: '성실한 → 수업 출석 횟수 / 과제 제출 횟수 등 수치로', type: '추상어' },
+  { wrong: '잠재력', right: '잠재력 → 기재 불가 (예측 불가 용어)', type: '금지어' },
+  { wrong: '마음이 따뜻한', right: '마음이 따뜻한 → 구체적 행동 기술로 대체', type: '금지어' },
+];
+
+// 생기부 점검 함수 (강화버전)
 function checkRecord() {
   const text = document.getElementById('recordInput').value.trim();
   const result = document.getElementById('recordResult');
   if (!text) { result.innerHTML = '<div style="color:#e53935;padding:10px;">내용을 입력해주세요.</div>'; return; }
-  const FORBIDDEN_WORDS = ['우수한','뛰어난','구체적으로','적극적으로','매우 우수','매우','다양한','다방면적으로','열심히','성실한','찌라한','마른','마음이 따뜻한','인성이 바른','선함','착한','시스템적으로','열정적으로','헌신적으로','잠재력','미래가 기대되는'];
+
   const bytes = new TextEncoder().encode(text).length;
   const chars = text.length;
-  let html = `<div style="margin-bottom:10px;padding:10px;background:#e8f5e9;border-radius:8px;">
-    <strong>📊 글자수:</strong> ${chars}자 / ${bytes} bytes
-    ${chars > 500 ? '<span style="color:#e53935;font-weight:700;"> (⚠️ 500자 초과)</span>' : '<span style="color:#2e7d32;"> (✅ 적절)</span>'}
+  let score = 100; // 점수 계산
+  let html = '';
+
+  // 1. 글자수 판정
+  let charStatus, charColor;
+  if (chars <= 500) { charStatus = '✅ 적절 (500자 이내)'; charColor = '#2e7d32'; }
+  else if (chars <= 600) { charStatus = '⚠️ 주의 (500자 초과)'; charColor = '#f57f17'; score -= 10; }
+  else { charStatus = '⛔ 초과 (600자 초과, 실제 저장 불가)'; charColor = '#c62828'; score -= 20; }
+
+  html += `<div style="margin-bottom:10px;padding:12px;background:#f8f9fa;border-radius:8px;border-left:4px solid ${charColor};">
+    <div style="font-weight:700;color:${charColor};margin-bottom:4px;">📊 글자수 판정</div>
+    <div>글자수: <strong>${chars}자</strong> / Bytes: <strong>${bytes} bytes</strong></div>
+    <div style="color:${charColor};font-weight:600;">${charStatus}</div>
   </div>`;
+
+  // 2. 금지어/추상어 탐지
   const found = FORBIDDEN_WORDS.filter(w => text.includes(w));
   if (found.length > 0) {
-    html += `<div style="padding:10px;background:#fce4ec;border-radius:8px;margin-bottom:8px;">
-      <strong style="color:#c62828;">⛔ 기재 금지 용어 발견:</strong><br>
-      ${found.map(w => `<span style="display:inline-block;margin:3px;padding:3px 10px;background:#e53935;color:#fff;border-radius:10px;font-size:12px;">${w}</span>`).join('')}
-    </div>`;
+    score -= found.length * 5;
+    // 특이 사항 구분
+    const isForbid = found.filter(w => ['K-MOOC','MOOC','KOCW','소논문','연구보고서','교외상','표창장','감사장','공로상','온라인 강좌','방과후학교','대회 수상','대회 성적','대회 참가','교외 대회','수상 실적','교외 기관','잠재력','마음이 따뜻한'].includes(w));
+    const isAbstract = found.filter(w => !isForbid.includes(w));
+    if (isForbid.length > 0) {
+      html += `<div style="padding:12px;background:#fce4ec;border-radius:8px;margin-bottom:8px;border-left:4px solid #c62828;">
+        <div style="font-weight:700;color:#c62828;margin-bottom:6px;">⛔ 기재 금지 용어 발견 (${isForbid.length}개)</div>
+        <div>${isForbid.map(w => `<span style="display:inline-block;margin:3px;padding:4px 10px;background:#e53935;color:#fff;border-radius:10px;font-size:12px;font-weight:700;">${w}</span>`).join('')}</div>
+        <div style="margin-top:6px;font-size:11.5px;color:#c62828;">2026 기재요령에 따라 반드시 삭제하세요.</div>
+      </div>`;
+    }
+    if (isAbstract.length > 0) {
+      html += `<div style="padding:12px;background:#fff3e0;border-radius:8px;margin-bottom:8px;border-left:4px solid #f57f17;">
+        <div style="font-weight:700;color:#e65100;margin-bottom:6px;">⚠️ 추상어 발견 (${isAbstract.length}개) — 증거어로 교체 권장</div>
+        <div>${isAbstract.map(w => `<span style="display:inline-block;margin:3px;padding:4px 10px;background:#ff9800;color:#fff;border-radius:10px;font-size:12px;font-weight:700;">${w}</span>`).join('')}</div>
+        <div style="margin-top:6px;font-size:11.5px;color:#e65100;">특정 활동을 언제, 어떻게, 무엇을 했는지 구체적으로 기술하세요.</div>
+      </div>`;
+    }
   } else {
-    html += '<div style="padding:10px;background:#e8f5e9;border-radius:8px;margin-bottom:8px;"><strong style="color:#2e7d32;">✅ 금지 용어 없음</strong></div>';
+    html += '<div style="padding:12px;background:#e8f5e9;border-radius:8px;margin-bottom:8px;border-left:4px solid #2e7d32;"><strong style="color:#2e7d32;">✅ 금지어/추상어 없음</strong></div>';
   }
-  // 문장 수 확인
-  const sentences = text.split(/[.!?]/).filter(s => s.trim().length > 0);
-  html += `<div style="padding:10px;background:#f3e5f5;border-radius:8px;margin-bottom:8px;">
-    <strong>📝 문장 수:</strong> ${sentences.length}문
+
+  // 3. 매춤법 패턴 점검
+  const spellFound = SPELLING_PATTERNS.filter(p => text.includes(p.wrong));
+  if (spellFound.length > 0) {
+    score -= spellFound.length * 3;
+    html += `<div style="padding:12px;background:#f3e5f5;border-radius:8px;margin-bottom:8px;border-left:4px solid #7b1fa2;">
+      <div style="font-weight:700;color:#7b1fa2;margin-bottom:8px;">📖 매춤법/표현 개선 권장 (${spellFound.length}건)</div>
+      ${spellFound.map(p => `<div style="margin-bottom:6px;padding:6px 10px;background:#fff;border-radius:6px;font-size:12px;">
+        <span style="color:#c62828;font-weight:700;">❌ ${p.wrong}</span> → <span style="color:#2e7d32;font-weight:700;">✅ ${p.right}</span>
+        <span style="display:inline-block;margin-left:6px;padding:1px 6px;background:#f3e5f5;color:#7b1fa2;border-radius:4px;font-size:10px;">${p.type}</span>
+      </div>`).join('')}
+    </div>`;
+  }
+
+  // 4. 문장 구조 분석
+  const sentences = text.split(/(?<=[.!?])/g).filter(s => s.trim().length > 0);
+  const avgLen = sentences.length > 0 ? Math.round(chars / sentences.length) : 0;
+  let sentStatus = '✅ 적절';
+  if (avgLen > 80) { sentStatus = '⚠️ 문장이 너무 깁니다 (한 문장 평균 ' + avgLen + '자)'; score -= 5; }
+  html += `<div style="padding:12px;background:#e3f2fd;border-radius:8px;margin-bottom:8px;border-left:4px solid #1565c0;">
+    <div style="font-weight:700;color:#1565c0;margin-bottom:4px;">📝 문장 구조 분석</div>
+    <div>문장 수: <strong>${sentences.length}문</strong> / 평균 문장 길이: <strong>${avgLen}자</strong></div>
+    <div style="color:${avgLen > 80 ? '#e65100' : '#2e7d32'};">${sentStatus}</div>
   </div>`;
-  html += '<div style="padding:10px;background:#fff8e1;border-radius:8px;font-size:12px;color:#7a5c00;"><strong>💡 안내:</strong> 맞춤법·띄어쓰기 정밀 점검은 한국어 맞춤법 검사기(한스펙 등)를 활용하세요.</div>';
+
+  // 5. 종합 평가
+  score = Math.max(0, score);
+  let scoreColor = score >= 80 ? '#2e7d32' : score >= 60 ? '#f57f17' : '#c62828';
+  let scoreLabel = score >= 80 ? '좌우' : score >= 60 ? '보완 필요' : '대폭 수정 필요';
+  html += `<div style="padding:12px;background:#fff;border-radius:8px;margin-bottom:8px;border:2px solid ${scoreColor};">
+    <div style="font-weight:700;color:${scoreColor};font-size:14px;">🎯 종합 평가: <span style="font-size:20px;">${score}점</span> — ${scoreLabel}</div>
+  </div>`;
+
+  // 6. 매춤법 검사기 링크
+  html += `<div style="padding:10px;background:#fff8e1;border-radius:8px;font-size:12px;color:#7a5c00;">
+    <strong>💡 매춤법·띄어쓰기 정밀 점검:</strong>
+    <a href="https://speller.cs.pusan.ac.kr/" target="_blank" style="color:#1565c0;font-weight:700;">부산대 매춤법 검사기</a> 또는
+    <a href="https://korean.go.kr/kornorms/main/main.do" target="_blank" style="color:#7b1fa2;font-weight:700;">국립국어원</a>을 활용하세요.
+  </div>`;
+
   result.innerHTML = html;
 }
 
@@ -1058,6 +1195,127 @@ function calcPerf() {
   else if (total >= 60) { grade = 'D'; color = '#e65100'; }
   else { grade = 'E'; color = '#c62828'; }
   el.innerHTML = `합산 원점수: <strong>${total.toFixed(1)}점</strong> → 성취도 <span style="color:${color};font-size:20px;">${grade}</span>`;
+}
+
+
+// AI 보완 예시 생성 함수 (세특)
+function generateSetech() {
+  const text = document.getElementById('setechEditor').value.trim();
+  const resultEl = document.getElementById('setechAIResult');
+  if (!text) {
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> 세특 내용을 먼저 입력하세요.</div>';
+    return;
+  }
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="padding:16px;background:#f3e5f5;border-radius:8px;text-align:center;"><i class="fas fa-spinner fa-spin"></i> AI 보완 예시 생성 중...</div>';
+  generateAIRecordLocal(text, 'setech', resultEl);
+}
+
+// AI 보완 예시 생성 함수 (창체)
+function generateActivity() {
+  const text = document.getElementById('activityEditor').value.trim();
+  const resultEl = document.getElementById('activityAIResult');
+  if (!text) {
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = '<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> 내용을 먼저 입력하세요.</div>';
+    return;
+  }
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="padding:16px;background:#f3e5f5;border-radius:8px;text-align:center;"><i class="fas fa-spinner fa-spin"></i> AI 보완 예시 생성 중...</div>';
+  generateAIRecordLocal(text, 'activity', resultEl);
+}
+
+// 로컬 기반 보완 (추상어 → 증거어 치환 + 성장 서술 추가)
+function generateAIRecordLocal(text, type, resultEl) {
+  // 추상어 → 증거어 치환 규칙
+  const replacements = [
+    ['적극적으로', '스스로 질문을 제기하며'],
+    ['열심히', '지속적으로 수정·보완하며'],
+    ['다양한 활동', '여러 유형의 활동'],
+    ['다양한 경험', '직접 체험한 경험'],
+    ['다양한', '여러 유형의'],
+    ['우수한', '완성도 높은'],
+    ['뛰어난', '도드라진'],
+    ['성실한', '매 수업마다 준비하는'],
+    ['창의적인', '독자적 방식으로 접근한'],
+    ['창의적', '독자적 방식으로'],
+    ['열정적으로', '주도적으로'],
+    ['헌신적으로', '책임감 있게'],
+    ['잠재력', '가능성'],
+    ['마음이 따뜻한', '주변을 배려하는 행동을 보이는'],
+    ['인성이 바른', '공동체 규칙을 솔선수범하는'],
+    ['착한 학생', '협력적 태도를 보이는 학생'],
+  ];
+
+  let plan1 = text;
+  replacements.forEach(([from, to]) => {
+    plan1 = plan1.split(from).join(to);
+  });
+
+  // 1안: 추상어 → 증거어 교체 버전
+  // 2안: DDAR 구조 (Define-Design-Adapt-Reflect) 반영한 성장 서술 추가
+  const ddarSuffix = ' 이 과정에서 문제를 스스로 정의하고 해결 방법을 설계하며 시행착오를 통해 수정하는 과정을 반복함으로써 사고력이 성장하는 모습이 드러남.';
+  let plan2 = plan1;
+  // plan2가 500자 이내일 때만 suffix 추가
+  if ((plan2 + ddarSuffix).length <= 500) {
+    plan2 = plan2 + ddarSuffix;
+  } else {
+    // 500자에 맞게 자르고 suffix 추가
+    const maxLen = 500 - ddarSuffix.length;
+    plan2 = plan2.substring(0, maxLen) + ddarSuffix;
+  }
+
+  const bytes1 = new TextEncoder().encode(plan1).length;
+  const bytes2 = new TextEncoder().encode(plan2).length;
+  const editorId = type + 'Editor';
+
+  resultEl.innerHTML = `
+    <div style="padding:14px;background:#f3e5f5;border-radius:10px;border:1.5px solid #ce93d8;">
+      <div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:12px;"><i class="fas fa-magic"></i> AI 보완 예시</div>
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:12.5px;font-weight:700;color:#6a1b9a;">🟣 1안 (추상어 → 증거어 교체)</span>
+          <span style="font-size:11px;color:#888;">${plan1.length}자 / ${bytes1} bytes</span>
+        </div>
+        <div id="aiPlan1_${type}" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.8;">${plan1}</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button onclick="useAIPlan('${editorId}','aiPlan1_${type}')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 1안 사용</button>
+          <button onclick="copyAIPlan('aiPlan1_${type}')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:12.5px;font-weight:700;color:#6a1b9a;">🟢 2안 (DDAR 성장 서술 추가)</span>
+          <span style="font-size:11px;color:${bytes2 > 1500 ? '#c62828' : '#888'};">${plan2.length}자 / ${bytes2} bytes${bytes2 > 1500 ? ' ⚠️' : ''}</span>
+        </div>
+        <div id="aiPlan2_${type}" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.8;">${plan2}</div>
+        <div style="display:flex;gap:6px;margin-top:6px;">
+          <button onclick="useAIPlan('${editorId}','aiPlan2_${type}')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;font-size:11.5px;cursor:pointer;">← 2안 사용</button>
+          <button onclick="copyAIPlan('aiPlan2_${type}')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:6px;font-size:11.5px;cursor:pointer;">복사</button>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border-radius:6px;font-size:11.5px;color:#7a5c00;">
+        💡 생성된 예시를 수정하여 실제 수업 내용과 학생 특성을 반영하세요. '← 사용' 버튼으로 에디터에 바로 적용됩니다.
+      </div>
+    </div>`;
+}
+
+// AI 예시 → 에디터 적용
+function useAIPlan(editorId, planDivId) {
+  const editor = document.getElementById(editorId);
+  const planDiv = document.getElementById(planDivId);
+  if (editor && planDiv) {
+    editor.value = planDiv.textContent;
+    editor.dispatchEvent(new Event('input'));
+    editor.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// AI 예시 복사
+function copyAIPlan(planDivId) {
+  const planDiv = document.getElementById(planDivId);
+  if (planDiv) navigator.clipboard.writeText(planDiv.textContent);
 }
 
 // 예약 기능
