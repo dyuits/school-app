@@ -596,66 +596,212 @@
   <!-- ════════ 새 탭 패널 (app-wrapper 안, main 다음) ════════ -->
 <section id="gradeCalcTab" class="tab-panel" style="display:none;padding:16px;">
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-calculator" style="color:#1565c0;"></i> 추정분할계산기</h2>
-  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">고교학점제 성취평가제 기반 추정 등급 및 분할점수 계산</p>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">2026학년도 고교학점제 성취평가제 · 추정분할점수 산출 보조 도구</p>
 
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
-    <!-- 성취도 추정 등급 계산 -->
-    <div class="card" style="padding:18px;">
-      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-chart-bar" style="color:#1565c0;"></i> 성취도 추정 등급 계산</div>
-      <div style="display:grid;gap:10px;">
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">전체 응시자 수</label><input type="number" id="calcTotalStudents" placeholder="예: 120" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> 명</span></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">내 점수 (원점수)</label><input type="number" id="calcMyScore" placeholder="예: 85" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> 점</span></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">과목 만점</label><input type="number" id="calcMaxScore" placeholder="예: 100" value="100" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> 점</span></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">A 비율 (%)</label><input type="number" id="calcRatioA" placeholder="예: 40" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> %</span></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">B 비율 (%)</label><input type="number" id="calcRatioB" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> %</span></div>
+  <!-- ① 추정분할점수 개념 설명 카드 -->
+  <div class="card" style="padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1.5px solid #90caf9;">
+    <div style="font-size:14px;font-weight:800;color:#1565c0;margin-bottom:10px;"><i class="fas fa-info-circle"></i> 추정분할점수란?</div>
+    <p style="font-size:12.5px;color:#37474f;line-height:1.7;margin-bottom:10px;"><strong>추정분할점수</strong>는 성취도(A~E)를 나누는 기준점수를 단순히 90/80/70/60/40점으로 고정하지 않고, 실제 평가 문항의 <strong>난이도·구성</strong>과 각 성취수준 <strong>최소 능력자(MCP)</strong>의 수행 특성을 반영하여 적절한 분할점수를 추정하는 방식입니다.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #bbdefb;">
+        <div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:6px;"><i class="fas fa-lock"></i> 고정분할점수</div>
+        <div style="font-size:11.5px;color:#546e7a;line-height:1.6;">기준 성취율을 원점수와 1:1 대응<br>A≥90, B≥80, C≥70, D≥60, E&lt;60<br><span style="color:#e53935;">문항 난이도 미반영</span></div>
       </div>
-      <div id="calcGradeResult" style="margin-top:14px;padding:14px;background:#f0f4ff;border-radius:10px;text-align:center;font-size:15px;font-weight:800;color:#1565c0;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">값을 입력하면 자동 계산됩니다</span></div>
-    </div>
-
-    <!-- 분할점수 계산 -->
-    <div class="card" style="padding:18px;">
-      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-cut" style="color:#1565c0;"></i> 분할점수 계산</div>
-      <div style="display:grid;gap:10px;">
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">과목 만점</label><input type="number" id="splitMaxScore" placeholder="예: 100" value="100" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">A 비율 (%)</label><input type="number" id="splitRatioA" placeholder="예: 40" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">B 비율 (%)</label><input type="number" id="splitRatioB" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
-        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">C 비율 (%)</label><input type="number" id="splitRatioC" placeholder="예: 20" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #ce93d8;">
+        <div style="font-size:12px;font-weight:700;color:#6a1b9a;margin-bottom:6px;"><i class="fas fa-sliders-h"></i> 추정분할점수</div>
+        <div style="font-size:11.5px;color:#546e7a;line-height:1.6;">문항 난이도·구성 반영<br>최소 능력자 예상 정답률 기반 산출<br><span style="color:#2e7d32;">교과협의 → 나이스 입력</span></div>
       </div>
-      <div id="calcSplitResult" style="margin-top:14px;padding:14px;background:#f0f4ff;border-radius:10px;text-align:center;font-size:14px;font-weight:800;color:#1565c0;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">비율을 입력하면 자동 계산됩니다</span></div>
     </div>
-
-    <!-- 성취도 등급 구간표 -->
-    <div class="card" style="padding:18px;">
-      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-table" style="color:#1565c0;"></i> 성취도 등급 구간표</div>
-      <p style="font-size:11.5px;color:var(--txt-light,#aaa);margin-bottom:10px;">고교학점제 성취평가제 기준 (2025학년도 적용)</p>
-      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
-        <thead><tr style="background:#1565c0;color:#fff;"><th style="padding:8px;border-radius:6px 0 0 0;">성취도</th><th style="padding:8px;">원점수 구간</th><th style="padding:8px;border-radius:0 6px 0 0;">비고</th></tr></thead>
-        <tbody>
-          <tr style="background:#e3f2fd;"><td style="padding:8px;text-align:center;font-weight:800;color:#1565c0;">A</td><td style="padding:8px;text-align:center;">90점 이상</td><td style="padding:8px;font-size:11.5px;color:#1565c0;">매우 우수</td></tr>
-          <tr><td style="padding:8px;text-align:center;font-weight:800;color:#2e7d32;">B</td><td style="padding:8px;text-align:center;">80점 이상 ~ 90점 미만</td><td style="padding:8px;font-size:11.5px;color:#2e7d32;">우수</td></tr>
-          <tr style="background:#f9fbe7;"><td style="padding:8px;text-align:center;font-weight:800;color:#f57f17;">C</td><td style="padding:8px;text-align:center;">70점 이상 ~ 80점 미만</td><td style="padding:8px;font-size:11.5px;color:#f57f17;">보통</td></tr>
-          <tr><td style="padding:8px;text-align:center;font-weight:800;color:#e65100;">D</td><td style="padding:8px;text-align:center;">60점 이상 ~ 70점 미만</td><td style="padding:8px;font-size:11.5px;color:#e65100;">미흡</td></tr>
-          <tr style="background:#fce4ec;"><td style="padding:8px;text-align:center;font-weight:800;color:#c62828;">E</td><td style="padding:8px;text-align:center;">60점 미만</td><td style="padding:8px;font-size:11.5px;color:#c62828;">매우 미흡</td></tr>
-        </tbody>
-      </table>
-      <p style="font-size:11px;color:var(--txt-light,#aaa);margin-top:8px;">※ 학교별·과목별 분할점수는 다를 수 있습니다</p>
+    <div style="margin-top:12px;padding:10px;background:#fff;border-radius:8px;border:1px solid #c8e6c9;">
+      <div style="font-size:12px;font-weight:700;color:#2e7d32;margin-bottom:6px;"><i class="fas fa-key"></i> 기준 성취율 (MCP 기준)</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:800;">A 90%</span>
+        <span style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border-radius:6px;font-size:12px;font-weight:800;">B 80%</span>
+        <span style="padding:4px 10px;background:#fff9c4;color:#f57f17;border-radius:6px;font-size:12px;font-weight:800;">C 70%</span>
+        <span style="padding:4px 10px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:800;">D 60%</span>
+        <span style="padding:4px 10px;background:#fce4ec;color:#c62828;border-radius:6px;font-size:12px;font-weight:800;">E 40%</span>
+      </div>
+      <div style="font-size:11px;color:#888;margin-top:6px;">※ 최소 능력자(MCP): 해당 성취수준에 가까스로 도달한 경계선 학생</div>
     </div>
+  </div>
 
-    <!-- 수행평가 비율 계산 -->
-    <div class="card" style="padding:18px;">
-      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-percent" style="color:#1565c0;"></i> 수행평가 비율 계산</div>
-      <p style="font-size:11.5px;color:var(--txt-light,#aaa);margin-bottom:12px;">지필+수행 합산 점수 및 성취도 추정</p>
-      <div style="display:grid;gap:10px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">지필 점수</label><input type="number" id="perfWritten" placeholder="예: 85" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
-          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">지필 비율(%)</label><input type="number" id="perfWrittenRatio" placeholder="예: 70" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
+  <!-- ② 계산 모드 탭 -->
+  <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e0e0e0;">
+    <button id="estTabBtn1" onclick="switchEstTab(1)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#1565c0;color:#fff;margin-right:4px;"><i class="fas fa-file-alt"></i> 정기시험</button>
+    <button id="estTabBtn2" onclick="switchEstTab(2)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#f5f5f5;color:#888;margin-right:4px;"><i class="fas fa-tasks"></i> 수행평가</button>
+    <button id="estTabBtn3" onclick="switchEstTab(3)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#f5f5f5;color:#888;"><i class="fas fa-plus-circle"></i> 지필+수행 합산</button>
+  </div>
+
+  <!-- ③ 정기시험 추정분할점수 -->
+  <div id="estPanel1" style="display:block;">
+    <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
+      <div style="font-size:13px;font-weight:700;color:#1565c0;margin-bottom:12px;"><i class="fas fa-info-circle"></i> 산출 원리: 난이도 범주별 배점합 × 성취수준별 최소 능력자 예상 정답률 합산</div>
+      <div style="font-size:12px;color:#546e7a;margin-bottom:16px;line-height:1.6;background:#e3f2fd;padding:10px;border-radius:8px;">
+        문항을 <strong>쉬움·보통·어려움</strong> 3개 난이도로 분류하고, 각 난이도 범주에서 성취수준별 최소 능력자가 맞힐 것으로 예상되는 정답률(%)을 입력합니다. 동일 난이도 범주가 하나의 성취수준 목표 문항으로만 구성되면 약 <strong>65%</strong>를 기준으로 추정합니다. 예상 정답률은 A~D는 5% 단위, E는 1% 단위로 입력합니다.
+      </div>
+
+      <!-- 난이도 범주 입력 테이블 -->
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:520px;">
+          <thead>
+            <tr style="background:#1565c0;color:#fff;">
+              <th style="padding:8px;text-align:center;">난이도</th>
+              <th style="padding:8px;text-align:center;">선택형 배점합</th>
+              <th style="padding:8px;text-align:center;">논술형 배점합</th>
+              <th style="padding:8px;text-align:center;background:#1a237e;">A 정답률(%)</th>
+              <th style="padding:8px;text-align:center;background:#1b5e20;">B 정답률(%)</th>
+              <th style="padding:8px;text-align:center;background:#f57f17;">C 정답률(%)</th>
+              <th style="padding:8px;text-align:center;background:#bf360c;">D 정답률(%)</th>
+              <th style="padding:8px;text-align:center;background:#880e4f;">E 정답률(%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#f8f9fa;">
+              <td style="padding:8px;text-align:center;font-weight:700;color:#2196f3;">쉬움</td>
+              <td style="padding:6px;"><input type="number" id="est_easy_sel" placeholder="예: 21" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_easy_ess" placeholder="예: 0" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_easy_A" placeholder="90" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_easy_B" placeholder="80" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_easy_C" placeholder="70" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_easy_D" placeholder="60" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_easy_E" placeholder="55" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcEstimate()"></td>
+            </tr>
+            <tr>
+              <td style="padding:8px;text-align:center;font-weight:700;color:#ff9800;">보통</td>
+              <td style="padding:6px;"><input type="number" id="est_mid_sel" placeholder="예: 34" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_mid_ess" placeholder="예: 0" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_mid_A" placeholder="85" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_mid_B" placeholder="70" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_mid_C" placeholder="60" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_mid_D" placeholder="45" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_mid_E" placeholder="30" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcEstimate()"></td>
+            </tr>
+            <tr style="background:#f8f9fa;">
+              <td style="padding:8px;text-align:center;font-weight:700;color:#f44336;">어려움</td>
+              <td style="padding:6px;"><input type="number" id="est_hard_sel" placeholder="예: 16" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_hard_ess" placeholder="예: 0" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_hard_A" placeholder="75" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_hard_B" placeholder="55" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_hard_C" placeholder="40" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_hard_D" placeholder="25" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcEstimate()"></td>
+              <td style="padding:6px;"><input type="number" id="est_hard_E" placeholder="15" min="0" max="100" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcEstimate()"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 결과 -->
+      <div id="estResult1" style="margin-top:16px;padding:16px;background:#f0f4ff;border-radius:10px;">
+        <div style="text-align:center;color:#aaa;font-size:13px;">배점합과 예상 정답률을 입력하면 자동 계산됩니다</div>
+      </div>
+      <div style="margin-top:10px;padding:10px;background:#fff8e1;border-radius:8px;border:1px solid #ffe082;">
+        <div style="font-size:11px;color:#795548;line-height:1.6;"><i class="fas fa-exclamation-triangle" style="color:#f57f17;"></i> <strong>주의:</strong> 본 계산기는 교과협의 및 나이스 입력 전 검토를 돕는 보조 도구입니다. 실제 분할점수는 교과 협의를 통해 결정하고 나이스에 입력해야 합니다. 분할점수를 의도적으로 높이거나 낮춰 특정 성적 분포를 만드는 것은 금지됩니다.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 수행평가 추정분할점수 -->
+  <div id="estPanel2" style="display:none;">
+    <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
+      <div style="font-size:13px;font-weight:700;color:#6a1b9a;margin-bottom:12px;"><i class="fas fa-info-circle"></i> 산출 원리: 평가요소별 성취수준 최소 능력자 배점 합산 → 점수 영역 설정</div>
+      <div style="font-size:12px;color:#546e7a;margin-bottom:16px;line-height:1.6;background:#f3e5f5;padding:10px;border-radius:8px;">
+        채점기준표의 각 평가요소에서 성취수준별 최소 능력자에게 부여되는 배점을 입력합니다. 각 성취수준의 배점 합계가 해당 성취수준의 분할점수(최소 점수)가 됩니다. 점수 영역은 해당 성취수준 최소점수 ~ 바로 위 성취수준 최소점수 -1 로 자동 설정됩니다.
+      </div>
+
+      <!-- 평가요소 입력 (최대 5개) -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12.5px;font-weight:700;color:#37474f;margin-bottom:8px;">평가요소별 성취수준 최소 능력자 배점 입력</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:480px;">
+            <thead>
+              <tr style="background:#6a1b9a;color:#fff;">
+                <th style="padding:8px;text-align:center;">평가요소</th>
+                <th style="padding:8px;text-align:center;background:#1a237e;">A 배점</th>
+                <th style="padding:8px;text-align:center;background:#1b5e20;">B 배점</th>
+                <th style="padding:8px;text-align:center;background:#f57f17;">C 배점</th>
+                <th style="padding:8px;text-align:center;background:#bf360c;">D 배점</th>
+                <th style="padding:8px;text-align:center;background:#880e4f;">E 배점</th>
+                <th style="padding:8px;text-align:center;">만점</th>
+              </tr>
+            </thead>
+            <tbody id="perfEvalRows">
+              <tr>
+                <td style="padding:6px;"><input type="text" placeholder="요소 1" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;"></td>
+                <td style="padding:6px;"><input type="number" class="perf_A" placeholder="4" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_B" placeholder="3" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_C" placeholder="2" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_D" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_E" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_max" placeholder="4" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcPerfEstimate()"></td>
+              </tr>
+              <tr style="background:#f8f9fa;">
+                <td style="padding:6px;"><input type="text" placeholder="요소 2" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;"></td>
+                <td style="padding:6px;"><input type="number" class="perf_A" placeholder="4" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_B" placeholder="2" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_C" placeholder="2" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_D" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_E" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_max" placeholder="4" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcPerfEstimate()"></td>
+              </tr>
+              <tr>
+                <td style="padding:6px;"><input type="text" placeholder="요소 3" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;"></td>
+                <td style="padding:6px;"><input type="number" class="perf_A" placeholder="2" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_B" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_C" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_D" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_E" placeholder="1" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcPerfEstimate()"></td>
+                <td style="padding:6px;"><input type="number" class="perf_max" placeholder="2" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcPerfEstimate()"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">수행 점수</label><input type="number" id="perfPerform" placeholder="예: 90" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
-          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">수행 비율(%)</label><input type="number" id="perfPerformRatio" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
+        <button onclick="addPerfRow()" style="margin-top:8px;padding:6px 14px;background:#f3e5f5;color:#6a1b9a;border:1.5px solid #ce93d8;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-plus"></i> 평가요소 추가</button>
+      </div>
+
+      <!-- 결과 -->
+      <div id="estResult2" style="margin-top:12px;padding:16px;background:#f3e5f5;border-radius:10px;">
+        <div style="text-align:center;color:#aaa;font-size:13px;">배점을 입력하면 자동 계산됩니다</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ 지필+수행 합산 -->
+  <div id="estPanel3" style="display:none;">
+    <div class="card" style="padding:18px;border-radius:0 8px 8px 8px;">
+      <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:12px;"><i class="fas fa-calculator"></i> 지필+수행 합산 원점수 및 성취도 추정</div>
+      <div style="display:grid;gap:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:4px;">지필 점수</label>
+            <input type="number" id="perfWritten" placeholder="예: 85" style="width:100%;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()">
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:4px;">지필 비율 (%)</label>
+            <input type="number" id="perfWrittenRatio" placeholder="예: 70" style="width:100%;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:4px;">수행 점수</label>
+            <input type="number" id="perfPerform" placeholder="예: 90" style="width:100%;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()">
+          </div>
+          <div>
+            <label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:4px;">수행 비율 (%)</label>
+            <input type="number" id="perfPerformRatio" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:4px;">추정분할점수 (선택 입력)</label>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;">
+            <div><span style="font-size:11px;color:#1565c0;font-weight:700;">A 분할</span><input type="number" id="perfCutA" placeholder="90" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcPerf()"></div>
+            <div><span style="font-size:11px;color:#2e7d32;font-weight:700;">B 분할</span><input type="number" id="perfCutB" placeholder="80" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcPerf()"></div>
+            <div><span style="font-size:11px;color:#f57f17;font-weight:700;">C 분할</span><input type="number" id="perfCutC" placeholder="70" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcPerf()"></div>
+            <div><span style="font-size:11px;color:#e65100;font-weight:700;">D 분할</span><input type="number" id="perfCutD" placeholder="60" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcPerf()"></div>
+            <div><span style="font-size:11px;color:#c62828;font-weight:700;">E 분할</span><input type="number" id="perfCutE" placeholder="40" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcPerf()"></div>
+          </div>
         </div>
       </div>
-      <div id="calcPerfResult" style="margin-top:14px;padding:14px;background:#f0f4ff;border-radius:10px;text-align:center;font-size:14px;font-weight:800;color:#1565c0;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">값을 입력하면 자동 계산됩니다</span></div>
+      <div id="calcPerfResult" style="margin-top:14px;padding:14px;background:#e8f5e9;border-radius:10px;text-align:center;font-size:14px;font-weight:800;color:#2e7d32;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">값을 입력하면 자동 계산됩니다</span></div>
     </div>
   </div>
 </section>
@@ -1425,51 +1571,221 @@ function checkRecord() {
   result.innerHTML = html;
 }
 
-// 추정분할계산기 함수
-function calcGrade() {
-  const total = parseFloat(document.getElementById('calcTotalStudents').value);
-  const score = parseFloat(document.getElementById('calcMyScore').value);
-  const max = parseFloat(document.getElementById('calcMaxScore').value) || 100;
-  const rA = parseFloat(document.getElementById('calcRatioA').value);
-  const rB = parseFloat(document.getElementById('calcRatioB').value);
-  const el = document.getElementById('calcGradeResult');
-  if (!total || !score || !rA || !rB) { el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">값을 입력하면 자동 계산됩니다</span>'; return; }
-  const pct = (score / max) * 100;
-  let grade, color;
-  if (pct >= 90) { grade = 'A'; color = '#1565c0'; }
-  else if (pct >= 80) { grade = 'B'; color = '#2e7d32'; }
-  else if (pct >= 70) { grade = 'C'; color = '#f57f17'; }
-  else if (pct >= 60) { grade = 'D'; color = '#e65100'; }
-  else { grade = 'E'; color = '#c62828'; }
-  el.innerHTML = `<span style="font-size:28px;color:${color};">${grade}</span><br><span style="font-size:12px;font-weight:400;color:#666;">원점수 ${score}점 (${pct.toFixed(1)}%)</span>`;
+// ════════ 추정분할계산기 함수 (PDF 기반 전면 재작성) ════════
+
+// 계산 모드 탭 전환
+function switchEstTab(n) {
+  [1,2,3].forEach(i => {
+    const btn = document.getElementById('estTabBtn'+i);
+    const panel = document.getElementById('estPanel'+i);
+    if (btn) btn.style.cssText = i===n
+      ? 'padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#1565c0;color:#fff;margin-right:4px;'
+      : 'padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#f5f5f5;color:#888;margin-right:4px;';
+    if (panel) panel.style.display = i===n ? 'block' : 'none';
+  });
 }
-function calcSplit() {
-  const max = parseFloat(document.getElementById('splitMaxScore').value) || 100;
-  const rA = parseFloat(document.getElementById('splitRatioA').value);
-  const rB = parseFloat(document.getElementById('splitRatioB').value);
-  const rC = parseFloat(document.getElementById('splitRatioC').value);
-  const el = document.getElementById('calcSplitResult');
-  if (!rA || !rB || !rC) { el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">비율을 입력하면 자동 계산됩니다</span>'; return; }
-  const cutA = (max * (100 - rA) / 100).toFixed(1);
-  const cutB = (max * (100 - rA - rB) / 100).toFixed(1);
-  const cutC = (max * (100 - rA - rB - rC) / 100).toFixed(1);
-  el.innerHTML = `A 분할: <strong>${cutA}점</strong> │ B 분할: <strong>${cutB}점</strong> │ C 분할: <strong>${cutC}점</strong><br><span style="font-size:11px;font-weight:400;color:#666;">만점 ${max}점 기준</span>`;
+
+// 성취도 색상
+function gradeColor(g) {
+  return {A:'#1565c0',B:'#2e7d32',C:'#f57f17',D:'#e65100',E:'#c62828'}[g]||'#666';
 }
+function gradeLabel(g) {
+  return {A:'매우 우수',B:'우수',C:'보통',D:'미흡',E:'매우 미흡'}[g]||'';
+}
+function scoreToGrade(s, cuts) {
+  // cuts = {A, B, C, D, E} 분할점수
+  if (s >= cuts.A) return 'A';
+  if (s >= cuts.B) return 'B';
+  if (s >= cuts.C) return 'C';
+  if (s >= cuts.D) return 'D';
+  return 'E';
+}
+
+// ① 정기시험 추정분할점수 계산
+// 공식: 각 성취수준 분할점수 = Σ(난이도별 배점합 × 예상정답률/100)
+function calcEstimate() {
+  const grades = ['A','B','C','D','E'];
+  const rows = ['easy','mid','hard'];
+  const result = {};
+  grades.forEach(g => { result[g] = 0; });
+
+  let totalScore = 0;
+  let hasAnyInput = false;
+
+  rows.forEach(r => {
+    const sel = parseFloat(document.getElementById('est_'+r+'_sel').value) || 0;
+    const ess = parseFloat(document.getElementById('est_'+r+'_ess').value) || 0;
+    const rowTotal = sel + ess;
+    if (rowTotal > 0) hasAnyInput = true;
+    totalScore += rowTotal;
+    grades.forEach(g => {
+      const rate = parseFloat(document.getElementById('est_'+r+'_'+g).value);
+      if (!isNaN(rate)) {
+        // 선택형: 예상정답률 그대로, 논술형: 50% 기준(논술형은 정답률 50% 기준이 일반적)
+        result[g] += sel * (rate / 100) + ess * (rate / 100);
+      }
+    });
+  });
+
+  const el = document.getElementById('estResult1');
+  if (!hasAnyInput) {
+    el.innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;">배점합과 예상 정답률을 입력하면 자동 계산됩니다</div>';
+    return;
+  }
+
+  const gradeColors = {A:'#1565c0',B:'#2e7d32',C:'#f57f17',D:'#e65100',E:'#c62828'};
+  const gradeBg = {A:'#e3f2fd',B:'#e8f5e9',C:'#fffde7',D:'#fff3e0',E:'#fce4ec'};
+
+  let html = `<div style="margin-bottom:10px;font-size:13px;font-weight:700;color:#37474f;">📊 추정분할점수 산출 결과 <span style="font-size:11px;font-weight:400;color:#888;">(만점 ${totalScore.toFixed(1)}점 기준)</span></div>`;
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
+  grades.forEach(g => {
+    const score = result[g].toFixed(1);
+    html += `<div style="flex:1;min-width:70px;text-align:center;padding:10px 6px;background:${gradeBg[g]};border-radius:8px;border:1.5px solid ${gradeColors[g]}20;">`;
+    html += `<div style="font-size:18px;font-weight:800;color:${gradeColors[g]}">${g}</div>`;
+    html += `<div style="font-size:14px;font-weight:700;color:${gradeColors[g]}">${score}점</div>`;
+    html += `<div style="font-size:10px;color:#888;">(${gradeLabel(g)})</div>`;
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 점수 영역 표
+  html += '<div style="font-size:12px;font-weight:700;color:#37474f;margin-bottom:6px;">📋 점수 영역</div>';
+  html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<tr style="background:#1565c0;color:#fff;"><th style="padding:6px;">성취도</th><th style="padding:6px;">분할점수(최소)</th><th style="padding:6px;">점수 영역</th><th style="padding:6px;">비고</th></tr>';
+  const sortedGrades = ['A','B','C','D','E'];
+  sortedGrades.forEach((g, i) => {
+    const minScore = result[g].toFixed(1);
+    const maxScore = i === 0 ? totalScore.toFixed(1) : (result[sortedGrades[i-1]] - 0.1).toFixed(1);
+    html += `<tr style="background:${gradeBg[g]};">`;
+    html += `<td style="padding:6px;text-align:center;font-weight:800;color:${gradeColors[g]}">${g}</td>`;
+    html += `<td style="padding:6px;text-align:center;">${minScore}점</td>`;
+    html += `<td style="padding:6px;text-align:center;">${minScore} ~ ${maxScore}점</td>`;
+    html += `<td style="padding:6px;font-size:11px;color:#888;">${gradeLabel(g)}</td>`;
+    html += '</tr>';
+  });
+  html += '</table></div>';
+  html += '<div style="margin-top:8px;font-size:11px;color:#888;">※ 나이스 입력 경로: 교과담임 → 분할점수 → 정기시험추정분할점수산출관리</div>';
+
+  el.innerHTML = html;
+}
+
+// ② 수행평가 추정분할점수 계산
+// 공식: 각 성취수준 분할점수 = 각 평가요소에서 해당 성취수준 MCP 배점의 합
+function calcPerfEstimate() {
+  const grades = ['A','B','C','D','E'];
+  const result = {A:0,B:0,C:0,D:0,E:0};
+  let totalMax = 0;
+  let hasInput = false;
+
+  document.querySelectorAll('#perfEvalRows tr').forEach(row => {
+    grades.forEach(g => {
+      const inp = row.querySelector('.perf_'+g);
+      if (inp && inp.value !== '') {
+        result[g] += parseFloat(inp.value) || 0;
+        hasInput = true;
+      }
+    });
+    const maxInp = row.querySelector('.perf_max');
+    if (maxInp && maxInp.value !== '') totalMax += parseFloat(maxInp.value) || 0;
+  });
+
+  const el = document.getElementById('estResult2');
+  if (!hasInput) {
+    el.innerHTML = '<div style="text-align:center;color:#aaa;font-size:13px;">배점을 입력하면 자동 계산됩니다</div>';
+    return;
+  }
+
+  const gradeColors = {A:'#1565c0',B:'#2e7d32',C:'#f57f17',D:'#e65100',E:'#c62828'};
+  const gradeBg = {A:'#e3f2fd',B:'#e8f5e9',C:'#fffde7',D:'#fff3e0',E:'#fce4ec'};
+
+  let html = `<div style="margin-bottom:10px;font-size:13px;font-weight:700;color:#37474f;">📊 수행평가 추정분할점수 결과 <span style="font-size:11px;font-weight:400;color:#888;">(만점 ${totalMax}점 기준)</span></div>`;
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">';
+  ['A','B','C','D','E'].forEach(g => {
+    html += `<div style="flex:1;min-width:70px;text-align:center;padding:10px 6px;background:${gradeBg[g]};border-radius:8px;border:1.5px solid ${gradeColors[g]}40;">`;
+    html += `<div style="font-size:18px;font-weight:800;color:${gradeColors[g]}">${g}</div>`;
+    html += `<div style="font-size:14px;font-weight:700;color:${gradeColors[g]}">${result[g]}점</div>`;
+    html += `<div style="font-size:10px;color:#888;">분할점수</div>`;
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 점수 영역 표
+  html += '<div style="font-size:12px;font-weight:700;color:#37474f;margin-bottom:6px;">📋 점수 영역</div>';
+  html += '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<tr style="background:#6a1b9a;color:#fff;"><th style="padding:6px;">성취도</th><th style="padding:6px;">최소점수(분할점수)</th><th style="padding:6px;">점수 영역</th></tr>';
+  ['A','B','C','D','E'].forEach((g, i) => {
+    const minScore = result[g];
+    const maxScore = i === 0 ? totalMax : result[['A','B','C','D','E'][i-1]] - 1;
+    html += `<tr style="background:${gradeBg[g]};">`;
+    html += `<td style="padding:6px;text-align:center;font-weight:800;color:${gradeColors[g]}">${g}</td>`;
+    html += `<td style="padding:6px;text-align:center;">${minScore}점</td>`;
+    html += `<td style="padding:6px;text-align:center;">${minScore} ~ ${maxScore}점</td>`;
+    html += '</tr>';
+  });
+  html += '</table></div>';
+  html += '<div style="margin-top:8px;font-size:11px;color:#888;">※ Tip: 각 성취수준의 최소 능력자(MCP) 배점 합이 해당 성취수준의 분할점수입니다.</div>';
+
+  el.innerHTML = html;
+}
+
+// 평가요소 행 추가
+function addPerfRow() {
+  const tbody = document.getElementById('perfEvalRows');
+  const rowCount = tbody.querySelectorAll('tr').length + 1;
+  const isEven = rowCount % 2 === 0;
+  const row = document.createElement('tr');
+  if (isEven) row.style.background = '#f8f9fa';
+  row.innerHTML = `
+    <td style="padding:6px;"><input type="text" placeholder="요소 ${rowCount}" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;"></td>
+    <td style="padding:6px;"><input type="number" class="perf_A" placeholder="" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #bbdefb;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e3f2fd;" oninput="calcPerfEstimate()"></td>
+    <td style="padding:6px;"><input type="number" class="perf_B" placeholder="" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #c8e6c9;border-radius:6px;font-size:12px;box-sizing:border-box;background:#e8f5e9;" oninput="calcPerfEstimate()"></td>
+    <td style="padding:6px;"><input type="number" class="perf_C" placeholder="" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #fff9c4;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fffde7;" oninput="calcPerfEstimate()"></td>
+    <td style="padding:6px;"><input type="number" class="perf_D" placeholder="" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #ffe0b2;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fff3e0;" oninput="calcPerfEstimate()"></td>
+    <td style="padding:6px;"><input type="number" class="perf_E" placeholder="" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #f8bbd0;border-radius:6px;font-size:12px;box-sizing:border-box;background:#fce4ec;" oninput="calcPerfEstimate()"></td>
+    <td style="padding:6px;"><input type="number" class="perf_max" placeholder="" min="0" style="width:100%;padding:5px 7px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;box-sizing:border-box;" oninput="calcPerfEstimate()"></td>
+  `;
+  tbody.appendChild(row);
+}
+
+// ③ 지필+수행 합산 계산 (추정분할점수 적용)
 function calcPerf() {
   const w = parseFloat(document.getElementById('perfWritten').value);
   const wr = parseFloat(document.getElementById('perfWrittenRatio').value);
   const p = parseFloat(document.getElementById('perfPerform').value);
   const pr = parseFloat(document.getElementById('perfPerformRatio').value);
   const el = document.getElementById('calcPerfResult');
-  if (!w || !wr || !p || !pr) { el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">값을 입력하면 자동 계산됩니다</span>'; return; }
+  if (!w || !wr || !p || !pr) {
+    el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">값을 입력하면 자동 계산됩니다</span>';
+    return;
+  }
   const total = (w * wr / 100) + (p * pr / 100);
+
+  // 추정분할점수 입력 여부 확인
+  const cutA = parseFloat(document.getElementById('perfCutA').value);
+  const cutB = parseFloat(document.getElementById('perfCutB').value);
+  const cutC = parseFloat(document.getElementById('perfCutC').value);
+  const cutD = parseFloat(document.getElementById('perfCutD').value);
+  const cutE = parseFloat(document.getElementById('perfCutE').value);
+
   let grade, color;
-  if (total >= 90) { grade = 'A'; color = '#1565c0'; }
-  else if (total >= 80) { grade = 'B'; color = '#2e7d32'; }
-  else if (total >= 70) { grade = 'C'; color = '#f57f17'; }
-  else if (total >= 60) { grade = 'D'; color = '#e65100'; }
-  else { grade = 'E'; color = '#c62828'; }
-  el.innerHTML = `합산 원점수: <strong>${total.toFixed(1)}점</strong> → 성취도 <span style="color:${color};font-size:20px;">${grade}</span>`;
+  if (!isNaN(cutA) && !isNaN(cutB) && !isNaN(cutC) && !isNaN(cutD)) {
+    // 추정분할점수 기준으로 성취도 판정
+    if (total >= cutA) { grade = 'A'; }
+    else if (total >= cutB) { grade = 'B'; }
+    else if (total >= cutC) { grade = 'C'; }
+    else if (total >= cutD) { grade = 'D'; }
+    else { grade = 'E'; }
+  } else {
+    // 고정분할점수 기준 (90/80/70/60)
+    if (total >= 90) { grade = 'A'; }
+    else if (total >= 80) { grade = 'B'; }
+    else if (total >= 70) { grade = 'C'; }
+    else if (total >= 60) { grade = 'D'; }
+    else { grade = 'E'; }
+  }
+  color = gradeColor(grade);
+  const cutNote = (!isNaN(cutA)) ? ' (추정분할점수 기준)' : ' (고정분할점수 기준)';
+  el.innerHTML = `합산 원점수: <strong>${total.toFixed(1)}점</strong> → 성취도 <span style="color:${color};font-size:22px;font-weight:800;">${grade}</span> <span style="font-size:11px;color:#888;">${cutNote}</span><br><span style="font-size:12px;color:#666;">${gradeLabel(grade)}</span>`;
 }
 
 
