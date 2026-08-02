@@ -1352,18 +1352,19 @@
   </details>
 
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <!-- 중간: 키워드/템플릿/에디터 (기존 UI) -->
+  <!-- 교과 드롭다운 + 키워드/템플릿/에디터 -->
   <!-- ═══════════════════════════════════════════════════════════ -->
-  <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
-    <!-- 좌측: 교과 목록 -->
-    <div>
-      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">교과 선택</div>
-      <div id="setechSubjectList" style="display:flex;flex-direction:column;gap:4px;"></div>
-    </div>
-
-    <!-- 우측: 입력 영역 -->
-    <div>
-      <div id="setechTitle" style="font-size:15px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:10px;"></div>
+  <!-- 교과 선택 드롭다운 -->
+  <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <label style="font-size:12.5px;font-weight:700;color:var(--txt-mid,#555);">📚 교과 선택</label>
+    <select id="setechSubjectDropdown" onchange="selectSubjectByDropdown(this.value)" style="padding:7px 14px;border:1.5px solid #90caf9;border-radius:8px;font-size:13px;font-weight:700;color:#1565c0;background:#e3f2fd;cursor:pointer;min-width:160px;">
+      <option value="">-- 교과 선택 --</option>
+    </select>
+    <div id="setechTitle" style="font-size:14px;font-weight:800;color:#7b1fa2;"></div>
+  </div>
+  <!-- 키워드/템플릿/에디터 -->
+  <div id="setechSubjectList" style="display:none;"></div>
+  <div>
 
       <!-- 키워드 -->
       <div style="margin-bottom:10px;">
@@ -1402,7 +1403,6 @@
       </div>
 
     </div>
-  </div>
 </section>
 
 <section id="activityTab" class="tab-panel" style="display:none;padding:16px;">
@@ -1597,26 +1597,47 @@ window.addEventListener('load', function() {
       templates:['애니메이션 제작의 기본 원리를 이해하고 스토리보드 구성부터 최종 편집까지 전 과정을 수행함.','프레임 단위의 움직임을 설계하고 구현하는 과정에서 섬세한 표현력과 기술적 역량을 기름.']}
   ];
 
-  const subjList = document.getElementById('setechSubjectList');
-  if (subjList) {
-    SUBJECTS.forEach((s, i) => {
-      const btn = document.createElement('button');
-      btn.textContent = s.icon + ' ' + s.name;
-      btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-lt,#e0e0e0);background:#fff;font-size:12.5px;cursor:pointer;text-align:left;';
-      btn.dataset.name = s.name;
-      btn.onclick = () => {
-        document.querySelectorAll('#setechSubjectList button').forEach(b => b.style.background = '#fff');
-        btn.style.background = '#e3f2fd';
-        document.getElementById('setechTitle').textContent = s.icon + ' ' + s.name + ' 세특 작성';
-        const kw = document.getElementById('setechKeywords');
-        kw.innerHTML = s.keywords.map(k => `<span onclick="insertText('setechEditor','${k}')" style="display:inline-block;padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:12px;font-size:12px;cursor:pointer;font-weight:600;">${k}</span>`).join('');
-        const tpl = document.getElementById('setechTemplates');
-        tpl.innerHTML = s.templates.map(t => `<div onclick="appendText('setechEditor','${t}')" style="padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12.5px;cursor:pointer;border:1px solid var(--border-lt,#e0e0e0);line-height:1.6;">${t}</div>`).join('');
-      };
-      subjList.appendChild(btn);
-      if (i === 0) btn.click();
+  // 드롭다운에 교과 목록 채우기
+  const dropdown = document.getElementById('setechSubjectDropdown');
+  if (dropdown) {
+    // 교과 그룹 구성
+    const groups = [
+      { label: '정보 교과', names: ['정보','인공지능기초','소프트웨어와 생활','데이터과학'] },
+      { label: '일반 교과', names: ['국어','수학','영어','과학','사회','역사','체육','음악','미술','기술·가정','진로'] },
+      { label: '상업 교과', names: ['사무관리','마케팅일반','전자상거래','상업경제','금융일반'] },
+      { label: '디자인 교과', names: ['미디어콘텐츠일반'] },
+      { label: 'NCS 교과', names: ['캐릭터제작','애니메이션'] }
+    ];
+    groups.forEach(g => {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = g.label;
+      g.names.forEach(name => {
+        const s = SUBJECTS.find(x => x.name === name);
+        if (s) {
+          const opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = s.icon + ' ' + s.name;
+          optgroup.appendChild(opt);
+        }
+      });
+      dropdown.appendChild(optgroup);
     });
+    // 첫 번째 교과 자동 선택
+    if (SUBJECTS.length > 0) {
+      dropdown.value = SUBJECTS[0].name;
+      selectSubjectByDropdown(SUBJECTS[0].name);
+    }
   }
+
+  window.selectSubjectByDropdown = function(name) {
+    const s = SUBJECTS.find(x => x.name === name);
+    if (!s) return;
+    document.getElementById('setechTitle').textContent = s.icon + ' ' + s.name + ' 세특 작성';
+    const kw = document.getElementById('setechKeywords');
+    if (kw) kw.innerHTML = s.keywords.map(k => `<span onclick="insertText('setechEditor','${k}')" style="display:inline-block;padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:12px;font-size:12px;cursor:pointer;font-weight:600;">${k}</span>`).join('');
+    const tpl = document.getElementById('setechTemplates');
+    if (tpl) tpl.innerHTML = s.templates.map(t => `<div onclick="appendText('setechEditor','${t.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12.5px;cursor:pointer;border:1px solid var(--border-lt,#e0e0e0);line-height:1.6;">${t}</div>`).join('');
+  };
 
   // 세특 에디터 글자수 카운터
   const setechEd = document.getElementById('setechEditor');
@@ -2711,8 +2732,8 @@ async function handleSetechExcel(input) {
 async function generateSetechSimple() {
   const comment = (document.getElementById('setechSimpleComment')?.value || '').trim();
   if (!comment) { alert('교사 총평을 입력해주세요.'); return; }
-  const subjectBtn = document.querySelector('#setechSubjectList button[style*="e3f2fd"]');
-  const subject = subjectBtn ? subjectBtn.dataset.name : '교과';
+  const subjectDropdownSimple = document.getElementById('setechSubjectDropdown');
+  const subject = subjectDropdownSimple ? subjectDropdownSimple.value : '교과';
   const resultEl = document.getElementById('setechSimpleResult');
   resultEl.style.display = 'block';
   resultEl.innerHTML = '<div style="text-align:center;padding:12px;color:#888;"><i class="fas fa-spinner fa-spin"></i> AI 세특 생성 중...</div>';
@@ -2813,9 +2834,9 @@ async function generateSetechNew() {
   const grade = (document.querySelector('.setech-grade-btn[style*="3949ab"]') || {}).dataset?.val || '';
   const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '';
   const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '';
-  // 교과명: 좌측 목록에서 선택된 버튼의 data-name, 없으면 setechTitle 텍스트에서 추출
-  const activeSubjectBtn = document.querySelector('#setechSubjectList button[style*="e3f2fd"]');
-  const subject = activeSubjectBtn ? (activeSubjectBtn.dataset.name || activeSubjectBtn.textContent.replace(/[^\w가-힣·]/g,'').trim()) : (document.getElementById('setechTitle')?.textContent?.replace(/\s*세특.*$/,'').replace(/[^\w가-힣·\s]/g,'').trim() || '');
+  // 교과명: 드롭다운에서 읽기
+  const subjectDropdown = document.getElementById('setechSubjectDropdown');
+  const subject = subjectDropdown ? subjectDropdown.value : (document.getElementById('setechTitle')?.textContent?.replace(/\s*세특.*$/,'').replace(/[^\w가-힣·\s]/g,'').trim() || '');
   const planText = document.getElementById('setechPlanText').value.trim();
   const activityText = document.getElementById('setechActivityText').value.trim();
   const excelText = (window._setechExcelText || '').trim();
