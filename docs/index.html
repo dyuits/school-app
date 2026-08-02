@@ -64,6 +64,19 @@
     <button class="tab-btn" data-tab="util" onclick="switchTab('util')">
       <i class="fas fa-sun tab-icon"></i><span class="tab-label"> 금일 일정 요약</span>
     </button>
+    <!-- ── 새 탭 버튼 ── -->
+    <button class="tab-btn" data-tab="gradeCalc" onclick="switchTab('gradeCalc')" style="background:var(--sky-pale,#eaf4ff);border-color:var(--sky-mid,#90caf9);">
+      <i class="fas fa-calculator tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 추정분할계산기</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
+    </button>
+    <button class="tab-btn" data-tab="recordCheck" onclick="switchTab('recordCheck')" style="background:var(--sky-pale,#eaf4ff);border-color:var(--sky-mid,#90caf9);">
+      <i class="fas fa-spell-check tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 생기부 점검</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
+    </button>
+    <button class="tab-btn" data-tab="setech" onclick="switchTab('setech')" style="background:var(--sky-pale,#eaf4ff);border-color:var(--sky-mid,#90caf9);">
+      <i class="fas fa-pencil-alt tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 교과 세특</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
+    </button>
+    <button class="tab-btn" data-tab="activity" onclick="switchTab('activity')" style="background:var(--sky-pale,#eaf4ff);border-color:var(--sky-mid,#90caf9);">
+      <i class="fas fa-star tab-icon" style="color:#1565c0;"></i><span class="tab-label"> 창체·행특</span><span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
+    </button>
   </nav>
 
   <!-- ══════════ 메인 ══════════ -->
@@ -195,20 +208,102 @@
 
     <!-- ── 4. 실습실 시간표 ── -->
     <section id="labTab" class="tab-panel">
-      <div class="side-btn-layout">
-        <!-- 왼쪽: 실습실 버튼 목록 -->
-        <div class="side-btn-panel">
-          <div class="side-btn-panel-header"><i class="fas fa-flask"></i> 실습실 목록</div>
-          <div class="side-btn-list" id="labSideList">
-            <!-- JS로 채워짐 -->
+      <!-- 서브탭 네비게이션 -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <button id="labSubBtn-schedule" class="sub-tab-btn active" onclick="switchLabSub('schedule')" style="padding:7px 16px;border-radius:20px;border:1.5px solid var(--primary,#4f7ef8);background:var(--primary,#4f7ef8);color:#fff;font-weight:700;font-size:13px;cursor:pointer;">
+          <i class="fas fa-flask"></i> 실습실 시간표
+        </button>
+        <button id="labSubBtn-reservation" class="sub-tab-btn" onclick="switchLabSub('reservation')" style="padding:7px 16px;border-radius:20px;border:1.5px solid var(--sky-mid,#90caf9);background:var(--sky-pale,#eaf4ff);color:#1565c0;font-weight:700;font-size:13px;cursor:pointer;">
+          <i class="fas fa-calendar-plus"></i> 실습실 사용예약 <span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
+        </button>
+      </div>
+
+      <!-- 서브탭 패널: 실습실 시간표 -->
+      <div id="labSubPanel-schedule" class="sub-tab-panel active">
+        <div class="side-btn-layout">
+          <div class="side-btn-panel">
+            <div class="side-btn-panel-header"><i class="fas fa-flask"></i> 실습실 목록</div>
+            <div class="side-btn-list" id="labSideList"></div>
+          </div>
+          <div class="side-btn-content card" id="labTableWrap">
+            <div class="empty-state">
+              <div class="empty-icon">🏫</div>
+              <h3>왼쪽에서 실습실를 선택해주세요</h3>
+              <p>실습실별 주간 시간표를 보여드립니다</p>
+            </div>
           </div>
         </div>
-        <!-- 오른쪽: 시간표 -->
-        <div class="side-btn-content card" id="labTableWrap">
-          <div class="empty-state">
-            <div class="empty-icon">🏫</div>
-            <h3>왼쪽에서 실습실을 선택해주세요</h3>
-            <p>실습실별 주간 시간표를 보여드립니다</p>
+      </div>
+
+      <!-- 서브탭 패널: 실습실 사용예약 -->
+      <div id="labSubPanel-reservation" class="sub-tab-panel">
+        <div class="card" style="padding:20px;">
+          <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);margin-bottom:16px;"><i class="fas fa-calendar-plus" style="color:var(--primary);"></i> 실습실 사용예약</h2>
+          <div style="background:#fff8e1;border:1.5px solid #ffe082;border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#7a5c00;">
+            <i class="fas fa-info-circle"></i> 실습실 사용 예약을 신청하고 현황을 확인할 수 있습니다. 예약 데이터는 브라우저에 저장됩니다.
+          </div>
+
+          <!-- 예약 양식 -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
+            <div>
+              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">실습실 선택</label>
+              <select id="resRoomSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
+                <option value="">실습실를 선택하세요</option>
+                <option>컴퓨터실(1)</option>
+                <option>컴퓨터실(2)</option>
+                <option>컴퓨터실(3)</option>
+                <option>실습실(1)</option>
+                <option>실습실(2)</option>
+                <option>실습실(3)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">요일</label>
+              <select id="resDaySelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
+                <option value="">요일 선택</option>
+                <option>월요일</option><option>화요일</option><option>수요일</option><option>목요일</option><option>금요일</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">교시</label>
+              <select id="resPeriodSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
+                <option value="">교시 선택</option>
+                <option>1교시</option><option>2교시</option><option>3궐시</option><option>4궐시</option><option>5궐시</option><option>6궐시</option><option>7궐시</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">예약자 (선생님 성함)</label>
+              <input type="text" id="resTeacherName" placeholder="예: 홍길동" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;box-sizing:border-box;">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">사용 목적</label>
+              <input type="text" id="resPurpose" placeholder="예: 정보 수업, 코딩 실습" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;box-sizing:border-box;">
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button onclick="addReservation()" style="width:100%;padding:9px;background:var(--primary,#4f7ef8);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
+                <i class="fas fa-plus"></i> 예약 신청
+              </button>
+            </div>
+          </div>
+
+          <!-- 예약 현황 테이블 -->
+          <div style="font-size:14px;font-weight:800;color:var(--txt-dark);margin-bottom:10px;">현재 예약 현황</div>
+          <div id="reservationTableWrap" style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+              <thead>
+                <tr style="background:var(--primary,#4f7ef8);color:#fff;">
+                  <th style="padding:9px 10px;text-align:center;border-radius:6px 0 0 0;">실습실</th>
+                  <th style="padding:9px 10px;text-align:center;">요일</th>
+                  <th style="padding:9px 10px;text-align:center;">교시</th>
+                  <th style="padding:9px 10px;text-align:center;">예약자</th>
+                  <th style="padding:9px 10px;text-align:center;">사용 목적</th>
+                  <th style="padding:9px 10px;text-align:center;border-radius:0 6px 0 0;">취소</th>
+                </tr>
+              </thead>
+              <tbody id="reservationTableBody">
+                <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt-light);"><i class="fas fa-calendar"></i> 등록된 예약이 없습니다</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -499,6 +594,164 @@
   </main>
 </div>
 
+<!-- ════════ 새 탭 패널 ════════ -->
+<!-- 주의: 이 패널들은 .app-wrapper 밖에 위치하지만 tab-panel 클래스로 제어됨 -->
+<section id="gradeCalcTab" class="tab-panel" style="display:none;padding:16px;">
+  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-calculator" style="color:#1565c0;"></i> 추정분할계산기</h2>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">고교학점제 성취평가제 기반 추정 등급 및 분할점수 계산</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+    <!-- 성취도 추정 등급 계산 -->
+    <div class="card" style="padding:18px;">
+      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-chart-bar" style="color:#1565c0;"></i> 성취도 추정 등급 계산</div>
+      <div style="display:grid;gap:10px;">
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">전체 응시자 수</label><input type="number" id="calcTotalStudents" placeholder="예: 120" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> 명</span></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">내 점수 (원점수)</label><input type="number" id="calcMyScore" placeholder="예: 85" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> 점</span></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">과목 만점</label><input type="number" id="calcMaxScore" placeholder="예: 100" value="100" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> 점</span></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">A 비율 (%)</label><input type="number" id="calcRatioA" placeholder="예: 40" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> %</span></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">B 비율 (%)</label><input type="number" id="calcRatioB" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcGrade()"> <span style="font-size:11px;color:var(--txt-light,#aaa);"> %</span></div>
+      </div>
+      <div id="calcGradeResult" style="margin-top:14px;padding:14px;background:#f0f4ff;border-radius:10px;text-align:center;font-size:15px;font-weight:800;color:#1565c0;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">값을 입력하면 자동 계산됩니다</span></div>
+    </div>
+
+    <!-- 분할점수 계산 -->
+    <div class="card" style="padding:18px;">
+      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-cut" style="color:#1565c0;"></i> 분할점수 계산</div>
+      <div style="display:grid;gap:10px;">
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">과목 만점</label><input type="number" id="splitMaxScore" placeholder="예: 100" value="100" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">A 비율 (%)</label><input type="number" id="splitRatioA" placeholder="예: 40" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">B 비율 (%)</label><input type="number" id="splitRatioB" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
+        <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">C 비율 (%)</label><input type="number" id="splitRatioC" placeholder="예: 20" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcSplit()"></div>
+      </div>
+      <div id="calcSplitResult" style="margin-top:14px;padding:14px;background:#f0f4ff;border-radius:10px;text-align:center;font-size:14px;font-weight:800;color:#1565c0;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">비율을 입력하면 자동 계산됩니다</span></div>
+    </div>
+
+    <!-- 성취도 등급 구간표 -->
+    <div class="card" style="padding:18px;">
+      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-table" style="color:#1565c0;"></i> 성취도 등급 구간표</div>
+      <p style="font-size:11.5px;color:var(--txt-light,#aaa);margin-bottom:10px;">고교학점제 성취평가제 기준 (2025학년도 적용)</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+        <thead><tr style="background:#1565c0;color:#fff;"><th style="padding:8px;border-radius:6px 0 0 0;">성취도</th><th style="padding:8px;">원점수 구간</th><th style="padding:8px;border-radius:0 6px 0 0;">비고</th></tr></thead>
+        <tbody>
+          <tr style="background:#e3f2fd;"><td style="padding:8px;text-align:center;font-weight:800;color:#1565c0;">A</td><td style="padding:8px;text-align:center;">90점 이상</td><td style="padding:8px;font-size:11.5px;color:#1565c0;">매우 우수</td></tr>
+          <tr><td style="padding:8px;text-align:center;font-weight:800;color:#2e7d32;">B</td><td style="padding:8px;text-align:center;">80점 이상 ~ 90점 미만</td><td style="padding:8px;font-size:11.5px;color:#2e7d32;">우수</td></tr>
+          <tr style="background:#f9fbe7;"><td style="padding:8px;text-align:center;font-weight:800;color:#f57f17;">C</td><td style="padding:8px;text-align:center;">70점 이상 ~ 80점 미만</td><td style="padding:8px;font-size:11.5px;color:#f57f17;">보통</td></tr>
+          <tr><td style="padding:8px;text-align:center;font-weight:800;color:#e65100;">D</td><td style="padding:8px;text-align:center;">60점 이상 ~ 70점 미만</td><td style="padding:8px;font-size:11.5px;color:#e65100;">미흡</td></tr>
+          <tr style="background:#fce4ec;"><td style="padding:8px;text-align:center;font-weight:800;color:#c62828;">E</td><td style="padding:8px;text-align:center;">60점 미만</td><td style="padding:8px;font-size:11.5px;color:#c62828;">매우 미흡</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:11px;color:var(--txt-light,#aaa);margin-top:8px;">※ 학교별·과목별 분할점수는 다를 수 있습니다</p>
+    </div>
+
+    <!-- 수행평가 비율 계산 -->
+    <div class="card" style="padding:18px;">
+      <div style="font-size:14px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:14px;"><i class="fas fa-percent" style="color:#1565c0;"></i> 수행평가 비율 계산</div>
+      <p style="font-size:11.5px;color:var(--txt-light,#aaa);margin-bottom:12px;">지필+수행 합산 점수 및 성취도 추정</p>
+      <div style="display:grid;gap:10px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">지필 점수</label><input type="number" id="perfWritten" placeholder="예: 85" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
+          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">지필 비율(%)</label><input type="number" id="perfWrittenRatio" placeholder="예: 70" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">수행 점수</label><input type="number" id="perfPerform" placeholder="예: 90" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
+          <div><label style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);display:block;margin-bottom:3px;">수행 비율(%)</label><input type="number" id="perfPerformRatio" placeholder="예: 30" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:8px;font-size:13px;box-sizing:border-box;" oninput="calcPerf()"></div>
+        </div>
+      </div>
+      <div id="calcPerfResult" style="margin-top:14px;padding:14px;background:#f0f4ff;border-radius:10px;text-align:center;font-size:14px;font-weight:800;color:#1565c0;">—<br><span style="font-size:11px;font-weight:400;color:var(--txt-light,#aaa);">값을 입력하면 자동 계산됩니다</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="recordCheckTab" class="tab-panel" style="display:none;padding:16px;">
+  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-spell-check" style="color:#1565c0;"></i> 생기부 점검</h2>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">맞춤법·띄어쓰기·금지어·글자수 자동 점검</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">생기부 내용 입력</div>
+      <textarea id="recordInput" rows="10" placeholder="학생부 기재 내용을 입력하세요...
+
+예) 수업 시간에 적극적으로 참여하며 질문을 통해 개념을 심화하는 모습을 보임." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button onclick="checkRecord()" style="padding:8px 18px;background:#1565c0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-search"></i> 점검 시작</button>
+        <button onclick="document.getElementById('recordInput').value='';document.getElementById('recordResult').innerHTML='<div style=\'text-align:center;padding:30px;color:var(--txt-light,#aaa);\'>\uae30\ub85d\uc744 \uc785\ub825\ud558\uace0 \uc810\uac80\uc744 \uc2dc\uc791\ud574\uc8fc\uc138\uc694</div>';updateRecordCount()" style="padding:8px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:13px;cursor:pointer;">완전 삭제</button>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('recordInput').value)" style="padding:8px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:13px;cursor:pointer;">클립보드 복사</button>
+        <span id="recordCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자 / 0 bytes</span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">점검 결과</div>
+      <div id="recordResult" style="min-height:200px;padding:14px;background:#f8f9fa;border-radius:10px;font-size:13px;line-height:1.7;">
+        <div style="text-align:center;padding:30px;color:var(--txt-light,#aaa);">내용을 입력하고 점검을 시작해주세요</div>
+      </div>
+      <div style="margin-top:12px;">
+        <div style="font-size:13px;font-weight:700;color:var(--txt-dark,#2c3e50);margin-bottom:8px;">기재 금지 용어</div>
+        <div id="forbiddenList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="setechTab" class="tab-panel" style="display:none;padding:16px;">
+  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-pencil-alt" style="color:#1565c0;"></i> 교과 수행평가(세특)</h2>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">세부능력 및 특기사항 작성 보조 도구</p>
+  <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">교과 선택</div>
+      <div id="setechSubjectList" style="display:flex;flex-direction:column;gap:4px;"></div>
+    </div>
+    <div>
+      <div id="setechTitle" style="font-size:15px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:12px;"></div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">키워드 클릭 → 자동 삽입</div>
+        <div id="setechKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">문장 템플릿</div>
+        <div id="setechTemplates" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">세특 작성</div>
+      <textarea id="setechEditor" rows="8" placeholder="위 키워드나 템플릿을 클릭하거나 직접 작성하세요..." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button onclick="document.getElementById('setechEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">완전 삭제</button>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('setechEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
+        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('setechEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
+        <span id="setechCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="activityTab" class="tab-panel" style="display:none;padding:16px;">
+  <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-star" style="color:#1565c0;"></i> 창체 및 행특</h2>
+  <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">창의적 체험활동 및 행동특성·종합의견 작성 보조</p>
+  <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">영역 선택</div>
+      <div id="activityAreaList" style="display:flex;flex-direction:column;gap:4px;"></div>
+    </div>
+    <div>
+      <div id="activityTitle" style="font-size:15px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:12px;"></div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">키워드 클릭 → 자동 삽입</div>
+        <div id="activityKeywords" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">문장 템플릿</div>
+        <div id="activityTemplates" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">내용 작성</div>
+      <textarea id="activityEditor" rows="8" placeholder="위 키워드나 템플릿을 클릭하거나 직접 작성하세요..." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+        <button onclick="document.getElementById('activityEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">완전 삭제</button>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('activityEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
+        <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('activityEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
+        <span id="activityCount" style="font-size:12px;color:var(--txt-light,#aaa);margin-left:auto;">0자</span>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ════════ 새 탭 패널 끝 ════════ -->
+
 <!-- ══ 교체/대체 결과 모달 ══ -->
 <div class="modal-overlay" id="resultModal" onclick="if(event.target===this)closeModal()">
   <div class="modal result-modal">
@@ -529,6 +782,329 @@
     </div>
   </div>
 </div>
+
+<script>
+/* ─────────────────────────────────────────
+   새 탭 전환 확장 및 기능
+───────────────────────────────────────── */
+const NEW_TABS = ['gradeCalc','recordCheck','setech','activity'];
+
+// 실습실 서브탭 전환
+function switchLabSub(sub) {
+  document.querySelectorAll('[id^="labSubPanel-"]').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('[id^="labSubBtn-"]').forEach(b => {
+    b.style.background = 'var(--sky-pale,#eaf4ff)';
+    b.style.color = '#1565c0';
+    b.style.borderColor = 'var(--sky-mid,#90caf9)';
+  });
+  const panel = document.getElementById('labSubPanel-' + sub);
+  const btn = document.getElementById('labSubBtn-' + sub);
+  if (panel) panel.classList.add('active');
+  if (btn) {
+    btn.style.background = 'var(--primary,#4f7ef8)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--primary,#4f7ef8)';
+  }
+}
+
+// 새 탭 패널 표시/숨김 함수
+function showNewTab(tabId) {
+  // 모든 탭 패널 숨김
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => { if (p.style.display !== undefined) p.style.display = 'none'; });
+  // 새 탭 패널 표시
+  const panel = document.getElementById(tabId + 'Tab');
+  if (panel) { panel.style.display = 'block'; }
+  // 앱 래퍼 숨김
+  const wrapper = document.querySelector('.app-wrapper');
+  if (wrapper) wrapper.style.display = 'none';
+}
+
+function showMainWrapper() {
+  const wrapper = document.querySelector('.app-wrapper');
+  if (wrapper) wrapper.style.display = '';
+  NEW_TABS.forEach(t => {
+    const p = document.getElementById(t + 'Tab');
+    if (p) p.style.display = 'none';
+  });
+}
+
+// switchTab 후킹 - app.js 로드 후 실행
+window.addEventListener('load', function() {
+  const origSwitchTab = window.switchTab;
+  window.switchTab = function(tabId) {
+    if (NEW_TABS.includes(tabId)) {
+      showNewTab(tabId);
+      // 탭 버튼 활성화
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabId));
+    } else {
+      showMainWrapper();
+      if (typeof origSwitchTab === 'function') origSwitchTab(tabId);
+    }
+  };
+
+  // 기재 금지 용어 목록 초기화
+  const FORBIDDEN = [
+    '우수한','뛰어난','구체적으로','적극적으로','매우','다양한','다방면적으로',
+    '매우 우수','전력을 다해','노력하는','열심히','성실한','찌라한','마른',
+    '마음이 따뜻한','인성이 바른','선함','착한','시스템적으로',
+    '열정적으로','헌신적으로','잠재력','미래가 기대되는'
+  ];
+  const fl = document.getElementById('forbiddenList');
+  if (fl) {
+    fl.innerHTML = FORBIDDEN.map(w =>
+      `<span style="display:inline-block;padding:3px 10px;background:#fce4ec;color:#c62828;border-radius:12px;font-size:12px;font-weight:600;">${w}</span>`
+    ).join('');
+  }
+
+  // 세특 교과 목록 초기화
+  const SUBJECTS = [
+    {name:'정보',icon:'💻',keywords:['알고리즘','데이터 분석','코딩','파이썬','인공지능','머신러닝','데이터베이스','네트워크','정보보안','프로그래밍'],
+      templates:['알고리즘의 원리를 이해하고 실생활 문제에 적용하는 능력을 보임.','데이터 분석 도구를 활용하여 문제를 해결하는 과정에서 논리적 사고력을 발휘함.','코딩 실습을 통해 문제 해결 능력과 창의적 사고력을 기름.']},
+    {name:'국어',icon:'📖',keywords:['의사소통','독해력','작문','문학','말하기','듣기','표현','문법'],
+      templates:['다양한 문학 작품을 읽고 자신의 생각을 논리적으로 표현하는 능력을 기름.','토론 수업에서 적극적으로 의견을 제시하고 다른 학생의 의견을 존중하는 태도를 보임.']},
+    {name:'수학',icon:'📐',keywords:['논리적 사고','문제 해결','수학적 사고','연산','증명','통계'],
+      templates:['수학적 개념을 정확하게 이해하고 다양한 유형의 문제를 스스로 해결하는 능력을 보임.']},
+    {name:'영어',icon:'🌍',keywords:['독해','작문','말하기','듣기','어휘','문법','회화'],
+      templates:['영어 지문을 읽고 핵심 내용을 파악하는 독해력이 우수하며 영어로 자신의 생각을 표현하는 능력을 기름.']},
+    {name:'과학',icon:'🔬',keywords:['관찰','실험','탐구','가설','결론','자연현상'],
+      templates:['과학적 탐구 과정에서 가설을 세우고 실험을 통해 검증하는 연구 역량을 기름.']},
+    {name:'사회',icon:'🌏',keywords:['사회현상','시사이슈','시민의식','통합적 사고','지역사회'],
+      templates:['사회 \ud604상을 다양한 관점에서 분석하고 자신의 의견을 논리적으로 제시하는 능력을 보임.']},
+    {name:'역사',icon:'📜',keywords:['역사적 사고','시대적 배경','인물','사건','역사의식'],
+      templates:['역사적 사건을 다양한 시각에서 분석하는 역사적 사고력을 기름.']},
+    {name:'체육',icon:'⚽',keywords:['체력','팀워크','스포츠맨십','건강','안전'],
+      templates:['체육 활동에 적극적으로 참여하며 팀워크와 스포츠맨십을 발휘하는 모습을 보임.']},
+    {name:'음악',icon:'🎵',keywords:['음악적 표현','연주','음악 감상','리듬','선율'],
+      templates:['음악적 개념을 이해하고 연주를 통해 음악적 표현력을 기름.']},
+    {name:'미술',icon:'🎨',keywords:['조형','색치','디자인','예술적 표현','시각적'],
+      templates:['예술적 감수성을 바탕으로 다양한 재료와 기법으로 작품을 완성하는 능력을 보임.']},
+    {name:'기술·가정',icon:'🔧',keywords:['설계','제작','안전','환경','실습'],
+      templates:['기술적 원리를 이해하고 실습을 통해 실제 문제를 해결하는 능력을 기름.']},
+    {name:'진로',icon:'🎯',keywords:['진로 탐색','직업 조사','자기이해','맹점관리','진로 설계'],
+      templates:['진로 탐색 활동에 적극적으로 참여하며 자신의 장단점을 파악하는 자기이해 능력을 기름.']}
+  ];
+
+  const subjList = document.getElementById('setechSubjectList');
+  if (subjList) {
+    SUBJECTS.forEach((s, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = s.icon + ' ' + s.name;
+      btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-lt,#e0e0e0);background:#fff;font-size:12.5px;cursor:pointer;text-align:left;';
+      btn.onclick = () => {
+        document.querySelectorAll('#setechSubjectList button').forEach(b => b.style.background = '#fff');
+        btn.style.background = '#e3f2fd';
+        document.getElementById('setechTitle').textContent = s.icon + ' ' + s.name + ' 세특 작성';
+        const kw = document.getElementById('setechKeywords');
+        kw.innerHTML = s.keywords.map(k => `<span onclick="insertText('setechEditor','${k}')" style="display:inline-block;padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:12px;font-size:12px;cursor:pointer;font-weight:600;">${k}</span>`).join('');
+        const tpl = document.getElementById('setechTemplates');
+        tpl.innerHTML = s.templates.map(t => `<div onclick="appendText('setechEditor','${t}')" style="padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12.5px;cursor:pointer;border:1px solid var(--border-lt,#e0e0e0);line-height:1.6;">${t}</div>`).join('');
+      };
+      subjList.appendChild(btn);
+      if (i === 0) btn.click();
+    });
+  }
+
+  // 세특 에디터 글자수 카운터
+  const setechEd = document.getElementById('setechEditor');
+  if (setechEd) setechEd.addEventListener('input', () => {
+    const v = setechEd.value;
+    document.getElementById('setechCount').textContent = v.length + '자 / ' + new TextEncoder().encode(v).length + ' bytes';
+  });
+
+  // 창체 영역 목록
+  const ACTIVITIES = [
+    {name:'자율활동',icon:'🏫',keywords:['학급회','학교행사','자치활동','지도력','공동체 의식'],
+      templates:['학급 자치 활동에서 리더십을 발휘하며 구성원의 의견을 조율하는 능력을 보임.','학교 행사에 적극적으로 참여하며 공동체 의식과 협력을 실천하는 모습을 보임.']},
+    {name:'동아리활동',icon:'🎭',keywords:['동아리 활동','전문성','협동','재능 계발','지속적 노력'],
+      templates:['동아리 활동에 지속적으로 참여하며 전문성을 함양하고 협동을 실천하는 자세를 보임.']},
+    {name:'진로활동',icon:'🎯',keywords:['진로 탐색','직업 체험','자기이해','맹점관리','진로 설계'],
+      templates:['진로 탐색 활동에 적극적으로 참여하며 자신의 장단점을 파악하는 자기이해 능력을 기름.']},
+    {name:'봉사활동',icon:'🤝',keywords:['나눈의 실천','봉사정신','지역사회 기여','자원봉사'],
+      templates:['자원봉사 활동에 지속적으로 참여하며 나눈의 가치를 실천하고 지역사회에 기여하는 자세를 보임.']},
+    {name:'행동특성·종합의견',icon:'📋',keywords:['인성적 성장','적극적인 태도','대인관계','자기관리','송의'],
+      templates:['학교생활에서 성실하고 책임감 있는 태도를 유지하며 주변 사람들에게 깍정한 인상을 주는 학생임.']}
+  ];
+
+  const actList = document.getElementById('activityAreaList');
+  if (actList) {
+    ACTIVITIES.forEach((a, i) => {
+      const btn = document.createElement('button');
+      btn.textContent = a.icon + ' ' + a.name;
+      btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-lt,#e0e0e0);background:#fff;font-size:12.5px;cursor:pointer;text-align:left;';
+      btn.onclick = () => {
+        document.querySelectorAll('#activityAreaList button').forEach(b => b.style.background = '#fff');
+        btn.style.background = '#e3f2fd';
+        document.getElementById('activityTitle').textContent = a.icon + ' ' + a.name + ' 작성';
+        const kw = document.getElementById('activityKeywords');
+        kw.innerHTML = a.keywords.map(k => `<span onclick="insertText('activityEditor','${k}')" style="display:inline-block;padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:12px;font-size:12px;cursor:pointer;font-weight:600;">${k}</span>`).join('');
+        const tpl = document.getElementById('activityTemplates');
+        tpl.innerHTML = a.templates.map(t => `<div onclick="appendText('activityEditor','${t}')" style="padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12.5px;cursor:pointer;border:1px solid var(--border-lt,#e0e0e0);line-height:1.6;">${t}</div>`).join('');
+      };
+      actList.appendChild(btn);
+      if (i === 0) btn.click();
+    });
+  }
+
+  // 활동 에디터 글자수 카운터
+  const actEd = document.getElementById('activityEditor');
+  if (actEd) actEd.addEventListener('input', () => {
+    const v = actEd.value;
+    document.getElementById('activityCount').textContent = v.length + '자 / ' + new TextEncoder().encode(v).length + ' bytes';
+  });
+
+  // 생기부 글자수 카운터
+  const recIn = document.getElementById('recordInput');
+  if (recIn) recIn.addEventListener('input', updateRecordCount);
+});
+
+// 텍스트 삽입 함수
+function insertText(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const s = el.selectionStart, e = el.selectionEnd;
+  el.value = el.value.slice(0,s) + text + el.value.slice(e);
+  el.selectionStart = el.selectionEnd = s + text.length;
+  el.dispatchEvent(new Event('input'));
+}
+function appendText(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = (el.value ? el.value + ' ' : '') + text;
+  el.dispatchEvent(new Event('input'));
+}
+
+// 글자수 카운터
+function updateRecordCount() {
+  const el = document.getElementById('recordInput');
+  const cnt = document.getElementById('recordCount');
+  if (!el || !cnt) return;
+  const v = el.value;
+  cnt.textContent = v.length + '자 / ' + new TextEncoder().encode(v).length + ' bytes';
+}
+
+// 생기부 점검 함수
+function checkRecord() {
+  const text = document.getElementById('recordInput').value.trim();
+  const result = document.getElementById('recordResult');
+  if (!text) { result.innerHTML = '<div style="color:#e53935;padding:10px;">내용을 입력해주세요.</div>'; return; }
+  const FORBIDDEN_WORDS = ['우수한','뛰어난','구체적으로','적극적으로','매우 우수','매우','다양한','다방면적으로','열심히','성실한','찌라한','마른','마음이 따뜻한','인성이 바른','선함','착한','시스템적으로','열정적으로','헌신적으로','잠재력','미래가 기대되는'];
+  const bytes = new TextEncoder().encode(text).length;
+  const chars = text.length;
+  let html = `<div style="margin-bottom:10px;padding:10px;background:#e8f5e9;border-radius:8px;">
+    <strong>📊 글자수:</strong> ${chars}자 / ${bytes} bytes
+    ${chars > 500 ? '<span style="color:#e53935;font-weight:700;"> (⚠️ 500자 초과)</span>' : '<span style="color:#2e7d32;"> (✅ 적절)</span>'}
+  </div>`;
+  const found = FORBIDDEN_WORDS.filter(w => text.includes(w));
+  if (found.length > 0) {
+    html += `<div style="padding:10px;background:#fce4ec;border-radius:8px;margin-bottom:8px;">
+      <strong style="color:#c62828;">⛔ 기재 금지 용어 발견:</strong><br>
+      ${found.map(w => `<span style="display:inline-block;margin:3px;padding:3px 10px;background:#e53935;color:#fff;border-radius:10px;font-size:12px;">${w}</span>`).join('')}
+    </div>`;
+  } else {
+    html += '<div style="padding:10px;background:#e8f5e9;border-radius:8px;margin-bottom:8px;"><strong style="color:#2e7d32;">✅ 금지 용어 없음</strong></div>';
+  }
+  // 문장 수 확인
+  const sentences = text.split(/[.!?]/).filter(s => s.trim().length > 0);
+  html += `<div style="padding:10px;background:#f3e5f5;border-radius:8px;margin-bottom:8px;">
+    <strong>📝 문장 수:</strong> ${sentences.length}문
+  </div>`;
+  html += '<div style="padding:10px;background:#fff8e1;border-radius:8px;font-size:12px;color:#7a5c00;"><strong>💡 안내:</strong> 맞춤법·띄어쓰기 정밀 점검은 한국어 맞춤법 검사기(한스펙 등)를 활용하세요.</div>';
+  result.innerHTML = html;
+}
+
+// 추정분할계산기 함수
+function calcGrade() {
+  const total = parseFloat(document.getElementById('calcTotalStudents').value);
+  const score = parseFloat(document.getElementById('calcMyScore').value);
+  const max = parseFloat(document.getElementById('calcMaxScore').value) || 100;
+  const rA = parseFloat(document.getElementById('calcRatioA').value);
+  const rB = parseFloat(document.getElementById('calcRatioB').value);
+  const el = document.getElementById('calcGradeResult');
+  if (!total || !score || !rA || !rB) { el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">값을 입력하면 자동 계산됩니다</span>'; return; }
+  const pct = (score / max) * 100;
+  let grade, color;
+  if (pct >= 90) { grade = 'A'; color = '#1565c0'; }
+  else if (pct >= 80) { grade = 'B'; color = '#2e7d32'; }
+  else if (pct >= 70) { grade = 'C'; color = '#f57f17'; }
+  else if (pct >= 60) { grade = 'D'; color = '#e65100'; }
+  else { grade = 'E'; color = '#c62828'; }
+  el.innerHTML = `<span style="font-size:28px;color:${color};">${grade}</span><br><span style="font-size:12px;font-weight:400;color:#666;">원점수 ${score}점 (${pct.toFixed(1)}%)</span>`;
+}
+function calcSplit() {
+  const max = parseFloat(document.getElementById('splitMaxScore').value) || 100;
+  const rA = parseFloat(document.getElementById('splitRatioA').value);
+  const rB = parseFloat(document.getElementById('splitRatioB').value);
+  const rC = parseFloat(document.getElementById('splitRatioC').value);
+  const el = document.getElementById('calcSplitResult');
+  if (!rA || !rB || !rC) { el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">비율을 입력하면 자동 계산됩니다</span>'; return; }
+  const cutA = (max * (100 - rA) / 100).toFixed(1);
+  const cutB = (max * (100 - rA - rB) / 100).toFixed(1);
+  const cutC = (max * (100 - rA - rB - rC) / 100).toFixed(1);
+  el.innerHTML = `A 분할: <strong>${cutA}점</strong> │ B 분할: <strong>${cutB}점</strong> │ C 분할: <strong>${cutC}점</strong><br><span style="font-size:11px;font-weight:400;color:#666;">만점 ${max}점 기준</span>`;
+}
+function calcPerf() {
+  const w = parseFloat(document.getElementById('perfWritten').value);
+  const wr = parseFloat(document.getElementById('perfWrittenRatio').value);
+  const p = parseFloat(document.getElementById('perfPerform').value);
+  const pr = parseFloat(document.getElementById('perfPerformRatio').value);
+  const el = document.getElementById('calcPerfResult');
+  if (!w || !wr || !p || !pr) { el.innerHTML = '—<br><span style="font-size:11px;font-weight:400;color:#aaa;">값을 입력하면 자동 계산됩니다</span>'; return; }
+  const total = (w * wr / 100) + (p * pr / 100);
+  let grade, color;
+  if (total >= 90) { grade = 'A'; color = '#1565c0'; }
+  else if (total >= 80) { grade = 'B'; color = '#2e7d32'; }
+  else if (total >= 70) { grade = 'C'; color = '#f57f17'; }
+  else if (total >= 60) { grade = 'D'; color = '#e65100'; }
+  else { grade = 'E'; color = '#c62828'; }
+  el.innerHTML = `합산 원점수: <strong>${total.toFixed(1)}점</strong> → 성취도 <span style="color:${color};font-size:20px;">${grade}</span>`;
+}
+
+// 예약 기능
+let reservations = JSON.parse(localStorage.getItem('labReservations') || '[]');
+function addReservation() {
+  const room = document.getElementById('resRoomSelect').value;
+  const day = document.getElementById('resDaySelect').value;
+  const period = document.getElementById('resPeriodSelect').value;
+  const teacher = document.getElementById('resTeacherName').value.trim();
+  const purpose = document.getElementById('resPurpose').value.trim();
+  if (!room || !day || !period || !teacher) { alert('실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return; }
+  // 중복 확인
+  if (reservations.find(r => r.room===room && r.day===day && r.period===period)) {
+    alert('해당 시간에 이미 예약이 있습니다.');
+    return;
+  }
+  reservations.push({room,day,period,teacher,purpose:purpose||'미입력'});
+  localStorage.setItem('labReservations', JSON.stringify(reservations));
+  renderReservations();
+  document.getElementById('resTeacherName').value = '';
+  document.getElementById('resPurpose').value = '';
+}
+function renderReservations() {
+  const tbody = document.getElementById('reservationTableBody');
+  if (!tbody) return;
+  if (reservations.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#aaa;"><i class="fas fa-calendar"></i> 등록된 예약이 없습니다</td></tr>';
+    return;
+  }
+  tbody.innerHTML = reservations.map((r,i) => `
+    <tr style="border-bottom:1px solid #eee;">
+      <td style="padding:8px 10px;text-align:center;font-weight:600;">${r.room}</td>
+      <td style="padding:8px 10px;text-align:center;">${r.day}</td>
+      <td style="padding:8px 10px;text-align:center;">${r.period}</td>
+      <td style="padding:8px 10px;text-align:center;">${r.teacher}</td>
+      <td style="padding:8px 10px;">${r.purpose}</td>
+      <td style="padding:8px 10px;text-align:center;"><button onclick="cancelReservation(${i})" style="padding:4px 10px;background:#fce4ec;color:#c62828;border:none;border-radius:6px;font-size:12px;cursor:pointer;">취소</button></td>
+    </tr>
+  `).join('');
+}
+function cancelReservation(i) {
+  if (!confirm('예약을 취소하시겠습니까?')) return;
+  reservations.splice(i, 1);
+  localStorage.setItem('labReservations', JSON.stringify(reservations));
+  renderReservations();
+}
+</script>
 
 <!-- Firebase SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
