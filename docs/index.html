@@ -699,6 +699,14 @@
           <div>⛔ 연구보고서(소논문) 관련 사항</div>
           <div>⛔ 정치활동 참여 관련 사항</div>
           <div>⛔ 야간자율학습 관련 내용 기반 교내상</div>
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ffe082;">🏢 <strong>기관명·상호명 기재 금지</strong> (기재요령 타항)</div>
+          <div>⛔ 특정 기업명: 삼성, LG, 네이버, 카카오, 구글, 유튜브 등</div>
+          <div>⛔ 방송사·기관명: EBS, KBS, 통계청, 교육부 등</div>
+          <div>⛔ 국제기구명: UN, WHO, UNESCO, OECD 등 → '국제 기구'로 대체</div>
+          <div>⛔ 특정 대학명: 서울대, 연세대, KAIST 등</div>
+          <div style="margin-top:6px;padding-top:6px;border-top:1px solid #ffe082;">🏆 <strong>대회명·행사명 기재 주의</strong></div>
+          <div>⛔ '대회' 명칭 자체를 세특/창체에 기재 불가 (수상경력란에만 가능)</div>
+          <div>⛔ 체육대회, 과학축제, 경진대회, 학교축제 등 행사명 기재 불가</div>
         </div>
       </div>
     </div>
@@ -1336,6 +1344,19 @@ const FORBIDDEN_WORDS = [
   '소논문','연구보고서','교외상','표창장','감사장','공로상',
   'K-MOOC','MOOC','KOCW','온라인 강좌','방과후학교','대회 수상','대회 성적',
   '대회 참가','교외 대회','수상 실적','교외 기관',
+  // 기관명·상호명 기재 금지 (기재요령 타항)
+  '삼성','LG','현대','SK','카카오','네이버','유튜브','구글','애플','마이크로소프트',
+  'EBS','KBS','MBC','SBS','JTBC',
+  'UN','WHO','UNESCO','UNICEF','OECD','IMF','EU','NATO',
+  '통계청','교육부','여성가족부','보건복지부','환경부',
+  '워크넷','커리어넷','NEIS',
+  // 대학명 기재 금지
+  '서울대','연세대','고려대','서강대','성균관대','한양대','중앙대','경희대','이화여대','숙명여대',
+  '카이스트','포스텍','KAIST','POSTECH',
+  // 대회명·행사명 기재 금지 (수상경력란 외 기재 불가)
+  '체육대회','체육한마당','체육 한마당','과학축제','과학 축제',
+  '경진대회','발표대회','토론대회','올림피아드','해커톤','공모전',
+  '학교 축제','학교축제','학교 행사','학교행사',
   // 매우 주의해야 할 표현
   '매우','구체적으로','다양한','미래의 인재','무한한 가능성'
 ];
@@ -1382,13 +1403,26 @@ function checkRecord() {
   if (found.length > 0) {
     score -= found.length * 5;
     // 특이 사항 구분
-    const isForbid = found.filter(w => ['K-MOOC','MOOC','KOCW','소논문','연구보고서','교외상','표창장','감사장','공로상','온라인 강좌','방과후학교','대회 수상','대회 성적','대회 참가','교외 대회','수상 실적','교외 기관','잠재력','마음이 따뜻한'].includes(w));
+    const STRICT_FORBID = ['K-MOOC','MOOC','KOCW','소논문','연구보고서','교외상','표창장','감사장','공로상','온라인 강좌','방과후학교','대회 수상','대회 성적','대회 참가','교외 대회','수상 실적','교외 기관','잠재력','마음이 따뜻한',
+      '삼성','LG','현대','SK','카카오','네이버','유튜브','구글','애플','마이크로소프트','EBS','KBS','MBC','SBS','JTBC',
+      'UN','WHO','UNESCO','UNICEF','OECD','IMF','EU','NATO','통계청','교육부','여성가족부','보건복지부','환경부','워크넷','커리어넷','NEIS',
+      '서울대','연세대','고려대','서강대','성균관대','한양대','중앙대','경희대','이화여대','숙명여대','카이스트','포스텍','KAIST','POSTECH',
+      '체육대회','체육한마당','체육 한마당','과학축제','과학 축제','경진대회','발표대회','토론대회','올림피아드','해커톤','공모전','학교 축제','학교축제','학교 행사','학교행사'];
+    const isForbid = found.filter(w => STRICT_FORBID.includes(w));
     const isAbstract = found.filter(w => !isForbid.includes(w));
+    // 기관명/상호명 카테고리 분류
+    const INST_WORDS = ['삼성','LG','현대','SK','카카오','네이버','유튜브','구글','애플','마이크로소프트','EBS','KBS','MBC','SBS','JTBC','UN','WHO','UNESCO','UNICEF','OECD','IMF','EU','NATO','통계청','교육부','여성가족부','보건복지부','환경부','워크넷','커리어넷','NEIS','서울대','연세대','고려대','서강대','성균관대','한양대','중앙대','경희대','이화여대','숙명여대','카이스트','포스텍','KAIST','POSTECH'];
+    const EVENT_WORDS = ['체육대회','체육한마당','체육 한마당','과학축제','과학 축제','경진대회','발표대회','토론대회','올림피아드','해커톤','공모전','학교 축제','학교축제','학교 행사','학교행사'];
+    const instFound = isForbid.filter(w => INST_WORDS.includes(w));
+    const eventFound = isForbid.filter(w => EVENT_WORDS.includes(w));
+    const otherForbid = isForbid.filter(w => !INST_WORDS.includes(w) && !EVENT_WORDS.includes(w));
     if (isForbid.length > 0) {
       html += `<div style="padding:12px;background:#fce4ec;border-radius:8px;margin-bottom:8px;border-left:4px solid #c62828;">
         <div style="font-weight:700;color:#c62828;margin-bottom:6px;">⛔ 기재 금지 용어 발견 (${isForbid.length}개)</div>
-        <div>${isForbid.map(w => `<span style="display:inline-block;margin:3px;padding:4px 10px;background:#e53935;color:#fff;border-radius:10px;font-size:12px;font-weight:700;">${w}</span>`).join('')}</div>
-        <div style="margin-top:6px;font-size:11.5px;color:#c62828;">2026 기재요령에 따라 반드시 삭제하세요.</div>
+        ${otherForbid.length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11.5px;color:#b71c1c;font-weight:700;">📌 기재 금지 키워드:</span><br>${otherForbid.map(w => `<span style="display:inline-block;margin:3px;padding:4px 10px;background:#e53935;color:#fff;border-radius:10px;font-size:12px;font-weight:700;">${w}</span>`).join('')}</div>` : ''}
+        ${instFound.length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11.5px;color:#b71c1c;font-weight:700;">🏢 기관명·상호명 (일반 표현으로 대체 필요):</span><br>${instFound.map(w => `<span style="display:inline-block;margin:3px;padding:4px 10px;background:#c62828;color:#fff;border-radius:10px;font-size:12px;font-weight:700;">${w}</span>`).join('')}<br><span style="font-size:11px;color:#b71c1c;">예: UN → 국제 기구, 네이버 → 검색 포털, 삼성 → 대기업</span></div>` : ''}
+        ${eventFound.length > 0 ? `<div style="margin-bottom:6px;"><span style="font-size:11.5px;color:#b71c1c;font-weight:700;">🏆 대회명·행사명 (수상경력란 외 기재 불가):</span><br>${eventFound.map(w => `<span style="display:inline-block;margin:3px;padding:4px 10px;background:#ad1457;color:#fff;border-radius:10px;font-size:12px;font-weight:700;">${w}</span>`).join('')}<br><span style="font-size:11px;color:#b71c1c;">대회명은 수상경력란에만 입력 가능, 세특·창체에는 활동 내용만 기술</span></div>` : ''}
+        <div style="margin-top:6px;font-size:11.5px;color:#c62828;">2026 기재요령에 따라 반드시 삭제하거나 일반 표현으로 교체하세요.</div>
       </div>`;
     }
     if (isAbstract.length > 0) {
