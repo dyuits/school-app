@@ -598,33 +598,6 @@
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-calculator" style="color:#1565c0;"></i> 추정분할계산기</h2>
   <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:14px;">2026학년도 고교학점제 성취평가제 · 추정분할점수 산출 보조 도구</p>
 
-  <!-- ① 추정분할점수 개념 설명 카드 -->
-  <div class="card" style="padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1.5px solid #90caf9;">
-    <div style="font-size:14px;font-weight:800;color:#1565c0;margin-bottom:10px;"><i class="fas fa-info-circle"></i> 추정분할점수란?</div>
-    <p style="font-size:12.5px;color:#37474f;line-height:1.7;margin-bottom:10px;"><strong>추정분할점수</strong>는 성취도(A~E)를 나누는 기준점수를 단순히 90/80/70/60/40점으로 고정하지 않고, 실제 평가 문항의 <strong>난이도·구성</strong>과 각 성취수준 <strong>최소 능력자(MCP)</strong>의 수행 특성을 반영하여 적절한 분할점수를 추정하는 방식입니다.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #bbdefb;">
-        <div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:6px;"><i class="fas fa-lock"></i> 고정분할점수</div>
-        <div style="font-size:11.5px;color:#546e7a;line-height:1.6;">기준 성취율을 원점수와 1:1 대응<br>A≥90, B≥80, C≥70, D≥60, E&lt;60<br><span style="color:#e53935;">문항 난이도 미반영</span></div>
-      </div>
-      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #ce93d8;">
-        <div style="font-size:12px;font-weight:700;color:#6a1b9a;margin-bottom:6px;"><i class="fas fa-sliders-h"></i> 추정분할점수</div>
-        <div style="font-size:11.5px;color:#546e7a;line-height:1.6;">문항 난이도·구성 반영<br>최소 능력자 예상 정답률 기반 산출<br><span style="color:#2e7d32;">교과협의 → 나이스 입력</span></div>
-      </div>
-    </div>
-    <div style="margin-top:12px;padding:10px;background:#fff;border-radius:8px;border:1px solid #c8e6c9;">
-      <div style="font-size:12px;font-weight:700;color:#2e7d32;margin-bottom:6px;"><i class="fas fa-key"></i> 기준 성취율 (MCP 기준)</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <span style="padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:800;">A 90%</span>
-        <span style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border-radius:6px;font-size:12px;font-weight:800;">B 80%</span>
-        <span style="padding:4px 10px;background:#fff9c4;color:#f57f17;border-radius:6px;font-size:12px;font-weight:800;">C 70%</span>
-        <span style="padding:4px 10px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:800;">D 60%</span>
-        <span style="padding:4px 10px;background:#fce4ec;color:#c62828;border-radius:6px;font-size:12px;font-weight:800;">E 40%</span>
-      </div>
-      <div style="font-size:11px;color:#888;margin-top:6px;">※ 최소 능력자(MCP): 해당 성취수준에 가까스로 도달한 경계선 학생</div>
-    </div>
-  </div>
-
   <!-- ② 계산 모드 탭 -->
   <div style="display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e0e0e0;">
     <button id="estTabBtn1" onclick="switchEstTab(1)" style="padding:9px 20px;font-size:13px;font-weight:700;border:none;border-radius:8px 8px 0 0;cursor:pointer;background:#1565c0;color:#fff;margin-right:4px;"><i class="fas fa-file-alt"></i> 정기시험</button>
@@ -1224,6 +1197,33 @@
         </div>
       </div>
       </div>
+
+  <!-- ① 추정분할점수 개념 설명 카드 -->
+  <div class="card" style="padding:18px;margin-bottom:16px;background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1.5px solid #90caf9;">
+    <div style="font-size:14px;font-weight:800;color:#1565c0;margin-bottom:10px;"><i class="fas fa-info-circle"></i> 추정분할점수란?</div>
+    <p style="font-size:12.5px;color:#37474f;line-height:1.7;margin-bottom:10px;"><strong>추정분할점수</strong>는 성취도(A~E)를 나누는 기준점수를 단순히 90/80/70/60/40점으로 고정하지 않고, 실제 평가 문항의 <strong>난이도·구성</strong>과 각 성취수준 <strong>최소 능력자(MCP)</strong>의 수행 특성을 반영하여 적절한 분할점수를 추정하는 방식입니다.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #bbdefb;">
+        <div style="font-size:12px;font-weight:700;color:#1565c0;margin-bottom:6px;"><i class="fas fa-lock"></i> 고정분할점수</div>
+        <div style="font-size:11.5px;color:#546e7a;line-height:1.6;">기준 성취율을 원점수와 1:1 대응<br>A≥90, B≥80, C≥70, D≥60, E&lt;60<br><span style="color:#e53935;">문항 난이도 미반영</span></div>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:10px;border:1px solid #ce93d8;">
+        <div style="font-size:12px;font-weight:700;color:#6a1b9a;margin-bottom:6px;"><i class="fas fa-sliders-h"></i> 추정분할점수</div>
+        <div style="font-size:11.5px;color:#546e7a;line-height:1.6;">문항 난이도·구성 반영<br>최소 능력자 예상 정답률 기반 산출<br><span style="color:#2e7d32;">교과협의 → 나이스 입력</span></div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px;background:#fff;border-radius:8px;border:1px solid #c8e6c9;">
+      <div style="font-size:12px;font-weight:700;color:#2e7d32;margin-bottom:6px;"><i class="fas fa-key"></i> 기준 성취율 (MCP 기준)</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <span style="padding:4px 10px;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:12px;font-weight:800;">A 90%</span>
+        <span style="padding:4px 10px;background:#e8f5e9;color:#2e7d32;border-radius:6px;font-size:12px;font-weight:800;">B 80%</span>
+        <span style="padding:4px 10px;background:#fff9c4;color:#f57f17;border-radius:6px;font-size:12px;font-weight:800;">C 70%</span>
+        <span style="padding:4px 10px;background:#fff3e0;color:#e65100;border-radius:6px;font-size:12px;font-weight:800;">D 60%</span>
+        <span style="padding:4px 10px;background:#fce4ec;color:#c62828;border-radius:6px;font-size:12px;font-weight:800;">E 40%</span>
+      </div>
+      <div style="font-size:11px;color:#888;margin-top:6px;">※ 최소 능력자(MCP): 해당 성취수준에 가까스로 도달한 경계선 학생</div>
+    </div>
+  </div>
 </section>
 
 <section id="recordCheckTab" class="tab-panel" style="display:none;padding:16px;">
