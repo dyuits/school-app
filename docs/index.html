@@ -1288,6 +1288,7 @@
         </label>
         <div id="setechExcelFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
         <div id="setechExcelPreview" style="margin-top:5px;font-size:10.5px;color:#555;background:#e3f2fd;border-radius:6px;padding:5px 7px;display:none;"></div>
+        <textarea id="setechExcelText" rows="2" placeholder="또는 슈퍼스쿨 활동 데이터 직접 붙여넣기" oninput="window._setechExcelText=this.value" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #90caf9;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
       </div>
     </div>
   </div>
@@ -1303,6 +1304,11 @@
         <button class="setech-grade-btn" data-val="고1" onclick="selectSetechBtn(this,'grade')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고1</button>
         <button class="setech-grade-btn" data-val="고2" onclick="selectSetechBtn(this,'grade')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고2</button>
         <button class="setech-grade-btn" data-val="고3" onclick="selectSetechBtn(this,'grade')" style="padding:6px 13px;border-radius:7px;border:1.5px solid #c5cae9;background:#fff;font-size:12px;cursor:pointer;font-weight:600;">고3</button>
+      </div>
+      <div style="font-size:9.5px;color:#999;margin-top:4px;line-height:1.5;white-space:nowrap;">
+        🟡 고1: 기초 개념 이해, 성실한 참여<br>
+        🟠 고2: 교과-실무 연결, 융합적 사고<br>
+        🔴 고3: 주도성, 전문성, 심화 탐구
       </div>
     </div>
     <div>
@@ -2762,8 +2768,10 @@ async function handleSetechExcel(input) {
           const csv = XLSX.utils.sheet_to_csv(ws, { blankrows: false });
           if (csv.trim()) allText += `[${sheetName}]\n${csv}\n\n`;
         });
-        // 엑셀 내용을 활동 텍스트에 저장
+        // 엑셀 내용을 활동 텍스트에 저장 (붙여넣기 칸에도 반영해 확인·수정 가능하게)
         window._setechExcelText = allText.trim();
+        const excelTextarea = document.getElementById('setechExcelText');
+        if (excelTextarea) excelTextarea.value = allText.trim();
         // 미리보기: 첫 5행만
         const preview = allText.split('\n').slice(0,6).join('\n');
         previewEl.textContent = '✅ ' + file.name + ' 분석 완료 (' + wb.SheetNames.length + '시트)\n' + preview + (allText.split('\n').length > 6 ? '\n...' : '');
@@ -3624,9 +3632,11 @@ function clearSetechAllForm() {
   const planText = document.getElementById('setechPlanText');
   const evalText = document.getElementById('setechEvalText');
   const actText = document.getElementById('setechActivityText');
+  const excelText = document.getElementById('setechExcelText');
   if (planText) planText.value = '';
   if (evalText) evalText.value = '';
   if (actText) actText.value = '';
+  if (excelText) excelText.value = '';
 }
 
 // ── 기존 세특 보완 함수 (하단 에디터용) ──
