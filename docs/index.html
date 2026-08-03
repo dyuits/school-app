@@ -3003,9 +3003,9 @@ ${teacherComment}
       }
     }
     // [안 1] / [안 2] 파싱
-    const plan1Match = content.match(/\[안\s*1\][^\[]*([\s\S]*?)(?=\[안\s*2\]|$)/);
-    const plan2Match = content.match(/\[안\s*2\][^\[]*([\s\S]*)/);
-    const plan1 = plan1Match ? plan1Match[1].trim() : content;
+    const plan1Match = content.match(/\[안\s*1\][^\n]*\n?([\s\S]*?)(?=\[안\s*2\]|$)/);
+    const plan2Match = content.match(/\[안\s*2\][^\n]*\n?([\s\S]*)/);
+    const plan1 = (plan1Match && plan1Match[1].trim()) ? plan1Match[1].trim() : content;
     const plan2 = plan2Match ? plan2Match[1].trim() : '';
     renderSetechResult(plan1, plan2, resultEl, true);
   } catch(err) {
@@ -3244,9 +3244,10 @@ ${existingText}
       if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error?.message || 'API 오류 ' + resp.status); }
       const data = await resp.json();
       const content = data.choices[0].message.content.trim();
-      const plan1Match = content.match(/\[안\s*1\][^\[]*([\s\S]*?)(?=\[안\s*2\]|$)/);
-      const plan2Match = content.match(/\[안\s*2\][^\[]*([\s\S]*)/);
-      renderSetechResult((plan1Match?plan1Match[1]:content).trim(), (plan2Match?plan2Match[1]:'').trim(), resultEl, true);
+      const plan1Match = content.match(/\[안\s*1\][^\n]*\n?([\s\S]*?)(?=\[안\s*2\]|$)/);
+      const plan2Match = content.match(/\[안\s*2\][^\n]*\n?([\s\S]*)/);
+      const plan1 = (plan1Match && plan1Match[1].trim()) ? plan1Match[1].trim() : content;
+      renderSetechResult(plan1, (plan2Match?plan2Match[1]:'').trim(), resultEl, true);
     } catch(err) {
       resultEl.innerHTML = `<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> GPT 오류: ${err.message}</div>`;
     }
