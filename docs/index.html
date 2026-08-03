@@ -3176,11 +3176,14 @@ async function generateSetechWithGPT(grade, semester, dept, subject, achievement
 }
 
 // 방향 A': Google Gemini 호출 (무료 대안, OpenAI 키 없을 때 자동 사용)
+// Google이 모델을 자주 교체/폐기하므로, 하나가 없어지면 다음 모델로 자동 폴백
+const GEMINI_MODEL_FALLBACKS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
 async function generateSetechWithGemini(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment, resultEl, apiKey) {
   const { systemPrompt, userPrompt } = buildSetechPrompts(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment);
 
-  async function callOnce() {
-    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + apiKey, {
+  async function callModel(model) {
+    const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -3202,17 +3205,32 @@ async function generateSetechWithGemini(grade, semester, dept, subject, achievem
     return text.trim();
   }
 
+  // 모델이 사라졌다는 오류(404 또는 "no longer available"/"not found")면 다음 후보 모델로 자동 전환
+  async function callWithModelFallback() {
+    let lastErr;
+    for (const model of GEMINI_MODEL_FALLBACKS) {
+      try {
+        return await callModel(model);
+      } catch (err) {
+        lastErr = err;
+        const isModelGone = err.status === 404 || /no longer available|not found|not supported/i.test(err.message || '');
+        if (!isModelGone) throw err;
+      }
+    }
+    throw lastErr;
+  }
+
   try {
     let content;
     try {
-      content = await callOnce();
+      content = await callWithModelFallback();
     } catch (err) {
       if (err.status === 429) {
         for (let s = 15; s > 0; s--) {
           resultEl.innerHTML = `<div style="padding:20px;background:#fff8e1;border-radius:10px;text-align:center;"><i class="fas fa-clock" style="font-size:22px;color:#e65100;"></i><div style="margin-top:10px;font-size:13px;color:#e65100;font-weight:700;">Gemini 무료 한도 초과 — ${s}초 후 재시도</div></div>`;
           await new Promise(r => setTimeout(r, 1000));
         }
-        content = await callOnce();
+        content = await callWithModelFallback();
       } else {
         throw err;
       }
@@ -3520,19 +3538,34 @@ ${existingText}
     }
   } else if (geminiKey) {
     try {
-      const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + geminiKey, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
-        })
-      });
-      if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error?.message || 'Gemini API 오류 ' + resp.status); }
-      const data = await resp.json();
-      const content = (data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '').trim();
-      if (!content) throw new Error('Gemini 응답에 내용이 없습니다.');
+      let content = '';
+      let lastErr;
+      for (const model of GEMINI_MODEL_FALLBACKS) {
+        try {
+          const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + geminiKey, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+              generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
+            })
+          });
+          if (!resp.ok) {
+            const err = await resp.json().catch(()=>({}));
+            const msg = err.error?.message || 'Gemini API 오류 ' + resp.status;
+            const isModelGone = resp.status === 404 || /no longer available|not found|not supported/i.test(msg);
+            if (isModelGone) { lastErr = new Error(msg); continue; }
+            throw new Error(msg);
+          }
+          const data = await resp.json();
+          content = (data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '').trim();
+          if (content) break;
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      if (!content) throw (lastErr || new Error('Gemini 응답에 내용이 없습니다.'));
       const [plan1, plan2] = parseSetechPlans(content);
       renderSetechResult(plan1, plan2, resultEl, 'gemini');
     } catch(err) {
