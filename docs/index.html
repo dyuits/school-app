@@ -1247,8 +1247,8 @@
   <!-- 파일 업로드 영역 (항상 보임) -->
   <!-- ═══════════════════════════════════════════════════════════ -->
   <div style="margin-bottom:14px;padding:14px 16px;background:#f8f9fa;border-radius:12px;border:1.5px solid #e0e0e0;">
-    <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:10px;"><i class="fas fa-folder-open"></i> 자료 업로드 <span style="font-weight:400;font-size:11px;color:#888;">(AI 세특 생성에 활용 · 선택사항)</span></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+    <div style="font-size:12.5px;font-weight:800;color:#1565c0;margin-bottom:10px;"><i class="fas fa-folder-open"></i> 자료 업로드 <span style="font-weight:400;font-size:11px;color:#888;">(AI 세특 생성에 활용 · 선택사항, 많이 첨부할수록 정교해짐)</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
       <!-- 평가계획서 PDF -->
       <div>
         <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📋 평가계획서 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
@@ -1259,9 +1259,19 @@
         <div id="setechPlanFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
         <textarea id="setechPlanText" rows="2" placeholder="또는 성취기준·평가방법 직접 붙여넣기" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #dce775;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
       </div>
-      <!-- 수행평가 학습지 PDF -->
+      <!-- 수행평가 PDF -->
       <div>
-        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📝 수행평가·학습지 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">📝 수행평가 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
+        <label style="display:block;padding:8px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#558b2f;font-weight:700;">
+          <i class="fas fa-upload"></i> 업로드
+          <input type="file" id="setechEvalFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'eval')">
+        </label>
+        <div id="setechEvalFileName" style="font-size:10.5px;color:#aaa;margin-top:3px;text-align:center;">선택된 파일 없음</div>
+        <textarea id="setechEvalText" rows="2" placeholder="또는 수행평가 채점기준·결과 직접 붙여넣기" style="width:100%;margin-top:5px;padding:6px;border:1.5px solid #dce775;border-radius:6px;font-size:11px;line-height:1.5;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+      </div>
+      <!-- 활동지 PDF -->
+      <div>
+        <div style="font-size:11.5px;font-weight:700;color:#555;margin-bottom:4px;">🗒️ 활동지 <span style="font-weight:400;color:#aaa;">(PDF/TXT)</span></div>
         <label style="display:block;padding:8px 10px;background:#fff;border:1.5px dashed #aed581;border-radius:8px;cursor:pointer;text-align:center;font-size:12px;color:#558b2f;font-weight:700;">
           <i class="fas fa-upload"></i> 업로드
           <input type="file" id="setechActivityFile" accept=".pdf,.txt" style="display:none;" onchange="handleSetechFile(this,'activity')">
@@ -2590,10 +2600,12 @@ function calcFinal() {
 // 버튼 선택 토글
 function selectSetechBtn(btn, group) {
   document.querySelectorAll('.setech-' + group + '-btn').forEach(b => {
+    b.classList.remove('is-selected');
     b.style.background = '#fff';
     b.style.color = '#333';
     b.style.borderColor = '#c5cae9';
   });
+  btn.classList.add('is-selected');
   btn.style.background = '#3949ab';
   btn.style.color = '#fff';
   btn.style.borderColor = '#3949ab';
@@ -2603,8 +2615,9 @@ function selectSetechBtn(btn, group) {
 function handleSetechFile(input, type) {
   const file = input.files[0];
   if (!file) return;
-  const nameEl = document.getElementById('setech' + (type==='plan'?'Plan':'Activity') + 'FileName');
-  const textEl = document.getElementById('setech' + (type==='plan'?'Plan':'Activity') + 'Text');
+  const idPrefix = { plan: 'Plan', eval: 'Eval', activity: 'Activity' }[type] || 'Activity';
+  const nameEl = document.getElementById('setech' + idPrefix + 'FileName');
+  const textEl = document.getElementById('setech' + idPrefix + 'Text');
   nameEl.textContent = file.name;
   if (file.type === 'text/plain') {
     const reader = new FileReader();
@@ -2745,12 +2758,15 @@ function renderSetechSimpleResult(el, text) {
 // 초기화
 function clearSetechForm() {
   document.querySelectorAll('.setech-grade-btn,.setech-semester-btn,.setech-dept-btn').forEach(b => {
+    b.classList.remove('is-selected');
     b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#c5cae9';
   });
   document.getElementById('setechPlanText').value = '';
+  document.getElementById('setechEvalText').value = '';
   document.getElementById('setechActivityText').value = '';
   document.getElementById('setechTeacherComment').value = '';
   document.getElementById('setechPlanFileName').textContent = '선택된 파일 없음';
+  document.getElementById('setechEvalFileName').textContent = '선택된 파일 없음';
   document.getElementById('setechActivityFileName').textContent = '선택된 파일 없음';
   document.getElementById('setechExcelFileName').textContent = '선택된 파일 없음';
   const previewEl = document.getElementById('setechExcelPreview');
@@ -2778,15 +2794,49 @@ function getDeptGuideline(dept) {
   return '일반 보통과 학생. 개념→탐구→심화→독서→질문→융합→확장의 흐름으로 서술할 것.';
 }
 
+// 교과별 반드시 반영할 요소 (교과 세특 특화)
+const SUBJECT_REQUIRED = {
+  '정보': '컴퓨팅 사고력, 알고리즘, 프로그래밍, 데이터, AI, 디지털 윤리, 문제 해결, 디버깅, 시스템 설계, 협업 개발, 프로젝트',
+  '인공지능기초': '인공지능 원리, 머신러닝·딥러닝 개념, 데이터 전처리, 모델 학습·평가, AI 윤리, 기술의 사회적 영향에 대한 비판적 성찰',
+  '소프트웨어와 생활': '생활 속 문제 발견, 알고리즘적 문제 해결, 자동화, 디지털 리터러시',
+  '데이터과학': '데이터 수집·전처리·분석·시각화, 통계적 해석, 데이터 기반 인사이트 도출',
+  '국어': '텍스트 해석, 논리적 글쓰기, 토론·발표, 매체 언어 이해',
+  '수학': '개념적 이해, 수학적 모델링, 증명·논리적 사고, 문제 해결 전략',
+  '영어': '독해·작문, 의사소통, 원서·원문 자료 활용, 발표',
+  '과학': '가설 설정, 실험 설계·수행, 데이터 해석, 과학적 논증',
+  '사회': '사회현상 분석, 자료 조사, 다양한 관점 비교, 시민의식',
+  '역사': '사료 분석, 시대적 맥락 이해, 역사적 관점 비교',
+  '체육': '체력 관리, 전략 분석, 팀 스포츠 협업, 자기관리',
+  '음악': '표현 기법 탐구, 감상·비평, 실기 향상 과정',
+  '미술': '조형 원리, 표현 기법 실험, 비평·피드백 반영',
+  '기술·가정': '설계·제작 과정, 문제해결형 실습, 안전·환경 고려',
+  '진로': '자기이해, 진로 탐색 활동, 정보 수집·분석',
+  '사무관리': '문서 작성 실무, 사무자동화 도구 활용, 데이터 관리',
+  '마케팅일반': '소비자 분석, 마케팅 전략 수립, 실제 사례 분석',
+  '전자상거래': '플랫폼 분석, 디지털 마케팅, 데이터 기반 의사결정',
+  '상업경제': '경제 원리 적용, 시장 분석, 합리적 의사결정',
+  '금융일반': '금융상품 분석, 재무 계획, 리스크 관리',
+  '미디어콘텐츠일반': '기획·제작·스토리텔링, 매체 분석, 포트폴리오',
+  '캐릭터제작': '컨셉 설계, 스케치~채색 전 과정, 세계관 구축',
+  '애니메이션': '스토리보드 구성, 프레임 연출, 편집 과정'
+};
+
+function getSubjectGuideline(subject) {
+  const req = SUBJECT_REQUIRED[subject];
+  if (!req) return subject ? `${subject} 교과의 고유한 학습 활동과 사고 과정을 중심으로 서술할 것.` : '';
+  return `${subject} 교과 세특이므로 반드시 다음 요소를 학생이 실제 수행한 활동과 연결하여 서술할 것: ${req}. 수업 내용을 단순 나열하지 말고 학생의 질문·탐구·분석·비교·실습·토론·발표·피드백·수정·성장 과정을 중심으로 작성할 것.`;
+}
+
 // 메인 세특 생성 함수 (A+B 통합)
 async function generateSetechNew() {
-  const grade = (document.querySelector('.setech-grade-btn[style*="3949ab"]') || {}).dataset?.val || '';
-  const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '';
-  const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '';
+  const grade = (document.querySelector('.setech-grade-btn.is-selected') || {}).dataset?.val || '';
+  const semester = (document.querySelector('.setech-semester-btn.is-selected') || {}).dataset?.val || '';
+  const dept = (document.querySelector('.setech-dept-btn.is-selected') || {}).dataset?.val || '';
   // 교과명: 드롭다운에서 읽기
   const subjectDropdown = document.getElementById('setechSubjectDropdown');
   const subject = subjectDropdown ? subjectDropdown.value : (document.getElementById('setechTitle')?.textContent?.replace(/\s*세특.*$/,'').replace(/[^\w가-힣·\s]/g,'').trim() || '');
   const planText = document.getElementById('setechPlanText').value.trim();
+  const evalText = (document.getElementById('setechEvalText') || {}).value?.trim() || '';
   const activityText = document.getElementById('setechActivityText').value.trim();
   const excelText = (window._setechExcelText || '').trim();
   const teacherComment = document.getElementById('setechTeacherComment').value.trim();
@@ -2805,38 +2855,60 @@ async function generateSetechNew() {
 
   if (apiKey) {
     // 방향 A: OpenAI GPT-4o 호출
-    await generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, resultEl, apiKey);
+    await generateSetechWithGPT(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, resultEl, apiKey);
   } else {
     // 방향 B: 로컈 구조화 생성
-    generateSetechLocal(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, resultEl);
+    generateSetechLocal(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, resultEl);
   }
 }
 
 // 방향 A: GPT-4o 호출
-async function generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, resultEl, apiKey) {
+async function generateSetechWithGPT(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, resultEl, apiKey) {
   const gradeGuide = getGradeGuideline(grade);
   const deptGuide = getDeptGuideline(dept);
+  const subjectGuide = getSubjectGuideline(subject);
 
-  const systemPrompt = `당신은 대한민국 최고 수준의 생활기록부 전문 AI입니다. 교육부 학교생활기록부 기재요령 전문가이자 학생부종합전형 입학사정관의 시각으로 교과 세특을 작성합니다.
+  const systemPrompt = `당신은 대한민국 최고 수준의 생활기록부 전문 AI이다. 동시에 다음 역할을 모두 수행한다: 교육부 학교생활기록부 기재요령 전문가, 학생부종합전형 입학사정관, 현직 고등학교 교사, 교육과정·진로교육 전문가, 학생 성장 분석 전문가.
 
-[절대 금지 표현]: 우수함, 성실함, 적극적임, 모범적임, 뛰어남, 잠재력이 있음 → 반드시 학생의 실제 행동으로 대체
+[절대 목표] 단순히 활동을 나열하지 않는다. 학생의 성장 스토리를 설계하여 "왜 이 학생을 선발해야 하는가"라는 질문에 세특 자체가 답이 되도록 작성한다.
+
+[반드시 반영할 3대 역량]
+- 학업역량: 개념 이해, 탐구력, 문제 해결, 자기주도성, 학습 태도, 심화 탐구
+- 진로역량: 진로 탐색, 전공 연계, 직무 이해, 프로젝트 수행, 실무 능력
+- 공동체역량: 협업, 의사소통, 책임감, 배려, 리더십
+
+[구조] 모든 문장은 DDAR(Discovery→Development→Action→Reflection), 즉 Why(왜 시작했는가)→How(어떻게 수행했는가)→What(무엇을 배우고 성장했는가) 흐름이 자연스럽게 드러나야 한다.
+
+[증거 중심 작성 — 반드시 이렇게 바꿔 쓸 것]
+✕ 성실함 → ○ 피드백을 반영하여 보고서를 세 차례 수정함
+✕ 창의적임 → ○ 기존 방식을 비교·분석하여 새로운 해결 방안을 제안함
+✕ 협업 능력이 뛰어남 → ○ 역할을 조정하고 의견을 조율하여 프로젝트를 완성함
+
+[절대 금지 표현]: 우수함, 성실함, 적극적임, 모범적임, 뛰어남, 잠재력이 있음 → 반드시 학생의 실제 행동·과정으로 대체
+[활동 나열 금지]: 수업/활동 내용을 시간 순으로 나열하지 말고, 학생의 질문·탐구·분석·비교·실험·토론·발표·피드백·수정 과정을 중심으로 작성
+[과장 금지]: 입력 자료에 없는 탐구·독서·발표·실험·논문 활동은 절대 추가하지 않는다
 [문체]: 문어체(~함, ~임, ~보임) 사용
 [분량]: 각 안마다 띄어쓰기 포함 500자 내외
-[구조]: DDAR(Discovery→Development→Action→Reflection) 구조 적용
 [기재 금지]: 특정 기업명, 기관명, 대학명, 대회명 기재 불가
 
 ${gradeGuide}
-${deptGuide}`;
+${deptGuide}
+${subjectGuide}
+
+[출력 전 자체 점검 — 출력하지 말고 내부적으로만 확인] 활동 나열이 아닌 성장 과정이 드러나는가? Why-How-What 구조가 자연스러운가? 학생만의 차별성이 드러나는가? 교과 특성이 살아있는가? 이 조건을 만족할 때만 최종 결과를 제시한다.`;
 
   const userPrompt = `다음 정보를 바탕으로 ${grade} ${subject} ${semester} 교과 세특을 2가지 안으로 작성해주세요.
 
 [학년/학과/학기]: ${grade} / ${dept||'보통과'} / ${semester||'1학기'}
 [교과명]: ${subject||'(미지정)'}
 
-[평가계획서 내용]:
+[평가계획서(교과 성취기준) 내용]:
 ${planText || '(미첨부)'}
 
-[수행평가·학습지 내용]:
+[수행평가 내용]:
+${evalText || '(미첨부)'}
+
+[활동지(학생 활동 결과물) 내용]:
 ${activityText || '(미첨부)'}
 
 [슈퍼스쿨 학생 활동지 데이터]:
@@ -2846,7 +2918,7 @@ ${excelText || '(미첨부)'}
 ${teacherComment}
 
 ---
-반드시 아래 형식으로 출력하세요:
+반드시 아래 형식으로, 완성된 세특 문장만 출력하세요(분석 과정이나 체크리스트는 출력하지 마세요):
 
 [안 1] 성실한 과정·개념 이해도·협업 및 학습 태도 강조 (균형 잡힌 서술형)
 (500자 내외 세특 내용)
@@ -2889,14 +2961,17 @@ ${teacherComment}
 }
 
 // 방향 B: 로컬 구조화 생성
-function generateSetechLocal(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, resultEl) {
+function generateSetechLocal(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, resultEl) {
   // 추상어 → 증거어 치환
   const replacements = [
     ['적극적으로', '스스로 질문을 제기하며'],['열심히', '지속적으로 수정·보완하며'],
     ['다양한 활동', '여러 유형의 활동'],['다양한 경험', '직접 체험한 경험'],
-    ['다양한', '여러 유형의'],['우수한', '완성도 높은'],['뛰어난', '두드러진'],
-    ['성실한', '매 수업마다 준비하는'],['창의적인', '독자적 방식으로 접근한'],
-    ['창의적', '독자적 방식으로'],['열정적으로', '주도적으로'],
+    ['다양한', '여러 유형의'],['우수한', '완성도 높은'],['우수함', '완성도 높게 수행함'],
+    ['뛰어난', '두드러진'],['뛰어남', '두드러지게 나타남'],
+    ['성실한', '매 수업마다 준비하는'],['성실함', '매 수업마다 준비하며 임함'],
+    ['창의적인', '독자적 방식으로 접근한'],['창의적', '독자적 방식으로'],
+    ['열정적으로', '주도적으로'],['적극적임', '스스로 문제를 제기함'],
+    ['모범적임', '공동체 규칙을 솔선수범함'],
     ['헌신적으로', '책임감 있게'],['잠재력', '성장 가능성'],
     ['마음이 따뜻한', '주변을 배려하는 행동을 보이는'],
     ['인성이 바른', '공동체 규칙을 솔선수범하는'],
@@ -2909,11 +2984,11 @@ function generateSetechLocal(grade, semester, dept, subject, planText, activityT
   const subjectTag = subject ? `${subject} ` : '';
   const semesterTag = semester ? `${semester} ` : '';
 
-  // 학년별 접두 문장
+  // 학년별 접두 문장 (고1: 과정·시행착오 / 고2: 진로 연결·응용 / 고3: 전공 적합성·심화 탐구)
   const gradeIntro = {
-    '고1': `${subjectTag}${semesterTag}수업에서 기초 개념을 성실히 탐구하며 지식을 내실화하는 모습을 보임. `,
-    '고2': `${subjectTag}${semesterTag}수업에서 교과 지식을 실제 문제에 연결하여 응용하는 융합적 사고를 발휘함. `,
-    '고3': `${subjectTag}${semesterTag}수업에서 스스로 탐구 주제를 설정하고 심화된 분석을 통해 전문성을 드러냄. `,
+    '고1': `${subjectTag}${semesterTag}수업에서 기초 개념에 대한 지적 호기심을 바탕으로 자료를 조사하고 시행착오를 거치며 지식을 내실화하는 모습을 보임. `,
+    '고2': `${subjectTag}${semesterTag}수업에서 교과 지식을 실제 사례와 연결하여 응용하고, 데이터를 활용한 융합적 사고를 발휘함. `,
+    '고3': `${subjectTag}${semesterTag}수업에서 스스로 탐구 주제를 발굴하고 전문 자료를 탐독하며 비판적 사고를 바탕으로 전공 적합성을 드러냄. `,
   }[grade] || `${subjectTag}${semesterTag}수업에서 `;
 
   // 학과별 연결 문장
@@ -2922,21 +2997,28 @@ function generateSetechLocal(grade, semester, dept, subject, planText, activityT
     '문화콘텐츠학과': ' 이를 콘텐츠 기획 및 제작 역량과 연결하여 창의적 결과물을 완성함.',
   }[dept] || ' 이를 통해 교과 역량을 심화하고 성장하는 모습이 드러남.';
 
-  // 활동 내용 요약 (있을 경우)
-  const actSummary = activityText ? activityText.substring(0, 80).replace(/\n/g,' ') + (activityText.length > 80 ? '...' : '') : '';
-  const planSummary = planText ? planText.substring(0, 60).replace(/\n/g,' ') + (planText.length > 60 ? '...' : '') : '';
+  // 교과별 반드시 반영 요소 중 첫 항목을 짧게 연결
+  const subjReq = SUBJECT_REQUIRED[subject];
+  const subjPart = subjReq ? ` 특히 ${subjReq.split(',')[0].trim()} 등의 핵심 역량을 중심으로 탐구를 확장함.` : '';
 
-  const actPart = actSummary ? ` 수행평가에서 ${actSummary}` : '';
+  // 자료 요약 (있을 경우에만 반영)
+  const evalSummary = evalText ? evalText.substring(0, 70).replace(/\n/g,' ') + (evalText.length > 70 ? '...' : '') : '';
+  const actSummary = activityText ? activityText.substring(0, 80).replace(/\n/g,' ') + (activityText.length > 80 ? '...' : '') : '';
+
+  const evalPart = evalSummary ? ` 수행평가에서 ${evalSummary}` : '';
+  const actPart = actSummary ? ` 활동지 수행 과정에서 ${actSummary}` : '';
 
   // 1안: 성실·과정·협업 중심
-  const plan1 = (gradeIntro + baseComment + actPart + deptLink).substring(0, 500);
+  const plan1 = (gradeIntro + baseComment + evalPart + actPart + deptLink).substring(0, 500);
 
-  // 2안: 주도성·역량·성장 중심 (DDAR 구조)
+  // 2안: 주도성·역량·성장 중심 (DDAR/Why-How-What 구조)
   const ddarParts = [
     gradeIntro,
     baseComment,
+    evalPart,
     actPart,
-    ' 이 과정에서 문제를 스스로 정의하고 해결 방법을 설계하며 시행착오를 통해 수정하는 과정을 반복함으로써 사고력이 성장하는 모습이 드러남.',
+    ' 이 과정에서 문제를 스스로 정의하고(Why) 해결 방법을 설계하며(How) 시행착오를 통해 수정하는 과정을 반복함으로써(What) 사고력이 성장하는 모습이 드러남.',
+    subjPart,
     deptLink
   ].join('');
   const plan2 = ddarParts.substring(0, 500);
@@ -3030,10 +3112,10 @@ function sendToRecordCheck(divId) {
 
 // ── 고1/고2/고3 전체 생성 함수 ──
 async function generateSetechAllGrades() {
-  const semester = (document.querySelector('.setech-semester-btn[style*="3949ab"]') || {}).dataset?.val || '1학기';
-  const dept = (document.querySelector('.setech-dept-btn[style*="3949ab"]') || {}).dataset?.val || '보통과';
+  const semester = (document.querySelector('.setech-semester-btn.is-selected') || {}).dataset?.val || '1학기';
+  const dept = (document.querySelector('.setech-dept-btn.is-selected') || {}).dataset?.val || '보통과';
   // 선택된 학년 버튼에서 시작 학년 결정
-  const selectedGradeBtn = document.querySelector('.setech-grade-btn[style*="3949ab"]');
+  const selectedGradeBtn = document.querySelector('.setech-grade-btn.is-selected');
   const startGrade = selectedGradeBtn ? selectedGradeBtn.dataset.val : '고1';
   const allGrades = ['고1', '고2', '고3'];
   const startIdx = allGrades.indexOf(startGrade);
@@ -3042,6 +3124,7 @@ async function generateSetechAllGrades() {
   const subjectDropdown = document.getElementById('setechSubjectDropdown');
   const subject = subjectDropdown ? subjectDropdown.value : '';
   const planText = (document.getElementById('setechPlanText') || {}).value?.trim() || '';
+  const evalText = (document.getElementById('setechEvalText') || {}).value?.trim() || '';
   const activityText = (document.getElementById('setechActivityText') || {}).value?.trim() || '';
   const excelText = (window._setechExcelText || '').trim();
   const teacherComment = document.getElementById('setechTeacherComment').value.trim();
@@ -3063,7 +3146,7 @@ async function generateSetechAllGrades() {
   async function callGPTWithRetry(grade, retries=3) {
     for (let attempt = 1; attempt <= retries; attempt++) {
       const tmpEl = document.createElement('div');
-      await generateSetechWithGPT(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, tmpEl, apiKey);
+      await generateSetechWithGPT(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, tmpEl, apiKey);
       // 오류 메시지 확인
       if (tmpEl.innerHTML.includes('Rate limit') && attempt < retries) {
         // 대기 시간: 오류 메시지에서 "try again in Xs" 파싱
@@ -3079,7 +3162,7 @@ async function generateSetechAllGrades() {
     }
     // 최대 재시도 후에도 실패하면 로컈 AI로 대체
     const fallbackEl = document.createElement('div');
-    generateSetechLocal(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, fallbackEl);
+    generateSetechLocal(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, fallbackEl);
     return fallbackEl.innerHTML;
   }
 
@@ -3097,7 +3180,7 @@ async function generateSetechAllGrades() {
       }
     } else {
       const tmpEl = document.createElement('div');
-      generateSetechLocal(grade, semester, dept, subject, planText, activityText, excelText, teacherComment, tmpEl);
+      generateSetechLocal(grade, semester, dept, subject, planText, evalText, activityText, excelText, teacherComment, tmpEl);
       results[grade] = tmpEl.innerHTML;
     }
   }
@@ -3121,14 +3204,17 @@ function clearSetechAllForm() {
   if (resultEl) { resultEl.style.display = 'none'; resultEl.innerHTML = ''; }
   // 버튼 선택 초기화
   document.querySelectorAll('.setech-semester-btn,.setech-dept-btn').forEach(b => {
+    b.classList.remove('is-selected');
     b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#c5cae9';
   });
   const dd = document.getElementById('setechSubjectDropdown');
   if (dd) dd.value = '';
   window._setechExcelText = '';
   const planText = document.getElementById('setechPlanText');
+  const evalText = document.getElementById('setechEvalText');
   const actText = document.getElementById('setechActivityText');
   if (planText) planText.value = '';
+  if (evalText) evalText.value = '';
   if (actText) actText.value = '';
 }
 
