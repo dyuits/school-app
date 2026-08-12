@@ -2426,6 +2426,12 @@ const MINT_CELLS = {
 
 const EXTERNAL_INSTRUCTOR_CELLS = MINT_CELLS;
 
+// 산학교사와 함께 수업하며 담당 교사가 반드시 임장해야 하는 민트색 수업.
+// 해당 교사의 일반 수업은 영향을 받지 않고, 아래 EXTERNAL_LESSONS에 등록된 칸만 교체·대체를 모두 차단한다.
+const INDUSTRY_CO_TEACHING_TEACHERS = new Set([
+  "김영조", "김영주", "오소연", "이상분"
+]);
+
 // PDF 민트색 분할 셀에서 분리한 실제 외부강사 수업
 const EXTERNAL_LESSONS = {
   "강승표": {

@@ -90,6 +90,22 @@ assert(contactMoves.hongWonjeong?.dept === '학생생활안전부' && !contactMo
 const externalBlock = read(`buildSwapLessonBlock('201 독서', '강승표', '월', 1, true, 0)`);
 assert(externalBlock.includes('var(--cell-mint-bg)') && !externalBlock.includes('[강사]'), '교체·대체 민트 수업에 [강사] 표시가 남아 있음');
 
+const industryCoTeachingAudit = read(`(() => {
+  let substituteCount = 0;
+  for (const teacher of INDUSTRY_CO_TEACHING_TEACHERS) {
+    for (const [slot, values] of Object.entries(EXTERNAL_LESSONS[teacher] || {})) {
+      const match = slot.match(/^(.+?)([1-7])$/);
+      if (!match) continue;
+      for (const value of values) {
+        substituteCount += findSubstituteCandidates(teacher, match[1], Number(match[2]), value).length;
+      }
+    }
+  }
+  return { substituteCount, teachers:[...INDUSTRY_CO_TEACHING_TEACHERS] };
+})()`);
+assert(industryCoTeachingAudit.substituteCount === 0, '임장 필수 산학교사 수업에 대체 후보 발생');
+assert(JSON.stringify(industryCoTeachingAudit.teachers) === JSON.stringify(['김영조','김영주','오소연','이상분']), '임장 필수 교사 명단 오류');
+
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
   let badSubstitutes = 0, placeholderSubstitutes = 0, selectionSwaps = 0, externalSwaps = 0, swapCount = 0;
@@ -124,6 +140,7 @@ console.log(JSON.stringify({
   placeholderSubstitutes: candidateAudit.placeholderSubstitutes,
   selectionSwaps: candidateAudit.selectionSwaps,
   externalSwaps: candidateAudit.externalSwaps,
+  industryCoTeachingSubstitutes: industryCoTeachingAudit.substituteCount,
   swapCandidatesChecked: candidateAudit.swapCount,
   subjectRules,
   periodRules,

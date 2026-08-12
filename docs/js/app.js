@@ -404,6 +404,17 @@ function openLessonMatching(teacher, day, period, val, forceExternal = false) {
     return;
   }
   if (forceExternal || isExternalLesson(teacher, day, period, val)) {
+    if (typeof INDUSTRY_CO_TEACHING_TEACHERS !== 'undefined' && INDUSTRY_CO_TEACHING_TEACHERS.has(teacher)) {
+      renderResultModal_blocked(
+        teacher,
+        day,
+        period,
+        val,
+        '산학교사 공동수업으로 담당 교사가 반드시 임장해야 하므로 교체 및 대체가 불가합니다.'
+      );
+      openModal();
+      return;
+    }
     const subResults = findSubstituteCandidates(teacher, day, period, val);
     renderResultModal(teacher, day, period, val, [], subResults, true);
     openModal();
@@ -472,6 +483,13 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
 
 // 대체 후보 (공강 선생님 중 같은 교과)
 function findSubstituteCandidates(myTeacher, day, period, lessonValue = '') {
+  // 산학교사 공동수업은 담당 교사 임장이 필수이므로 민트색 칸의 대체 후보를 만들지 않는다.
+  if (typeof INDUSTRY_CO_TEACHING_TEACHERS !== 'undefined' &&
+      INDUSTRY_CO_TEACHING_TEACHERS.has(myTeacher) &&
+      isExternalLesson(myTeacher, day, period, lessonValue)) {
+    return [];
+  }
+
   // 창체 시간인 경우: 비담임 교사 명단에서 해당 시간 공강인 교사를 대체 후보로 반환
   if (isChatcheTime(myTeacher, day, period)) {
     const results = [];
