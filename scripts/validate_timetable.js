@@ -33,6 +33,7 @@ const subjectRules = read(`(() => {
   const groups = getSubjectGroups();
   return {
     korean: groups['국어'] || [], design: groups['디자인'] || [], commerce: groups['상업'] || [], pe: groups['체육'] || [],
+    video: groups['영상'] || [], art: groups['미술'] || [],
     hasKorean2: !!groups['국어2'], hasPe2: !!groups['체육2']
   };
 })()`);
@@ -40,6 +41,8 @@ assert(!subjectRules.korean.includes('홍민영'), '국어에 홍민영이 남�
 assert(!subjectRules.design.includes('송준한') && subjectRules.design.includes('김제령'), '디자인 교사 수정 불일치');
 assert(!subjectRules.commerce.includes('고대홍'), '상업에 고대홍이 남아 있음');
 assert(subjectRules.pe.includes('김지윤'), '체육에 김지윤이 없음');
+assert(JSON.stringify(subjectRules.video) === JSON.stringify(['송준한']), '영상 교과에 송준한 배치 오류');
+assert(subjectRules.art.includes('백경민'), '미술 교과에 백경민이 없음');
 assert(!subjectRules.hasKorean2 && !subjectRules.hasPe2, '국어2/체육2 버튼이 남아 있음');
 
 const externalChecks = read(`({

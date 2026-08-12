@@ -225,6 +225,19 @@ a { text-decoration:none; color:inherit; }
 }
 .tab-icon { font-size: 13px; }
 .tab-label { font-size: 12px; }
+.new-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: #e53935;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.tab-btn.active .new-tab-badge { background: var(--yellow); color: var(--brown); }
+.tool-tab-panel { padding: 0; }
 
 /* ══════════════════════════════════════
    카드

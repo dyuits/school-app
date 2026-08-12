@@ -967,14 +967,12 @@ function findMeetingTime() {
       if (!selectedPeriods.includes(period)) return;
 
       if (period === 4) {
-        // 1·2학년 교사만
-        const g12 = teachers.filter(t => getTeacherGradeGroup(t) === '12');
-        if (g12.length > 0 && g12.every(t => !isBlockedTime(t,day,period) && !isChatcheTime(t,day,period) && !(TEACHER_SCHEDULE[t]||{})[day+period])) {
+        // 4교시는 교사의 소속 학년이 아니라 실제 시간구간으로 충돌을 판정한다.
+        // 혼합 학년 협의에서도 선택한 교사 전원이 해당 구간에 비어 있어야 한다.
+        if (teachers.every(t => !isBlockedTime(t,day,period) && !isChatcheTime(t,day,period) && !isTeacherBusyAt(t, day, period, { grade:'1' }))) {
           available.push({ day, period, type:'4A', note:'1·2학년 기준' });
         }
-        // 3학년 교사만
-        const g3 = teachers.filter(t => getTeacherGradeGroup(t) === '3');
-        if (g3.length > 0 && g3.every(t => !isBlockedTime(t,day,period) && !isChatcheTime(t,day,period) && !(TEACHER_SCHEDULE[t]||{})[day+period])) {
+        if (teachers.every(t => !isBlockedTime(t,day,period) && !isChatcheTime(t,day,period) && !isTeacherBusyAt(t, day, period, { grade:'3' }))) {
           available.push({ day, period, type:'4B', note:'3학년 기준' });
         }
       } else {
@@ -999,7 +997,7 @@ function renderMeetingResult(teachers, times) {
     <span class="meeting-selected-label">선택 ${teachers.length}명:</span>
     ${teachers.map(t => `<span class="meeting-selected-tag">${t} <button onclick="toggleMeetingTeacher('${t}',false)" style="background:none;border:none;cursor:pointer;color:inherit;font-weight:900;margin-left:2px;padding:0;">×</button></span>`).join('')}
     <button class="btn btn-outline btn-sm" onclick="resetMeetingSelection()" style="margin-left:auto;white-space:nowrap;">전체 해제</button>
-    <button class="btn btn-dark btn-sm" onclick="copyMeetingResult()"><i class="fas fa-print"></i> 인쇄</button>
+    <button class="btn btn-dark btn-sm" onclick="printMeetingResult()"><i class="fas fa-print"></i> 인쇄</button>
   </div>`;
 
   if (times.length === 0) {
@@ -1016,14 +1014,14 @@ function buildMeetingTable(teachers, times) {
   const free4B  = new Set(times.filter(t => t.type === '4B').map(t => t.day + '4B'));
 
   // 특정 교시·요일의 수업/공강 계산
-  function getCellInfo(day, period, subset) {
-    const grp = subset || teachers;
+  function getCellInfo(day, period, targetGrade = null) {
+    const grp = teachers;
     let teachingCount = 0; let freeTeachers = [];
     grp.forEach(t => {
-      const val = (TEACHER_SCHEDULE[t]||{})[day + period];
       const ch  = isChatcheTime(t, day, period);
       const bl  = isBlockedTime(t, day, period);
-      if (val || ch || bl) teachingCount++; else freeTeachers.push(t);
+      const busy = isTeacherBusyAt(t, day, period, targetGrade ? { grade:targetGrade } : {});
+      if (busy || ch || bl) teachingCount++; else freeTeachers.push(t);
     });
     return { teachingCount, freeTeachers, total: grp.length };
   }
@@ -1040,35 +1038,29 @@ function buildMeetingTable(teachers, times) {
 
   PERIODS.forEach(p => {
     if (p === 4) {
-      const g12 = teachers.filter(t => getTeacherGradeGroup(t) !== '3');
-      const g3  = teachers.filter(t => getTeacherGradeGroup(t) === '3');
+      html += `<tr><td class="meeting-td-period">
+        <span class="meeting-period-num">4</span>
+        <span class="meeting-period-sub">11:40~12:30</span>
+        <span class="meeting-period-grade">1·2학년</span>
+      </td>`;
+      DAYS.forEach(day => {
+        const isAllFree = free4A.has(day + '4A');
+        const info = getCellInfo(day, 4, '1');
+        html += buildMeetingCell(isAllFree, info.teachingCount, info.freeTeachers, info.total);
+      });
+      html += `</tr>`;
 
-      if (g12.length > 0) {
-        html += `<tr><td class="meeting-td-period">
-          <span class="meeting-period-num">4</span>
-          <span class="meeting-period-sub">11:40</span>
-          <span class="meeting-period-grade">1·2학년</span>
-        </td>`;
-        DAYS.forEach(day => {
-          const isAllFree = free4A.has(day + '4A');
-          const info = getCellInfo(day, 4, g12);
-          html += buildMeetingCell(isAllFree, info.teachingCount, info.freeTeachers, info.total);
-        });
-        html += `</tr>`;
-      }
-      if (g3.length > 0) {
-        html += `<tr><td class="meeting-td-period">
-          <span class="meeting-period-num">4</span>
-          <span class="meeting-period-sub">12:40</span>
-          <span class="meeting-period-grade">3학년</span>
-        </td>`;
-        DAYS.forEach(day => {
-          const isAllFree = free4B.has(day + '4B');
-          const info = getCellInfo(day, 4, g3);
-          html += buildMeetingCell(isAllFree, info.teachingCount, info.freeTeachers, info.total);
-        });
-        html += `</tr>`;
-      }
+      html += `<tr><td class="meeting-td-period">
+        <span class="meeting-period-num">4</span>
+        <span class="meeting-period-sub">12:40~13:30</span>
+        <span class="meeting-period-grade">3학년</span>
+      </td>`;
+      DAYS.forEach(day => {
+        const isAllFree = free4B.has(day + '4B');
+        const info = getCellInfo(day, 4, '3');
+        html += buildMeetingCell(isAllFree, info.teachingCount, info.freeTeachers, info.total);
+      });
+      html += `</tr>`;
     } else {
       const timeLabel = PERIOD_TIMES[p]?.time?.split('~')[0]?.trim() || '';
       html += `<tr><td class="meeting-td-period">
@@ -1077,7 +1069,7 @@ function buildMeetingTable(teachers, times) {
       </td>`;
       DAYS.forEach(day => {
         const isAllFree = freeSet.has(day + p);
-        const info = getCellInfo(day, p, null);
+        const info = getCellInfo(day, p);
         html += buildMeetingCell(isAllFree, info.teachingCount, info.freeTeachers, info.total);
       });
       html += `</tr>`;
@@ -1091,7 +1083,7 @@ function buildMeetingTable(teachers, times) {
 function buildMeetingCell(isAllFree, teachingCount, freeTeachers, total) {
   if (isAllFree || (freeTeachers.length === total && total > 0)) {
     return `<td class="meeting-td free-all">
-      <div class="mtd-check">✅</div>
+      <div class="mtd-check" title="공강">☕</div>
       <div class="mtd-free-label">공강</div>
     </td>`;
   } else if (freeTeachers.length > 0) {
@@ -1115,11 +1107,37 @@ function copyMeetingResult() {
     if (!selectedDays.includes(d)) return;
     PERIODS.forEach(p => {
       if (!selectedPeriods.includes(p)) return;
-      const allFree = teachers.every(t => !isBlockedTime(t,d,p) && !isChatcheTime(t,d,p) && !(TEACHER_SCHEDULE[t]||{})[d+p]);
-      if (allFree) text += `○ ${d}요일 ${p}교시 - 전체 공강\n`;
+      if (p === 4) {
+        const free12 = teachers.every(t => !isBlockedTime(t,d,p) && !isChatcheTime(t,d,p) && !isTeacherBusyAt(t,d,p,{grade:'1'}));
+        const free3 = teachers.every(t => !isBlockedTime(t,d,p) && !isChatcheTime(t,d,p) && !isTeacherBusyAt(t,d,p,{grade:'3'}));
+        if (free12) text += `○ ${d}요일 4교시 (1·2학년 11:40~12:30) - 전체 공강\n`;
+        if (free3) text += `○ ${d}요일 4교시 (3학년 12:40~13:30) - 전체 공강\n`;
+      } else {
+        const allFree = teachers.every(t => !isBlockedTime(t,d,p) && !isChatcheTime(t,d,p) && !isTeacherBusyAt(t,d,p,{}));
+        if (allFree) text += `○ ${d}요일 ${p}교시 - 전체 공강\n`;
+      }
     });
   });
   copyToClipboard(text, null);
+}
+
+function printMeetingResult() {
+  const result = qs('#meetingResult');
+  if (!result || STATE.meetingSelectedTeachers.size < 2) {
+    showAlert('교사를 2명 이상 선택해주세요.');
+    return;
+  }
+  const printWindow = window.open('', '_blank', 'width=1100,height=800');
+  if (!printWindow) {
+    showAlert('팝업이 차단되었습니다. 브라우저에서 팝업을 허용해주세요.');
+    return;
+  }
+  const teachers = [...STATE.meetingSelectedTeachers];
+  printWindow.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>협의시간 결과</title>
+    <style>body{font-family:'Noto Sans KR',sans-serif;padding:24px;color:#333}h1{font-size:20px;margin:0 0 6px}.meta{font-size:13px;margin-bottom:18px;color:#666}.meeting-selected-bar button,.meeting-selected-tag button,.btn{display:none!important}.meeting-tbl{width:100%;border-collapse:collapse}.meeting-tbl th,.meeting-tbl td{border:1px solid #bbb;padding:8px;text-align:center}.meeting-tbl th{background:#eee}.free-all{background:#eafaf1}.free-partial{background:#fff8dc}.meeting-table-info{margin-bottom:10px;font-weight:700}.meeting-period-grade,.meeting-period-sub{display:block;font-size:10px}.mtd-free-name{font-size:10px}@media print{body{padding:0}}</style>
+    </head><body><h1>협의시간 결과</h1><div class="meta">참석: ${teachers.join(', ')} 선생님 (${teachers.length}명)</div>${result.innerHTML}</body></html>`);
+  printWindow.document.close();
+  printWindow.onload = () => { printWindow.focus(); printWindow.print(); };
 }
 
 // ═══════════════════════════════════════════════
@@ -1596,21 +1614,23 @@ function getSubjectGroups() {
   }
   // 교과별 수업 탭의 확정 수정사항
   for (const teachers of Object.values(groups)) {
-    ['홍민영','김제령','김지윤'].forEach(name => {
+    ['홍민영','김제령','김지윤','송준한','백경민'].forEach(name => {
       const index = teachers.indexOf(name);
       if (index >= 0) teachers.splice(index, 1);
     });
   }
-  if (groups['디자인']) groups['디자인'] = groups['디자인'].filter(name => name !== '송준한');
   if (groups['상업']) groups['상업'] = groups['상업'].filter(name => name !== '고대홍');
-  groups['디자인'] = [...new Set([...(groups['디자인'] || []), '김제령'])];
-  groups['체육'] = [...new Set([...(groups['체육'] || []), '김지윤'])];
   delete groups['국어2'];
   delete groups['체육2'];
   Object.keys(groups).forEach(subject => {
     groups[subject] = groups[subject].filter(name => TEACHER_SCHEDULE[name]);
     if (!groups[subject].length) delete groups[subject];
   });
+  // 시간표가 없는 교사도 요청된 교과 버튼에 명시적으로 표시한다.
+  groups['디자인'] = [...new Set([...(groups['디자인'] || []), '김제령'])];
+  groups['체육'] = [...new Set([...(groups['체육'] || []), '김지윤'])];
+  groups['영상'] = ['송준한'];
+  groups['미술'] = [...new Set([...(groups['미술'] || []), '백경민'])];
   return groups;
 }
 
@@ -1636,7 +1656,7 @@ function renderSubjectClassTab_subject() {
   const groups = getSubjectGroups();
   const listEl = qs('#subjectClassList');
   listEl.innerHTML = '';
-  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','정보','디자인','상업','종교'];
+  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','영상','정보','디자인','상업','종교'];
   const subjects = Object.keys(groups).sort((a, b) => {
     const ai = subjectOrder.indexOf(a), bi = subjectOrder.indexOf(b);
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
@@ -1724,7 +1744,8 @@ function renderSubjectClassDetail(subjectName, teachers) {
   html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
 
   teachers.forEach(teacher => {
-    const sched = TEACHER_SCHEDULE[teacher];
+    // 송준한·백경민은 교과 목록에만 표시하고 상세에서는 '시간표 없음'으로 안내한다.
+    const sched = new Set(['송준한','백경민']).has(teacher) ? null : TEACHER_SCHEDULE[teacher];
     let classes = [];
     if (sched) {
       const classSet = new Map();
@@ -1744,14 +1765,15 @@ function renderSubjectClassDetail(subjectName, teachers) {
         return a.localeCompare(b);
       });
     }
-    html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:pointer;" onclick="STATE.teacherScheduleSelected='${teacher}';switchTab('teacher');">`;
+    const clickAction = sched ? `onclick="STATE.teacherScheduleSelected='${teacher}';switchTab('teacher');"` : '';
+    html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:${sched ? 'pointer' : 'default'};" ${clickAction}>`;
     html += `<div style="font-weight:700;font-size:14px;color:var(--brown,#5a3e2b);margin-bottom:${classes.length?6:0}px;">${teacher} 선생님</div>`;
     if (classes.length > 0) {
       html += `<div style="display:flex;flex-wrap:wrap;gap:4px;">`;
       html += classes.map(c => `<span style="display:inline-block;background:white;border:1px solid var(--border-lt);border-radius:10px;padding:2px 9px;font-size:11.5px;color:var(--txt-mid);">${c}</span>`).join('');
       html += `</div>`;
     } else {
-      html += `<span style="font-size:12px;color:var(--txt-light);">시간표 미등록</span>`;
+      html += `<span style="font-size:12px;color:var(--txt-light);">시간표 없음</span>`;
     }
     html += `</div>`;
   });
@@ -2392,10 +2414,46 @@ function renderUtilTab() {
 }
 
 function saveMemo() {
-  try {
-    localStorage.setItem('memo', qs('#memoArea')?.value || '');
-    showAlert('메모가 저장되었습니다! 💾');
-  } catch(e) {}
+  const memo = qs('#memoArea');
+  const value = memo?.value || '';
+  try { localStorage.setItem('memo', value); } catch(e) {}
+  if (memo) memo.dataset.dirty = 'false';
+  if (firebaseDB) {
+    firebaseDB.ref('shared/memo').set({ text:value, updatedAt:firebase.database.ServerValue.TIMESTAMP })
+      .then(() => showAlert('공유 메모가 저장되었습니다! 💾'))
+      .catch(() => showAlert('서버 저장에 실패해 이 브라우저에만 저장했습니다.'));
+  } else {
+    showAlert('메모가 이 브라우저에 저장되었습니다.');
+  }
+}
+
+function deleteSharedMemo() {
+  const memo = qs('#memoArea');
+  if (!confirm('공유 메모를 삭제하시겠습니까?')) return;
+  if (memo) { memo.value = ''; memo.dataset.dirty = 'false'; }
+  try { localStorage.removeItem('memo'); } catch(e) {}
+  if (firebaseDB) firebaseDB.ref('shared/memo').remove();
+}
+
+function startSharedMemoListener() {
+  const memo = qs('#memoArea');
+  if (!firebaseDB || !memo || memo.dataset.sharedListener === 'true') return;
+  memo.dataset.sharedListener = 'true';
+  memo.addEventListener('input', () => { memo.dataset.dirty = 'true'; });
+  const ref = firebaseDB.ref('shared/memo');
+  ref.once('value').then(snap => {
+    const localMemo = localStorage.getItem('memo') || '';
+    if (!snap.exists() && localMemo) {
+      return ref.set({ text:localMemo, updatedAt:firebase.database.ServerValue.TIMESTAMP });
+    }
+  }).finally(() => {
+    ref.on('value', snap => {
+      const remote = snap.val();
+      const text = typeof remote === 'string' ? remote : (remote?.text || '');
+      if (memo.dataset.dirty !== 'true') memo.value = text;
+      try { localStorage.setItem('memo', text); } catch(e) {}
+    });
+  });
 }
 
 function renderTodayStatus() {
@@ -2755,6 +2813,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // Firebase 초기화
   initFirebase();
   setTimeout(startHeartbeatListener, 1000);
+  setTimeout(startSharedMemoListener, 1000);
 
   // 엔터키 지원
   qs('#contactPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')verifyContactPassword();});
