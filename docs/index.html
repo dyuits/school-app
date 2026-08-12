@@ -1640,7 +1640,7 @@ window.addEventListener('load', function() {
     // 첫 번째 교과 자동 선택
     if (SUBJECTS.length > 0) {
       dropdown.value = SUBJECTS[0].name;
-      selectSubjectByDropdown(SUBJECTS[0].name);
+      window.selectSubjectByDropdown?.(SUBJECTS[0].name);
     }
   }
 
@@ -1653,6 +1653,7 @@ window.addEventListener('load', function() {
     const tpl = document.getElementById('setechTemplates');
     if (tpl) tpl.innerHTML = s.templates.map(t => `<div onclick="appendText('setechEditor','${t.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')" style="padding:8px 12px;background:#f8f9fa;border-radius:8px;font-size:12.5px;cursor:pointer;border:1px solid var(--border-lt,#e0e0e0);line-height:1.6;">${t}</div>`).join('');
   };
+  if (SUBJECTS.length > 0) window.selectSubjectByDropdown(SUBJECTS[0].name);
 
   // 세특 에디터 글자수 카운터
   const setechEd = document.getElementById('setechEditor');

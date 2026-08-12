@@ -138,7 +138,6 @@ function parseCellValue(v, teacher, slot) {
     classNum = cn > 10 ? null : cn;
     if (cn > 10) isSelect = true;  // SELECT_CELLS 판정 유지, 반호 기반 추가
     const subject = roomM[3];
-    // 선택 타임은 반호가 301처럼 일반반 형태여도 A_~N_ 접두어로 식별한다.
     if (/^[A-N]_/.test(subject)) isSelect = true;
     // 온라인 포함 과목명 체크
     if (onlineKeywords.some(k => subject.toLowerCase().includes(k.toLowerCase()))) {
@@ -168,20 +167,16 @@ function isBlockedTime(teacher, day, period) {
   return bs[day].includes(period);
 }
 
-// 외부강사 여부는 화면 색상이 아니라 시간표 메타데이터로 판정한다.
 function isExternalLesson(teacher, day, period) {
   const slot = day + period;
   return (typeof EXTERNAL_INSTRUCTORS !== 'undefined' && EXTERNAL_INSTRUCTORS.has(teacher)) ||
-    (typeof EXTERNAL_INSTRUCTOR_CELLS !== 'undefined' &&
-      EXTERNAL_INSTRUCTOR_CELLS[teacher]?.has(slot));
+    (typeof EXTERNAL_INSTRUCTOR_CELLS !== 'undefined' && EXTERNAL_INSTRUCTOR_CELLS[teacher]?.has(slot));
 }
 
 function sameClass(a, b) {
   return !!a?.grade && !!a?.classNum && a.grade === b?.grade && a.classNum === b?.classNum;
 }
 
-// 교사시간표를 현재 상태의 단일 원천으로 사용해 특정 학급의 점유 여부를 계산한다.
-// 맞교환 당사자 두 수업은 가상 이동 전에 제거하므로 ignoreLessons로 제외한다.
 function isClassBusy(classInfo, day, period, ignoreLessons = []) {
   if (!classInfo?.grade || !classInfo?.classNum) return false;
   const slot = day + period;
@@ -377,8 +372,8 @@ function onCellClick(teacher, day, period) {
 }
 
 // 교체(맞교환) 후보
-// 두 수업을 제거한 뒤 서로의 시간에 가상 배치하여 교사/학급 충돌을 검사한다.
-// 특별실은 교체 가능 여부의 제한 조건으로 사용하지 않는다.
+// 교체 조건: 상대방이 '내가 가르치는 반'에 수업이 있고,
+// 그 시간에 내가 공강이며, 내 수업 시간에 상대방이 공강인 경우
 function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
   const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod);
   if (!myVal || myInfo.isSelect || myInfo.isMint || isExternalLesson(myTeacher, myDay, myPeriod) || !myInfo.grade || !myInfo.classNum) return [];
@@ -389,6 +384,7 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
 
   ALL_TEACHERS.forEach(other => {
     if (other === myTeacher) return;
+    // 민트 교사(시간강사/산학협력교사)는 교체 대상 아님
     if (typeof MINT_TEACHERS !== 'undefined' && MINT_TEACHERS.has(other)) return;
     if (isBlockedTime(other, myDay, myPeriod)) return;
     if (isChatcheTime(other, myDay, myPeriod)) return;
@@ -408,27 +404,16 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
         if (!otherVal) return;
         const otherInfo = parseCellValue(otherVal, other, d + p);
         if (otherInfo.isSelect || otherInfo.isMint || isExternalLesson(other, d, p) || !otherInfo.grade || !otherInfo.classNum) return;
-
         const ignored = [
           { teacher: myTeacher, day: myDay, period: myPeriod },
           { teacher: other, day: d, period: p }
         ];
-        const teacherAFree = !myRow[d + p];
-        const teacherBFree = !otherRow[myDay + myPeriod];
-        const classAFree = !isClassBusy(myInfo, d, p, ignored);
-        const classBFree = !isClassBusy(otherInfo, myDay, myPeriod, ignored);
-        if (!teacherAFree || !teacherBFree || !classAFree || !classBFree) return;
-
+        if (myRow[d + p] || otherRow[myDay + myPeriod] ||
+            isClassBusy(myInfo, d, p, ignored) || isClassBusy(otherInfo, myDay, myPeriod, ignored)) return;
         const key = `${other}|${d}|${p}`;
         if (seen.has(key)) return;
         seen.add(key);
-        results.push({
-          teacher: other,
-          day: d,
-          period: p,
-          subject: otherInfo.subject,
-          theirClass: otherInfo.classLabel
-        });
+        results.push({ teacher: other, day: d, period: p, subject: otherInfo.subject, theirClass: otherInfo.classLabel });
       });
     });
   });
@@ -543,13 +528,10 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
   </div>`;
 
   if (isExternalLesson(teacher, day, period)) {
-    html += `<div class="result-rule-notice mint">
-      <div class="result-rule-icon">🚫</div>
-      <div>
-        <div style="font-weight:700;font-size:13px;margin-bottom:3px;">외부강사 수업 · 교체 불가</div>
-        <div style="font-size:12px;color:var(--txt-mid);line-height:1.5;">외부강사 수업은 맞교환 후보에 포함하지 않습니다.<br>아래 동일 교과 대체 가능 선생님을 확인하세요.</div>
-      </div>
-    </div>`;
+    html += `<div class="result-rule-notice mint"><div class="result-rule-icon">🚫</div><div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:3px;">외부강사 수업 · 교체 불가</div>
+      <div style="font-size:12px;color:var(--txt-mid);line-height:1.5;">외부강사 수업은 맞교환 후보에 포함하지 않습니다.<br>아래 동일 교과 대체 가능 선생님을 확인하세요.</div>
+    </div></div>`;
   } else if (isChatech) {
     html += `<div class="result-empty-msg"><i class="fas fa-info-circle"></i> 창체 시간은 맞교환 대상이 아닙니다.</div>`;
   } else if (info.isSelect || !info.grade) {
@@ -2713,9 +2695,6 @@ window.addEventListener('DOMContentLoaded', () => {
   // Firebase 초기화
   initFirebase();
   setTimeout(startHeartbeatListener, 1000);
-
-  // 관리자 오버라이드 데이터 로드 (학사일정/교과선생님/학생명단)
-  setTimeout(loadAdminOverrides, 1500);
 
   // 엔터키 지원
   qs('#contactPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')verifyContactPassword();});
