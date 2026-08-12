@@ -210,12 +210,27 @@ function slotParts(slot) {
 function isTeacherBusyAt(teacher, day, period, targetInfo, ignoreLessons = []) {
   const target = getLessonInterval(period, targetInfo?.grade);
   const schedule = TEACHER_SCHEDULE[teacher] || {};
-  return Object.entries(schedule).some(([slot, value]) => {
+  const hasRegularLesson = Object.entries(schedule).some(([slot, value]) => {
     const parts = slotParts(slot);
     if (!parts || parts.day !== day || !value) return false;
     if (ignoreLessons.some(x => x.teacher === teacher && x.day === parts.day && x.period === parts.period)) return false;
     const existingInfo = parseCellValue(value, teacher, slot);
     return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+  });
+  if (hasRegularLesson) return true;
+
+  // 산학교사 민트 수업은 외부강사와 공동으로 진행하며 담당 교사의 임장이 필수다.
+  // 따라서 일반 시간표에 없는 민트 셀도 협의시간·교체 충돌 검사에서는 수업으로 센다.
+  if (typeof INDUSTRY_CO_TEACHING_TEACHERS === 'undefined' ||
+      !INDUSTRY_CO_TEACHING_TEACHERS.has(teacher) ||
+      typeof EXTERNAL_LESSONS === 'undefined') return false;
+  return Object.entries(EXTERNAL_LESSONS[teacher] || {}).some(([slot, values]) => {
+    const parts = slotParts(slot);
+    if (!parts || parts.day !== day) return false;
+    return values.some(value => {
+      const existingInfo = parseCellValue(value, teacher, slot, true);
+      return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+    });
   });
 }
 
@@ -1640,7 +1655,8 @@ function getSubjectGroups() {
   delete groups['국어2'];
   delete groups['체육2'];
   Object.keys(groups).forEach(subject => {
-    groups[subject] = groups[subject].filter(name => TEACHER_SCHEDULE[name]);
+    // 교과별 수업 탭에는 실제 교사만 표시하고 온라인 수업용 계정은 제외한다.
+    groups[subject] = groups[subject].filter(name => TEACHER_SCHEDULE[name] && !name.includes('온라인'));
     if (!groups[subject].length) delete groups[subject];
   });
   // 시간표가 없는 교사도 요청된 교과 버튼에 명시적으로 표시한다.
@@ -1761,8 +1777,8 @@ function renderSubjectClassDetail(subjectName, teachers) {
   html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
 
   teachers.forEach(teacher => {
-    // 송준한·백경민은 교과 목록에만 표시하고 상세에서는 '시간표 없음'으로 안내한다.
-    const sched = new Set(['송준한','백경민']).has(teacher) ? null : TEACHER_SCHEDULE[teacher];
+    // 백경민은 요청대로 교과 목록에만 표시하고 '시간표 없음'으로 안내한다.
+    const sched = teacher === '백경민' ? null : TEACHER_SCHEDULE[teacher];
     let classes = [];
     if (sched) {
       const classSet = new Map();

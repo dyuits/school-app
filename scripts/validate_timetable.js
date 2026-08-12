@@ -44,6 +44,10 @@ assert(subjectRules.pe.includes('김지윤'), '체육에 김지윤이 없음');
 assert(JSON.stringify(subjectRules.video) === JSON.stringify(['송준한']), '영상 교과에 송준한 배치 오류');
 assert(subjectRules.art.includes('백경민'), '미술 교과에 백경민이 없음');
 assert(!subjectRules.hasKorean2 && !subjectRules.hasPe2, '국어2/체육2 버튼이 남아 있음');
+const onlineSubjectTeachers = read(`Object.values(getSubjectGroups()).flat().filter(name => name.includes('온라인'))`);
+assert(onlineSubjectTeachers.length === 0, '교과별 수업 탭에 온라인 교사가 남아 있음');
+const songJunhanLessonCount = read(`Object.keys(TEACHER_SCHEDULE['송준한'] || {}).length`);
+assert(songJunhanLessonCount === 15, '영상 송준한 시간표 수업 수 오류');
 
 const externalChecks = read(`({
   gangRegularMon1: TEACHER_SCHEDULE['강승표']['월1'] || null,
@@ -106,6 +110,22 @@ const industryCoTeachingAudit = read(`(() => {
 assert(industryCoTeachingAudit.substituteCount === 0, '임장 필수 산학교사 수업에 대체 후보 발생');
 assert(JSON.stringify(industryCoTeachingAudit.teachers) === JSON.stringify(['김영조','김영주','오소연','이상분']), '임장 필수 교사 명단 오류');
 
+const industryMeetingAudit = read(`(() => {
+  const missed = [];
+  for (const teacher of INDUSTRY_CO_TEACHING_TEACHERS) {
+    for (const [slot, values] of Object.entries(EXTERNAL_LESSONS[teacher] || {})) {
+      const match = slot.match(/^(.+?)([1-7])$/);
+      if (!match) continue;
+      for (const value of values) {
+        const info = parseCellValue(value, teacher, slot, true);
+        if (!isTeacherBusyAt(teacher, match[1], Number(match[2]), info)) missed.push(teacher + ':' + slot);
+      }
+    }
+  }
+  return missed;
+})()`);
+assert(industryMeetingAudit.length === 0, '산학교사 임장 수업이 협의시간에서 공강으로 판정됨');
+
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
   let badSubstitutes = 0, placeholderSubstitutes = 0, selectionSwaps = 0, externalSwaps = 0, swapCount = 0;
@@ -141,6 +161,9 @@ console.log(JSON.stringify({
   selectionSwaps: candidateAudit.selectionSwaps,
   externalSwaps: candidateAudit.externalSwaps,
   industryCoTeachingSubstitutes: industryCoTeachingAudit.substituteCount,
+  industryMeetingMisses: industryMeetingAudit.length,
+  onlineSubjectTeachers: onlineSubjectTeachers.length,
+  songJunhanLessonCount,
   swapCandidatesChecked: candidateAudit.swapCount,
   subjectRules,
   periodRules,
