@@ -1166,6 +1166,7 @@ const STAFF_CONTACTS = [
   { dept:"본교무실", name:"김대현", role:"학적·고입전형", ext:"817", phone:"010-3238-7207" },
   { dept:"본교무실", name:"박정민", role:"일과·생기부 정정", ext:"817", phone:"010-6490-7396" },
   { dept:"본교무실", name:"김연아", role:"평가·학업성취도", ext:"817", phone:"010-4448-3541" },
+  { dept:"본교무실", name:"김유리", role:"교사", ext:"", phone:"010-3647-9062" },
   { dept:"행정실", name:"강영석", role:"행정실장", ext:"803", phone:"010-3694-2659" },
   { dept:"행정실", name:"김정미", role:"행정팀장", ext:"804", phone:"010-2793-6405" },
   { dept:"행정실", name:"고대현", role:"주무관", ext:"805", phone:"010-6605-7012" },
@@ -1182,6 +1183,7 @@ const STAFF_CONTACTS = [
   { dept:"학생생활안전부", name:"오승철", role:"학생생활안전부장", ext:"820", phone:"010-9525-3060" },
   { dept:"학생생활안전부", name:"강승표", role:"자치·학폭·축제", ext:"821", phone:"010-7242-6533" },
   { dept:"학생생활안전부", name:"홍민영", role:"상담지원", ext:"820", phone:"010-4292-4432" },
+  { dept:"학생생활안전부", name:"홍원정", role:"교사", ext:"", phone:"010-9019-9870" },
   { dept:"예술건강부", name:"김형우", role:"예술건강부장", ext:"843", phone:"010-7271-1013" },
   { dept:"예술건강부", name:"고세권", role:"건강지원", ext:"843", phone:"010-2916-2020" },
   { dept:"보건실", name:"홍연주", role:"보건", ext:"831", phone:"010-6329-8290" },
@@ -1229,8 +1231,6 @@ const STAFF_CONTACTS = [
   { dept:"환경미화실", name:"부정순", role:"환경미화", ext:"", phone:"010-7274-3313" },
   { dept:"축구부", name:"정수진", role:"운동부지도자", ext:"", phone:"010-4598-4732" },
   { dept:"축구부", name:"김성수", role:"운동부지도자", ext:"", phone:"010-5254-4452" },
-  { dept:"휴직", name:"홍원정", role:"교사(휴직)", ext:"", phone:"010-9019-9870" },
-  { dept:"휴직", name:"김유리", role:"교사(휴직)", ext:"", phone:"010-3647-9062" },
   { dept:"휴직", name:"백경민", role:"교사(휴직)", ext:"", phone:"010-7599-5311" }
 ];
 
@@ -2615,7 +2615,7 @@ const SELECT_CELLS = {
 };
 
 // 지정된 교사·온라인 항목은 목록 맨 아래에 고정한다.
-const BOTTOM_TEACHERS = ["김지윤","송혜리","중국어특성화","중어온라인","지과온라인","화학온라인","물리온라인"];
+const BOTTOM_TEACHERS = ["김지윤","송혜리","중국어특성화","중어온라인","지과온라인","화학온라인","물리온라인","경제온라인"];
 const ALL_TEACHERS = Object.keys(TEACHER_SCHEDULE).sort((a,b) => {
   const ai = BOTTOM_TEACHERS.indexOf(a), bi = BOTTOM_TEACHERS.indexOf(b);
   if (ai >= 0 || bi >= 0) return ai < 0 ? -1 : bi < 0 ? 1 : ai - bi;

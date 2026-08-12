@@ -559,42 +559,53 @@ a { text-decoration:none; color:inherit; }
 .meeting-tbl {
   width: 100%;
   border-collapse: collapse;
-  min-width: 500px;
+  min-width: 700px;
   font-size: 12px;
 }
 /* 헤더 */
 .meeting-th-period {
-  background: #2d3748;
-  color: #fff;
+  background: var(--sky-pale);
+  color: var(--brown);
   text-align: center;
-  padding: 10px 8px;
+  padding: 5px 6px;
   font-size: 12px;
   font-weight: 700;
-  min-width: 62px;
-  border-radius: 6px 0 0 0;
+  min-width: 80px;
+  border: 1px solid var(--border-lt);
+  border-right: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 3;
 }
 .meeting-th-day {
-  background: #2d3748;
-  color: #fff;
+  background: var(--sky-pale);
+  color: var(--brown);
   text-align: center;
-  padding: 10px 6px;
-  font-size: 13px;
+  padding: 5px 6px;
+  font-size: 12px;
   font-weight: 700;
+  border: 1px solid var(--border-lt);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
-.meeting-th-day:last-child { border-radius: 0 6px 0 0; }
 /* 교시 셀 */
 .meeting-td-period {
-  background: var(--bg-soft);
+  background: var(--white);
   text-align: center;
-  padding: 8px 4px;
-  border-bottom: 1px solid var(--border-lt);
+  padding: 5px 6px;
+  border: 1px solid var(--border-lt);
   border-right: 2px solid var(--border);
-  min-width: 60px;
+  min-width: 80px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
 }
 .meeting-period-num {
   display: block;
-  font-size: 16px;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 800;
   color: var(--brown);
   line-height: 1.2;
 }
@@ -618,15 +629,15 @@ a { text-decoration:none; color:inherit; }
 /* 데이터 셀 */
 .meeting-td {
   text-align: center;
-  padding: 8px 6px;
+  padding: 5px 6px;
   border: 1px solid var(--border-lt);
   vertical-align: middle;
   min-width: 90px;
 }
 /* 전체 공강 - 녹색 */
 .meeting-td.free-all {
-  background: #eafaf1;
-  border-color: #a9dfbf;
+  background: var(--cell-free-bg);
+  border-color: var(--border-lt);
 }
 .mtd-check { font-size: 18px; line-height: 1.2; }
 .mtd-free-label {
@@ -637,8 +648,8 @@ a { text-decoration:none; color:inherit; }
 }
 /* 일부 공강 - 연한 배경 */
 .meeting-td.free-partial {
-  background: #fdf9e8;
-  border-color: #f0d060;
+  background: var(--cell-select-bg);
+  border-color: var(--border-lt);
 }
 .mtd-teaching-count {
   font-size: 12px;

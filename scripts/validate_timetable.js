@@ -77,8 +77,18 @@ assert(labRules.computerMon['3'] === '309 출판 박정민' && labRules.computer
 assert(labRules.computerTue['12'] === '107 사무 이상분' && labRules.computerTue['3'] === '', '컴그실 화요일 4교시 오류');
 assert(labRules.businessMon['3'] === '307 기자 임홍재', '사행실 3학년 4교시 오류');
 
-const bottom = read(`ALL_TEACHERS.slice(-7)`);
-assert(JSON.stringify(bottom) === JSON.stringify(['김지윤','송혜리','중국어특성화','중어온라인','지과온라인','화학온라인','물리온라인']), '교사 맨 아래 순서 오류');
+const bottom = read(`ALL_TEACHERS.slice(-8)`);
+assert(JSON.stringify(bottom) === JSON.stringify(['김지윤','송혜리','중국어특성화','중어온라인','지과온라인','화학온라인','물리온라인','경제온라인']), '교사 맨 아래 순서 오류');
+
+const contactMoves = read(`({
+  kimYuri: STAFF_CONTACTS.find(c => c.name === '김유리'),
+  hongWonjeong: STAFF_CONTACTS.find(c => c.name === '홍원정')
+})`);
+assert(contactMoves.kimYuri?.dept === '본교무실' && !contactMoves.kimYuri.role.includes('휴직'), '김유리 본교무실 연락처 이동 오류');
+assert(contactMoves.hongWonjeong?.dept === '학생생활안전부' && !contactMoves.hongWonjeong.role.includes('휴직'), '홍원정 학생부 연락처 이동 오류');
+
+const externalBlock = read(`buildSwapLessonBlock('201 독서', '강승표', '월', 1, true, 0)`);
+assert(externalBlock.includes('var(--cell-mint-bg)') && !externalBlock.includes('[강사]'), '교체·대체 민트 수업에 [강사] 표시가 남아 있음');
 
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();

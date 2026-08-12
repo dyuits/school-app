@@ -257,7 +257,6 @@ function buildSwapLessonBlock(value, teacher, day, period, isExternal = false, e
   let label = info.classLabel;
   if (isExternal) {
     style += 'background:var(--cell-mint-bg);border:1px solid var(--cell-mint-bd);';
-    label = `[강사]${label}`;
   } else if (info.isSelect) {
     style += 'background:var(--cell-select-bg);border:1px solid var(--cell-select-bd);';
     label = `${label} · 교체불가`;
