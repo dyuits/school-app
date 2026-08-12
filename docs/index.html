@@ -268,7 +268,10 @@
               <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">교시</label>
               <select id="resPeriodSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
                 <option value="">교시 선택</option>
-                <option>1교시</option><option>2교시</option><option>3교시</option><option>4교시</option><option>5교시</option><option>6교시</option><option>7교시</option>
+                <option>1교시</option><option>2교시</option><option>3교시</option>
+                <option value="4교시-12">4교시 (1·2학년 11:40~12:30)</option>
+                <option value="4교시-3">4교시 (3학년 12:40~13:30)</option>
+                <option>5교시</option><option>6교시</option><option>7교시</option>
               </select>
             </div>
             <div>
@@ -3767,13 +3770,17 @@ function addReservation() {
   if (!room || !day || !period || !teacher) { alert('실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return; }
   const dayKey = day.replace('요일', '');
   const periodNumber = parseInt(period, 10);
-  const regularUse = LAB_SCHEDULE[room]?.[dayKey]?.[periodNumber] || '';
+  const gradeGroup = period === '4교시-3' ? '3' : period === '4교시-12' ? '12' : null;
+  const rawRegularUse = LAB_SCHEDULE[room]?.[dayKey]?.[periodNumber] || '';
+  const regularUse = gradeGroup && rawRegularUse && typeof rawRegularUse === 'object'
+    ? (rawRegularUse[gradeGroup] || '')
+    : rawRegularUse;
   if (regularUse) {
     alert(`정규수업이 있는 시간입니다.\n${regularUse}`);
     return;
   }
   // 중복 확인
-  if (reservations.find(r => r.room===room && r.day===day && r.period===period)) {
+  if (reservations.find(r => r.room===room && r.day===day && (r.period===period || (periodNumber===4 && r.period==='4교시')))) {
     alert('해당 시간에 이미 예약이 있습니다.');
     return;
   }
@@ -3794,7 +3801,7 @@ function renderReservations() {
     <tr style="border-bottom:1px solid #eee;">
       <td style="padding:8px 10px;text-align:center;font-weight:600;">${r.room}</td>
       <td style="padding:8px 10px;text-align:center;">${r.day}</td>
-      <td style="padding:8px 10px;text-align:center;">${r.period}</td>
+      <td style="padding:8px 10px;text-align:center;">${r.period === '4교시-12' ? '4교시 (1·2학년)' : r.period === '4교시-3' ? '4교시 (3학년)' : r.period}</td>
       <td style="padding:8px 10px;text-align:center;">${r.teacher}</td>
       <td style="padding:8px 10px;">${r.purpose}</td>
       <td style="padding:8px 10px;text-align:center;"><button onclick="cancelReservation(${i})" style="padding:4px 10px;background:#fce4ec;color:#c62828;border:none;border-radius:6px;font-size:12px;cursor:pointer;">취소</button></td>
