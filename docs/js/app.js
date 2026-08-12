@@ -246,6 +246,119 @@ function isClassBusy(classInfo, day, period, ignoreLessons = []) {
   });
 }
 
+function createLessonRecord(teacher, day, period, value, forceExternal = false) {
+  const info = parseCellValue(value, teacher, day + period, forceExternal);
+  return {
+    teacher, day, period, value,
+    grade: info.grade,
+    classNum: info.classNum,
+    classKey: info.grade && info.classNum ? `${info.grade}-${info.classNum}` : null,
+    interval: getLessonInterval(period, info.grade),
+    isExternal: forceExternal,
+  };
+}
+
+function createScheduleSnapshot() {
+  return { teacherRecords:new Map(), classRecords:new Map() };
+}
+
+function getTeacherLessonRecords(teacher, snapshot = null) {
+  const cache = snapshot?.teacherRecords;
+  if (cache?.has(teacher)) return cache.get(teacher);
+  const records = [];
+  for (const [slot, value] of Object.entries(TEACHER_SCHEDULE[teacher] || {})) {
+    const parts = slotParts(slot);
+    if (parts && value) records.push(createLessonRecord(teacher, parts.day, parts.period, value));
+  }
+
+  // 산학교사 공동수업은 일반 시간표와 별도 데이터에 있으나 교사는 실제로 임장한다.
+  if (typeof INDUSTRY_CO_TEACHING_TEACHERS !== 'undefined' &&
+      INDUSTRY_CO_TEACHING_TEACHERS.has(teacher) &&
+      typeof EXTERNAL_LESSONS !== 'undefined') {
+    for (const [slot, values] of Object.entries(EXTERNAL_LESSONS[teacher] || {})) {
+      const parts = slotParts(slot);
+      if (!parts) continue;
+      values.forEach(value => records.push(createLessonRecord(teacher, parts.day, parts.period, value, true)));
+    }
+  }
+  if (cache) cache.set(teacher, records);
+  return records;
+}
+
+function getClassLessonRecords(classKey, snapshot = null) {
+  const cache = snapshot?.classRecords;
+  if (cache?.has(classKey)) return cache.get(classKey);
+  const grade = String(classKey || '').split('-')[0];
+  const records = [];
+  for (const [slot, value] of Object.entries(CLASS_SCHEDULE[classKey] || {})) {
+    const parts = slotParts(slot);
+    if (!parts || !value) continue;
+    records.push({
+      classKey, day:parts.day, period:parts.period, value,
+      interval:getLessonInterval(parts.period, grade),
+    });
+  }
+  if (cache) cache.set(classKey, records);
+  return records;
+}
+
+function findScheduleRecordConflicts(records) {
+  const conflicts = [];
+  for (let i = 0; i < records.length; i++) {
+    for (let j = i + 1; j < records.length; j++) {
+      if (records[i].day === records[j].day && intervalsOverlap(records[i].interval, records[j].interval)) {
+        conflicts.push([records[i], records[j]]);
+      }
+    }
+  }
+  return conflicts;
+}
+
+function isSameTeacherLesson(record, source) {
+  return record.teacher === source.teacher && record.day === source.day &&
+    record.period === source.period && String(record.value) === String(source.value);
+}
+
+// 두 원수업을 제거한 뒤 서로의 시간에 임시 배치하여 최종 교사·학급 상태를 검증한다.
+function evaluateVirtualSwap(sourceA, sourceB, snapshot = null) {
+  const movedA = { ...sourceA, day:sourceB.day, period:sourceB.period, interval:getLessonInterval(sourceB.period, sourceA.grade) };
+  const movedB = { ...sourceB, day:sourceA.day, period:sourceA.period, interval:getLessonInterval(sourceA.period, sourceB.grade) };
+  const teacherConflicts = [];
+  const classConflicts = [];
+
+  for (const teacher of new Set([sourceA.teacher, sourceB.teacher])) {
+    const finalRecords = getTeacherLessonRecords(teacher, snapshot)
+      .filter(record => !isSameTeacherLesson(record, sourceA) && !isSameTeacherLesson(record, sourceB));
+    if (movedA.teacher === teacher) finalRecords.push(movedA);
+    if (movedB.teacher === teacher) finalRecords.push(movedB);
+    findScheduleRecordConflicts(finalRecords).forEach(conflict => teacherConflicts.push({ teacher, conflict }));
+  }
+
+  for (const classKey of new Set([sourceA.classKey, sourceB.classKey].filter(Boolean))) {
+    const finalRecords = getClassLessonRecords(classKey, snapshot).filter(record => {
+      const removesA = sourceA.classKey === classKey && record.day === sourceA.day && record.period === sourceA.period;
+      const removesB = sourceB.classKey === classKey && record.day === sourceB.day && record.period === sourceB.period;
+      return !removesA && !removesB;
+    });
+    if (movedA.classKey === classKey) finalRecords.push({ ...movedA, classKey });
+    if (movedB.classKey === classKey) finalRecords.push({ ...movedB, classKey });
+    findScheduleRecordConflicts(finalRecords).forEach(conflict => classConflicts.push({ classKey, conflict }));
+  }
+
+  return {
+    valid: teacherConflicts.length === 0 && classConflicts.length === 0,
+    teacherConflicts,
+    classConflicts,
+  };
+}
+
+function canSubstituteLesson(candidate, day, period, targetInfo) {
+  if (isTeacherBusyAt(candidate, day, period, targetInfo)) return false;
+  if (!targetInfo?.grade || !targetInfo?.classNum) return true;
+  const classKey = `${targetInfo.grade}-${targetInfo.classNum}`;
+  return !isClassBusy(targetInfo, day, period, [{ classKey, day, period }]);
+}
+
 // 교사의 학년군 파악 (3학년 or 1·2학년)
 function getTeacherGradeGroup(teacher) {
   const sch = TEACHER_SCHEDULE[teacher] || {};
@@ -449,11 +562,12 @@ function openLessonMatching(teacher, day, period, val, forceExternal = false) {
 }
 
 // 교체(맞교환) 후보
-// 교체 조건: 상대방이 '내가 가르치는 반'에 수업이 있고,
-// 그 시간에 내가 공강이며, 내 수업 시간에 상대방이 공강인 경우
-function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
+// 교체 조건: 두 원수업을 제거하고 서로의 시간에 가상 배치한 최종 상태에서
+// 양쪽 교사와 양쪽 학급 모두 시간 충돌이 없어야 한다.
+function findSwapCandidates(myTeacher, myDay, myPeriod, myVal, scheduleSnapshot = createScheduleSnapshot()) {
   const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod);
   if (!myVal || myInfo.isSelect || myInfo.isMint || isExternalLesson(myTeacher, myDay, myPeriod, myVal) || !myInfo.grade || !myInfo.classNum) return [];
+  const sourceLesson = createLessonRecord(myTeacher, myDay, myPeriod, myVal);
 
   const results = [];
   const seen = new Set(); // 중복 방지
@@ -478,14 +592,15 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
         const otherInfo = parseCellValue(otherVal, other, d + p);
         if (otherInfo.isSelect || otherInfo.isMint || isExternalLesson(other, d, p, otherVal) || !otherInfo.grade || !otherInfo.classNum) return;
         const ignored = [
-          { teacher: myTeacher, classKey:`${myInfo.grade}-${myInfo.classNum}`, day: myDay, period: myPeriod },
-          { teacher: other, classKey:`${otherInfo.grade}-${otherInfo.classNum}`, day: d, period: p }
+          { teacher:myTeacher, classKey:sourceLesson.classKey, day:myDay, period:myPeriod },
+          { teacher:other, classKey:`${otherInfo.grade}-${otherInfo.classNum}`, day:d, period:p },
         ];
-        const teacherAFree = !isTeacherBusyAt(myTeacher, d, p, myInfo, ignored);
-        const teacherBFree = !isTeacherBusyAt(other, myDay, myPeriod, otherInfo, ignored);
-        const classAFree = !isClassBusy(myInfo, d, p, ignored);
-        const classBFree = !isClassBusy(otherInfo, myDay, myPeriod, ignored);
-        if (!teacherAFree || !teacherBFree || !classAFree || !classBFree) return;
+        if (isTeacherBusyAt(myTeacher, d, p, myInfo, ignored) ||
+            isTeacherBusyAt(other, myDay, myPeriod, otherInfo, ignored) ||
+            isClassBusy(myInfo, d, p, ignored) ||
+            isClassBusy(otherInfo, myDay, myPeriod, ignored)) return;
+        const candidateLesson = createLessonRecord(other, d, p, otherVal);
+        if (!evaluateVirtualSwap(sourceLesson, candidateLesson, scheduleSnapshot).valid) return;
         const key = `${other}|${d}|${p}`;
         if (seen.has(key)) return;
         seen.add(key);
@@ -512,7 +627,7 @@ function findSubstituteCandidates(myTeacher, day, period, lessonValue = '') {
     CHANGCHE_AVAILABLE_TEACHERS.forEach(candidate => {
       if (isBlockedTime(candidate, day, period)) return;
       const targetInfo = parseCellValue(lessonValue || '101 창체', myTeacher, key);
-      if (!isTeacherBusyAt(candidate, day, period, targetInfo)) {
+      if (canSubstituteLesson(candidate, day, period, targetInfo)) {
         results.push({ teacher: candidate, subject: '창체' });
       }
     });
@@ -531,7 +646,7 @@ function findSubstituteCandidates(myTeacher, day, period, lessonValue = '') {
     if (candidate.includes('온라인') || candidate === '중국어특성화') return;
     if (isBlockedTime(candidate, day, period)) return;
     if (isChatcheTime(candidate, day, period)) return;
-    if (!isTeacherBusyAt(candidate, day, period, targetInfo)) {
+    if (canSubstituteLesson(candidate, day, period, targetInfo)) {
       results.push({ teacher: candidate, subject });
     }
   });

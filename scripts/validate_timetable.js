@@ -126,31 +126,88 @@ const industryMeetingAudit = read(`(() => {
 })()`);
 assert(industryMeetingAudit.length === 0, '산학교사 임장 수업이 협의시간에서 공강으로 판정됨');
 
+const reportedSwapRegression = read(`(() => {
+  const source = createLessonRecord('김영주', '금', 4, TEACHER_SCHEDULE['김영주']['금4']);
+  const candidate = createLessonRecord('김재현', '화', 2, TEACHER_SCHEDULE['김재현']['화2']);
+  const evaluation = evaluateVirtualSwap(source, candidate);
+  const shown = findSwapCandidates('김영주', '금', 4, TEACHER_SCHEDULE['김영주']['금4'])
+    .some(item => item.teacher === '김재현' && item.day === '화' && item.period === 2);
+  return {
+    shown,
+    valid: evaluation.valid,
+    teacherConflicts: evaluation.teacherConflicts.map(item => item.teacher),
+    classConflictCount: evaluation.classConflicts.length,
+  };
+})()`);
+assert(!reportedSwapRegression.shown, '김영주 금4 ↔ 김재현 화2 오류 후보가 다시 표시됨');
+assert(!reportedSwapRegression.valid && reportedSwapRegression.teacherConflicts.includes('김영주'), '김영주 화2 임장 충돌을 가상 맞교환 검증이 찾지 못함');
+
+const baseCollisionAudit = read(`(() => {
+  let teacherConflicts = 0;
+  let classConflicts = 0;
+  const snapshot = createScheduleSnapshot();
+  for (const teacher of Object.keys(TEACHER_SCHEDULE)) {
+    teacherConflicts += findScheduleRecordConflicts(getTeacherLessonRecords(teacher, snapshot)).length;
+  }
+  for (const classKey of Object.keys(CLASS_SCHEDULE)) {
+    classConflicts += findScheduleRecordConflicts(getClassLessonRecords(classKey, snapshot)).length;
+  }
+  return { teacherConflicts, classConflicts };
+})()`);
+assert(baseCollisionAudit.teacherConflicts === 0, '현재 교사시간표에 중복 수업이 있음');
+assert(baseCollisionAudit.classConflicts === 0, '현재 학급시간표에 중복 수업이 있음');
+
+const specialRoomPolicyAudit = read(`(() => {
+  const source = createLessonRecord('가상교사A', '월', 1, '101 테스트 회계실');
+  const candidate = createLessonRecord('가상교사B', '화', 2, '102 테스트');
+  const snapshot = createScheduleSnapshot();
+  snapshot.teacherRecords.set(source.teacher, [source]);
+  snapshot.teacherRecords.set(candidate.teacher, [candidate]);
+  snapshot.classRecords.set(source.classKey, [{ ...source }]);
+  snapshot.classRecords.set(candidate.classKey, [{ ...candidate }]);
+  return {
+    roomAlreadyUsed: !!LAB_SCHEDULE['회계실']['화'][2],
+    swapAllowed: evaluateVirtualSwap(source, candidate, snapshot).valid,
+  };
+})()`);
+assert(specialRoomPolicyAudit.roomAlreadyUsed && specialRoomPolicyAudit.swapAllowed, '특별실 충돌 때문에 교체 후보가 차단됨');
+
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
-  let badSubstitutes = 0, placeholderSubstitutes = 0, selectionSwaps = 0, externalSwaps = 0, swapCount = 0;
+  let badSubstitutes = 0, placeholderSubstitutes = 0, invalidSubstitutes = 0;
+  let selectionSwaps = 0, externalSwaps = 0, invalidVirtualSwaps = 0, swapCount = 0;
+  const snapshot = createScheduleSnapshot();
   const auditLesson = (teacher, slot, value, external = false) => {
     const match = slot.match(/^(.+?)([1-7])$/); if (!match) return;
     const day = match[1], period = Number(match[2]);
     const info = parseCellValue(value, teacher, slot, external);
-    const swaps = external ? [] : findSwapCandidates(teacher, day, period, value);
+    const swaps = external ? [] : findSwapCandidates(teacher, day, period, value, snapshot);
     swapCount += swaps.length;
     if (info.isSelect) selectionSwaps += swaps.length;
     if (external) externalSwaps += swaps.length;
+    const source = external ? null : createLessonRecord(teacher, day, period, value);
+    for (const swap of swaps) {
+      const candidateValue = (TEACHER_SCHEDULE[swap.teacher] || {})[swap.day + swap.period];
+      const candidate = createLessonRecord(swap.teacher, swap.day, swap.period, candidateValue);
+      if (!evaluateVirtualSwap(source, candidate, snapshot).valid) invalidVirtualSwaps++;
+    }
     const sourceGroup = Object.entries(groups).find(([, names]) => names.includes(teacher));
     for (const candidate of findSubstituteCandidates(teacher, day, period, value)) {
       if (!sourceGroup || !sourceGroup[1].includes(candidate.teacher)) badSubstitutes++;
       if (candidate.teacher.includes('온라인') || candidate.teacher === '중국어특성화') placeholderSubstitutes++;
+      if (!canSubstituteLesson(candidate.teacher, day, period, info)) invalidSubstitutes++;
     }
   };
   for (const [teacher, row] of Object.entries(TEACHER_SCHEDULE)) for (const [slot, value] of Object.entries(row)) auditLesson(teacher, slot, value);
   for (const [teacher, row] of Object.entries(EXTERNAL_LESSONS)) for (const [slot, values] of Object.entries(row)) for (const value of values) auditLesson(teacher, slot, value, true);
-  return { badSubstitutes, placeholderSubstitutes, selectionSwaps, externalSwaps, swapCount };
+  return { badSubstitutes, placeholderSubstitutes, invalidSubstitutes, selectionSwaps, externalSwaps, invalidVirtualSwaps, swapCount };
 })()`);
 assert(candidateAudit.badSubstitutes === 0, '다른 교과 대체 후보 발생');
 assert(candidateAudit.placeholderSubstitutes === 0, '온라인/특성화 표시 항목이 대체 교사로 나옴');
+assert(candidateAudit.invalidSubstitutes === 0, '교사/학급 충돌이 있는 대체 후보 발생');
 assert(candidateAudit.selectionSwaps === 0, '선택과목 교체 후보 발생');
 assert(candidateAudit.externalSwaps === 0, '외부강사 교체 후보 발생');
+assert(candidateAudit.invalidVirtualSwaps === 0, '가상 맞교환 후 충돌하는 교체 후보 발생');
 
 console.log(JSON.stringify({
   teacherCount: read(`Object.keys(TEACHER_SCHEDULE).length`),
@@ -162,8 +219,14 @@ console.log(JSON.stringify({
   externalSwaps: candidateAudit.externalSwaps,
   industryCoTeachingSubstitutes: industryCoTeachingAudit.substituteCount,
   industryMeetingMisses: industryMeetingAudit.length,
+  reportedSwapRegression,
+  teacherScheduleConflicts: baseCollisionAudit.teacherConflicts,
+  classScheduleConflicts: baseCollisionAudit.classConflicts,
+  specialRoomPolicyAudit,
   onlineSubjectTeachers: onlineSubjectTeachers.length,
   songJunhanLessonCount,
+  invalidSubstitutes: candidateAudit.invalidSubstitutes,
+  invalidVirtualSwaps: candidateAudit.invalidVirtualSwaps,
   swapCandidatesChecked: candidateAudit.swapCount,
   subjectRules,
   periodRules,
