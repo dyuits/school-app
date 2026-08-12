@@ -253,12 +253,8 @@
               <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">실습실 선택</label>
               <select id="resRoomSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
                 <option value="">실습실를 선택하세요</option>
-                <option>컴퓨터실(1)</option>
-                <option>컴퓨터실(2)</option>
-                <option>컴퓨터실(3)</option>
-                <option>실습실(1)</option>
-                <option>실습실(2)</option>
-                <option>실습실(3)</option>
+                <option>만콘실</option><option>영상실</option><option>컴그실</option>
+                <option>회계실</option><option>사행실</option><option>창구실</option><option>전상실</option>
               </select>
             </div>
             <div>
@@ -272,7 +268,7 @@
               <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">교시</label>
               <select id="resPeriodSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
                 <option value="">교시 선택</option>
-                <option>1교시</option><option>2교시</option><option>3궐시</option><option>4궐시</option><option>5궐시</option><option>6궐시</option><option>7궐시</option>
+                <option>1교시</option><option>2교시</option><option>3교시</option><option>4교시</option><option>5교시</option><option>6교시</option><option>7교시</option>
               </select>
             </div>
             <div>
@@ -3768,6 +3764,13 @@ function addReservation() {
   const teacher = document.getElementById('resTeacherName').value.trim();
   const purpose = document.getElementById('resPurpose').value.trim();
   if (!room || !day || !period || !teacher) { alert('실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return; }
+  const dayKey = day.replace('요일', '');
+  const periodNumber = parseInt(period, 10);
+  const regularUse = LAB_SCHEDULE[room]?.[dayKey]?.[periodNumber] || '';
+  if (regularUse) {
+    alert(`정규수업이 있는 시간입니다.\n${regularUse}`);
+    return;
+  }
   // 중복 확인
   if (reservations.find(r => r.room===room && r.day===day && r.period===period)) {
     alert('해당 시간에 이미 예약이 있습니다.');
@@ -3815,7 +3818,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/data.js?v=20260428"></script>
-<script src="js/app.js?v=20260428"></script>
+<script src="js/data.js?v=20260812"></script>
+<script src="js/app.js?v=20260812"></script>
 </body>
 </html>
