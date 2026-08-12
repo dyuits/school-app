@@ -98,10 +98,10 @@ function switchTab(name) {
 
 // 셀값 파싱: "106 국어1" → {subject, classLabel, grade, classNum, isSelect, isMint, isOnline}
 // teacher 매개변수: 해당 셀의 교사명 (MINT_TEACHERS 체크용)
-function parseCellValue(v, teacher, slot) {
+function parseCellValue(v, teacher, slot, forceExternal = false) {
   if (!v) return { subject:'', classLabel:'', grade:null, classNum:null, isSelect:false, isMint:false, isOnline:false };
   const s = String(v).trim();
-  let grade = null, classNum = null, isSelect = false, isMint = false, isOnline = false;
+  let grade = null, classNum = null, isSelect = false, isMint = forceExternal, isOnline = false;
 
   // SELECT_CELLS 기반 선택과목 판정 (PDF 노란색 셀)
   if (slot && typeof SELECT_CELLS !== 'undefined' && SELECT_CELLS[teacher] && SELECT_CELLS[teacher].has(slot)) {
@@ -112,9 +112,10 @@ function parseCellValue(v, teacher, slot) {
   if (teacher && typeof MINT_TEACHERS !== 'undefined' && MINT_TEACHERS.has(teacher)) {
     isMint = true;
   }
-  // MINT_CELLS 기반 셀 단위 민트 판정 (PDF 민트색 셀)
-  if (slot && typeof MINT_CELLS !== 'undefined' && MINT_CELLS[teacher] && MINT_CELLS[teacher].has(slot)) {
-    isMint = true;
+  // 혼합 셀에서 일반수업까지 민트로 판정하지 않도록 수업값까지 비교한다.
+  if (!isMint && slot && typeof EXTERNAL_LESSONS !== 'undefined') {
+    const externalValues = EXTERNAL_LESSONS[teacher]?.[slot] || [];
+    isMint = externalValues.some(value => String(value).trim() === s);
   }
   // 온라인 수업 키워드 체크 (교사 없음)
   const onlineKeywords = ['온라인', 'online', '물리온라인'];
@@ -138,7 +139,6 @@ function parseCellValue(v, teacher, slot) {
     classNum = cn > 10 ? null : cn;
     if (cn > 10) isSelect = true;  // SELECT_CELLS 판정 유지, 반호 기반 추가
     const subject = roomM[3];
-    // 선택 타임은 반호가 301처럼 일반반 형태여도 A_~N_ 접두어로 식별한다.
     if (/^[A-N]_/.test(subject)) isSelect = true;
     // 온라인 포함 과목명 체크
     if (onlineKeywords.some(k => subject.toLowerCase().includes(k.toLowerCase()))) {
@@ -168,28 +168,66 @@ function isBlockedTime(teacher, day, period) {
   return bs[day].includes(period);
 }
 
-// 외부강사 여부는 화면 색상이 아니라 시간표 메타데이터로 판정한다.
-function isExternalLesson(teacher, day, period) {
+function getExternalLessonValues(teacher, day, period) {
+  return (typeof EXTERNAL_LESSONS !== 'undefined' && EXTERNAL_LESSONS[teacher]?.[day + period]) || [];
+}
+
+function isExternalLesson(teacher, day, period, value = '') {
   const slot = day + period;
-  return (typeof EXTERNAL_INSTRUCTORS !== 'undefined' && EXTERNAL_INSTRUCTORS.has(teacher)) ||
-    (typeof EXTERNAL_INSTRUCTOR_CELLS !== 'undefined' &&
-      EXTERNAL_INSTRUCTOR_CELLS[teacher]?.has(slot));
+  if (typeof EXTERNAL_INSTRUCTORS !== 'undefined' && EXTERNAL_INSTRUCTORS.has(teacher)) return true;
+  const externalValues = getExternalLessonValues(teacher, day, period);
+  if (value) return externalValues.some(v => String(v).trim() === String(value).trim());
+  return externalValues.length > 0 && !(TEACHER_SCHEDULE[teacher] || {})[slot];
 }
 
-function sameClass(a, b) {
-  return !!a?.grade && !!a?.classNum && a.grade === b?.grade && a.classNum === b?.classNum;
+function getGradeGroup(grade) { return String(grade) === '3' ? '3' : '12'; }
+
+function getPeriodTime(period, grade = null) {
+  const gradeTime = grade && typeof PERIOD_TIMES_BY_GRADE !== 'undefined'
+    ? PERIOD_TIMES_BY_GRADE[getGradeGroup(grade)]?.[period]
+    : null;
+  return gradeTime?.time || PERIOD_TIMES[period]?.time || '';
 }
 
-// 교사시간표를 현재 상태의 단일 원천으로 사용해 특정 학급의 점유 여부를 계산한다.
-// 맞교환 당사자 두 수업은 가상 이동 전에 제거하므로 ignoreLessons로 제외한다.
+function getLessonInterval(period, grade = null) {
+  const times = getPeriodTime(period, grade).match(/(\d{1,2}):(\d{2})\s*[~∼-]\s*(\d{1,2}):(\d{2})/);
+  if (!times) return null;
+  return {
+    start: Number(times[1]) * 60 + Number(times[2]),
+    end: Number(times[3]) * 60 + Number(times[4]),
+  };
+}
+
+function intervalsOverlap(a, b) {
+  return !!a && !!b && a.start < b.end && b.start < a.end;
+}
+
+function slotParts(slot) {
+  const match = String(slot).match(/^(.+?)([1-7])$/);
+  return match ? { day:match[1], period:Number(match[2]) } : null;
+}
+
+function isTeacherBusyAt(teacher, day, period, targetInfo, ignoreLessons = []) {
+  const target = getLessonInterval(period, targetInfo?.grade);
+  const schedule = TEACHER_SCHEDULE[teacher] || {};
+  return Object.entries(schedule).some(([slot, value]) => {
+    const parts = slotParts(slot);
+    if (!parts || parts.day !== day || !value) return false;
+    if (ignoreLessons.some(x => x.teacher === teacher && x.day === parts.day && x.period === parts.period)) return false;
+    const existingInfo = parseCellValue(value, teacher, slot);
+    return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+  });
+}
+
 function isClassBusy(classInfo, day, period, ignoreLessons = []) {
   if (!classInfo?.grade || !classInfo?.classNum) return false;
-  const slot = day + period;
-  return ALL_TEACHERS.some(teacher => {
-    const value = (TEACHER_SCHEDULE[teacher] || {})[slot];
-    if (!value) return false;
-    if (ignoreLessons.some(x => x.teacher === teacher && x.day === day && x.period === period)) return false;
-    return sameClass(classInfo, parseCellValue(value, teacher, slot));
+  const classKey = `${classInfo.grade}-${classInfo.classNum}`;
+  const target = getLessonInterval(period, classInfo.grade);
+  return Object.entries(CLASS_SCHEDULE[classKey] || {}).some(([slot, value]) => {
+    const parts = slotParts(slot);
+    if (!parts || parts.day !== day || !value) return false;
+    if (ignoreLessons.some(x => x.classKey === classKey && x.day === parts.day && x.period === parts.period)) return false;
+    return intervalsOverlap(target, getLessonInterval(parts.period, classInfo.grade));
   });
 }
 
@@ -209,6 +247,27 @@ function getTeacherGradeGroup(teacher) {
 // ═══════════════════════════════════════════════
 // 교체/대체 시간표 탭
 // ═══════════════════════════════════════════════
+function buildSwapLessonBlock(value, teacher, day, period, isExternal = false, externalIndex = 0) {
+  const key = day + period;
+  const info = parseCellValue(value, teacher, key, isExternal);
+  const clickFn = isExternal
+    ? `onExternalCellClick('${teacher}','${day}',${period},${externalIndex});event.stopPropagation();`
+    : `onCellClick('${teacher}','${day}',${period});event.stopPropagation();`;
+  let style = 'padding:3px 2px;border-radius:4px;cursor:pointer;';
+  let label = info.classLabel;
+  if (isExternal) {
+    style += 'background:var(--cell-mint-bg);border:1px solid var(--cell-mint-bd);';
+    label = `[강사]${label}`;
+  } else if (info.isSelect) {
+    style += 'background:var(--cell-select-bg);border:1px solid var(--cell-select-bd);';
+    label = `${label} · 교체불가`;
+  }
+  return `<div style="${style}" onclick="${clickFn}">
+    <div class="cell-subject">${info.subject}</div>
+    <div class="cell-class" style="font-size:8px;">${label}</div>
+  </div>`;
+}
+
 function renderSwapTable() {
   const wrap = qs('#swapTableWrap');
   if (!wrap) return;
@@ -242,6 +301,7 @@ function renderSwapTable() {
       PERIODS.forEach((period, pi) => {
         const key = day + period;
         const val = sch[key] || '';
+        const externalValues = getExternalLessonValues(teacher, day, period);
         const blocked = isBlockedTime(teacher, day, period);
         const isChatech = isChatcheTime(teacher, day, period);
         const dayStartCls = pi === 0 ? 'day-start' : '';
@@ -253,9 +313,16 @@ function renderSwapTable() {
         let cellStyle = '';
         let cellContent = '';
         let clickable = '';
-        let cellInfo = null;
 
-        if (isLunchSlot && !val) {
+        if (val || externalValues.length) {
+          cellStyle = 'style="background:white;padding:2px;"';
+          const blocks = [];
+          if (val) blocks.push(buildSwapLessonBlock(val, teacher, day, period));
+          externalValues.forEach((externalValue, index) => {
+            blocks.push(buildSwapLessonBlock(externalValue, teacher, day, period, true, index));
+          });
+          cellContent = `<div style="display:flex;flex-direction:column;gap:2px;">${blocks.join('')}</div>`;
+        } else if (isLunchSlot) {
           cellStyle = 'style="background:#fffcee;cursor:default;"';
           cellContent = `<span style="font-size:9.5px;color:#c8a000;font-style:italic;">점심</span>`;
         } else if (blocked) {
@@ -265,39 +332,9 @@ function renderSwapTable() {
           cellStyle = 'style="background:var(--cell-chatech-bg);"';
           cellContent = `<span class="cell-chatech">창체</span>`;
           clickable = `onclick="onCellClick('${teacher}','${day}',${period})"`;
-        } else if (val) {
-          const info = parseCellValue(val, teacher, key);
-          cellInfo = info;
-          clickable = `onclick="onCellClick('${teacher}','${day}',${period})"`;
-          if (info.isSelect) {
-            cellStyle = 'style="background:var(--cell-select-bg);border-color:var(--cell-select-bd);"';
-            cellContent = `<div class="cell-inner">
-              <span class="cell-subject">${info.subject}</span>
-              <span class="cell-class cell-select-badge">${info.classLabel}</span>
-              <span style="font-size:7.5px;color:#b8860b;font-weight:700;margin-top:1px;">선택·교체불가</span>
-            </div>`;
-          } else if (info.isMint) {
-            cellStyle = 'style="background:var(--cell-mint-bg);border-color:var(--cell-mint-bd);"';
-            const mintLabel = teacher === '체육순회' ? '순회' : '강사';
-            cellContent = `<div class="cell-inner">
-              <span class="cell-subject">${info.subject}</span>
-              <span class="cell-class" style="font-size:8px;color:var(--cell-mint-bd);">[${mintLabel}]${info.classLabel}</span>
-            </div>`;
-          } else {
-            cellContent = `<div class="cell-inner">
-              <span class="cell-subject">${info.subject}</span>
-              <span class="cell-class">${info.classLabel}</span>
-            </div>`;
-          }
         }
 
-        const cellTitle = cellInfo?.isSelect
-          ? `${teacher} ${day}${period}교시 — 선택과목 (교체 불가, 대체만 가능)`
-          : cellInfo?.isMint
-            ? `${teacher} ${day}${period}교시 — 시간강사·산학협력 (교체 불가)`
-          : cellInfo?.isOnline
-            ? '온라인 수업 (교사 없음 — 교체·대체 불가)'
-          : (teacher === '체육순회' ? '체육순회 수업 (교체·대체 불가)' : `${teacher} ${day}${period}교시`);
+        const cellTitle = `${teacher} ${day}${period}교시${externalValues.length ? ' · 민트색은 외부강사 수업' : ''}`;
 
         html += `<td class="${cellClass}" id="cell-${teacher.replace(/\s/g,'_')}-${day}-${period}" 
                    ${cellStyle} ${clickable} title="${cellTitle}">
@@ -327,6 +364,16 @@ function onCellClick(teacher, day, period) {
   const sch = TEACHER_SCHEDULE[teacher] || {};
   const key = day + period;
   const val = sch[key];
+  openLessonMatching(teacher, day, period, val, false);
+}
+
+function onExternalCellClick(teacher, day, period, externalIndex = 0) {
+  const val = getExternalLessonValues(teacher, day, period)[externalIndex];
+  openLessonMatching(teacher, day, period, val, true);
+}
+
+function openLessonMatching(teacher, day, period, val, forceExternal = false) {
+  const key = day + period;
   const isChatech = isChatcheTime(teacher, day, period);
 
   if (!val && !isChatech) return;
@@ -342,7 +389,7 @@ function onCellClick(teacher, day, period) {
   STATE.selectedSwapDay = day;
   STATE.selectedSwapPeriod = period;
 
-  const info = parseCellValue(val || '', teacher, key);
+  const info = parseCellValue(val || '', teacher, key, forceExternal);
 
   // 온라인 수업 안내
   if (info.isOnline) {
@@ -357,15 +404,15 @@ function onCellClick(teacher, day, period) {
     openModal();
     return;
   }
-  if (isExternalLesson(teacher, day, period)) {
-    const subResults = findSubstituteCandidates(teacher, day, period);
-    renderResultModal(teacher, day, period, val, [], subResults);
+  if (forceExternal || isExternalLesson(teacher, day, period, val)) {
+    const subResults = findSubstituteCandidates(teacher, day, period, val);
+    renderResultModal(teacher, day, period, val, [], subResults, true);
     openModal();
     return;
   }
 
   const swapResults = findSwapCandidates(teacher, day, period, val);
-  const subResults  = findSubstituteCandidates(teacher, day, period);
+  const subResults  = findSubstituteCandidates(teacher, day, period, val);
 
   swapResults.forEach(r => {
     const cell = qs(`#cell-${r.teacher.replace(/\s/g,'_')}-${r.day}-${r.period}`);
@@ -377,25 +424,22 @@ function onCellClick(teacher, day, period) {
 }
 
 // 교체(맞교환) 후보
-// 두 수업을 제거한 뒤 서로의 시간에 가상 배치하여 교사/학급 충돌을 검사한다.
-// 특별실은 교체 가능 여부의 제한 조건으로 사용하지 않는다.
+// 교체 조건: 상대방이 '내가 가르치는 반'에 수업이 있고,
+// 그 시간에 내가 공강이며, 내 수업 시간에 상대방이 공강인 경우
 function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
   const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod);
-  if (!myVal || myInfo.isSelect || myInfo.isMint || isExternalLesson(myTeacher, myDay, myPeriod) || !myInfo.grade || !myInfo.classNum) return [];
+  if (!myVal || myInfo.isSelect || myInfo.isMint || isExternalLesson(myTeacher, myDay, myPeriod, myVal) || !myInfo.grade || !myInfo.classNum) return [];
 
   const results = [];
-  const myRow = TEACHER_SCHEDULE[myTeacher] || {};
   const seen = new Set(); // 중복 방지
 
   ALL_TEACHERS.forEach(other => {
     if (other === myTeacher) return;
+    // 민트 교사(시간강사/산학협력교사)는 교체 대상 아님
     if (typeof MINT_TEACHERS !== 'undefined' && MINT_TEACHERS.has(other)) return;
     if (isBlockedTime(other, myDay, myPeriod)) return;
     if (isChatcheTime(other, myDay, myPeriod)) return;
     const otherRow = TEACHER_SCHEDULE[other] || {};
-    // 상대방이 내 시간(myDay, myPeriod)에 수업이 있으면 교체 불가
-    if (otherRow[myDay + myPeriod]) return;
-
     DAYS.forEach(d => {
       PERIODS.forEach(p => {
         if (d === myDay && p === myPeriod) return;
@@ -407,28 +451,20 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
         const otherVal = otherRow[d + p];
         if (!otherVal) return;
         const otherInfo = parseCellValue(otherVal, other, d + p);
-        if (otherInfo.isSelect || otherInfo.isMint || isExternalLesson(other, d, p) || !otherInfo.grade || !otherInfo.classNum) return;
-
+        if (otherInfo.isSelect || otherInfo.isMint || isExternalLesson(other, d, p, otherVal) || !otherInfo.grade || !otherInfo.classNum) return;
         const ignored = [
-          { teacher: myTeacher, day: myDay, period: myPeriod },
-          { teacher: other, day: d, period: p }
+          { teacher: myTeacher, classKey:`${myInfo.grade}-${myInfo.classNum}`, day: myDay, period: myPeriod },
+          { teacher: other, classKey:`${otherInfo.grade}-${otherInfo.classNum}`, day: d, period: p }
         ];
-        const teacherAFree = !myRow[d + p];
-        const teacherBFree = !otherRow[myDay + myPeriod];
+        const teacherAFree = !isTeacherBusyAt(myTeacher, d, p, myInfo, ignored);
+        const teacherBFree = !isTeacherBusyAt(other, myDay, myPeriod, otherInfo, ignored);
         const classAFree = !isClassBusy(myInfo, d, p, ignored);
         const classBFree = !isClassBusy(otherInfo, myDay, myPeriod, ignored);
         if (!teacherAFree || !teacherBFree || !classAFree || !classBFree) return;
-
         const key = `${other}|${d}|${p}`;
         if (seen.has(key)) return;
         seen.add(key);
-        results.push({
-          teacher: other,
-          day: d,
-          period: p,
-          subject: otherInfo.subject,
-          theirClass: otherInfo.classLabel
-        });
+        results.push({ teacher: other, day: d, period: p, grade: otherInfo.grade, subject: otherInfo.subject, theirClass: otherInfo.classLabel });
       });
     });
   });
@@ -436,34 +472,35 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal) {
 }
 
 // 대체 후보 (공강 선생님 중 같은 교과)
-function findSubstituteCandidates(myTeacher, day, period) {
+function findSubstituteCandidates(myTeacher, day, period, lessonValue = '') {
   // 창체 시간인 경우: 비담임 교사 명단에서 해당 시간 공강인 교사를 대체 후보로 반환
   if (isChatcheTime(myTeacher, day, period)) {
     const results = [];
     const key = day + period;
     CHANGCHE_AVAILABLE_TEACHERS.forEach(candidate => {
       if (isBlockedTime(candidate, day, period)) return;
-      const candRow = TEACHER_SCHEDULE[candidate] || {};
-      if (!(candRow[key] || '').trim()) {
+      const targetInfo = parseCellValue(lessonValue || '101 창체', myTeacher, key);
+      if (!isTeacherBusyAt(candidate, day, period, targetInfo)) {
         results.push({ teacher: candidate, subject: '창체' });
       }
     });
     return results;
   }
 
-  const subMap = SUBJECT_SUBSTITUTE_MAP[myTeacher];
-  if (!subMap || subMap.canSubFor.length === 0) return [];
+  const subjectGroups = getSubjectGroups();
+  const subjectEntry = Object.entries(subjectGroups).find(([, teachers]) => teachers.includes(myTeacher));
+  if (!subjectEntry) return [];
+  const [subject, sameSubjectTeachers] = subjectEntry;
+  const targetInfo = parseCellValue(lessonValue || (TEACHER_SCHEDULE[myTeacher] || {})[day + period] || '', myTeacher, day + period);
 
   const results = [];
-  subMap.canSubFor.forEach(candidate => {
-    if (candidate === myTeacher || isExternalLesson(candidate, day, period)) return;
-    const candidateMap = SUBJECT_SUBSTITUTE_MAP[candidate];
-    if (!candidateMap || candidateMap.subject !== subMap.subject) return;
+  sameSubjectTeachers.forEach(candidate => {
+    if (candidate === myTeacher) return;
+    if (candidate.includes('온라인') || candidate === '중국어특성화') return;
     if (isBlockedTime(candidate, day, period)) return;
     if (isChatcheTime(candidate, day, period)) return;
-    const candRow = TEACHER_SCHEDULE[candidate] || {};
-    if (!(candRow[day + period] || '').trim()) {
-      results.push({ teacher: candidate, subject: subMap.subject });
+    if (!isTeacherBusyAt(candidate, day, period, targetInfo)) {
+      results.push({ teacher: candidate, subject });
     }
   });
   return results;
@@ -471,9 +508,9 @@ function findSubstituteCandidates(myTeacher, day, period) {
 
 // 결과 모달 – 차단됨(시간강사/산학협력교사 등)
 function renderResultModal_blocked(teacher, day, period, val, msg) {
-  const info = parseCellValue(val || '', teacher);
+  const info = parseCellValue(val || '', teacher, day + period);
   const dayNames = {월:'월요일',화:'화요일',수:'수요일',목:'목요일',금:'금요일'};
-  const periodTime = PERIOD_TIMES[period]?.time || '';
+  const periodTime = getPeriodTime(period, info.grade);
 
   qs('#modalMyLesson').innerHTML = `
     <div class="result-my-lesson mint">
@@ -501,17 +538,18 @@ function renderResultModal_blocked(teacher, day, period, val, msg) {
 }
 
 // 결과 모달 메인 렌더링
-function renderResultModal(teacher, day, period, val, swapRes, subRes) {
-  const info      = parseCellValue(val || '', teacher, day + period);
+function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExternal = false) {
+  const info      = parseCellValue(val || '', teacher, day + period, forceExternal);
+  const externalLesson = forceExternal || isExternalLesson(teacher, day, period, val);
   const isChatech = isChatcheTime(teacher, day, period) && !val;
   const lessonName = isChatech ? '창의적 체험활동(창체)' : (info.subject || val || '-');
   const dayNames = {월:'월요일',화:'화요일',수:'수요일',목:'목요일',금:'금요일'};
-  const periodTime = PERIOD_TIMES[period]?.time || '';
+  const periodTime = getPeriodTime(period, info.grade);
   const homeroomCls = TEACHER_TO_CLASS[teacher];
 
   // ── 선택 수업 박스 ──
   qs('#modalMyLesson').innerHTML = `
-    <div class="result-my-lesson ${info.isSelect ? 'select' : 'normal'}">
+    <div class="result-my-lesson ${externalLesson ? 'mint' : info.isSelect ? 'select' : 'normal'}">
       <div class="result-my-meta">
         <span class="result-meta-tag day">${dayNames[day] || day}</span>
         <span class="result-meta-tag period">${period}교시</span>
@@ -524,6 +562,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
       </div>
       <div class="result-my-teacher">${teacher} 선생님${homeroomCls ? ' · ' + homeroomCls + '반 담임' : ''}</div>
       ${info.isSelect ? '<div class="result-rule-badge select"><i class="fas fa-palette"></i> 선택과목 (노란색) — 대체만 가능, 교체 불가</div>' : ''}
+      ${externalLesson ? '<div class="result-rule-badge mint"><i class="fas fa-user-clock"></i> 외부강사 수업 (민트색) — 교체 불가</div>' : ''}
     </div>`;
 
   let html = '';
@@ -542,14 +581,11 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
     ${(!isChatech && !info.isSelect && swapRes.length > 0) ? `<span class="result-count-badge swap">${swapRes.length}명</span>` : ''}
   </div>`;
 
-  if (isExternalLesson(teacher, day, period)) {
-    html += `<div class="result-rule-notice mint">
-      <div class="result-rule-icon">🚫</div>
-      <div>
-        <div style="font-weight:700;font-size:13px;margin-bottom:3px;">외부강사 수업 · 교체 불가</div>
-        <div style="font-size:12px;color:var(--txt-mid);line-height:1.5;">외부강사 수업은 맞교환 후보에 포함하지 않습니다.<br>아래 동일 교과 대체 가능 선생님을 확인하세요.</div>
-      </div>
-    </div>`;
+  if (externalLesson) {
+    html += `<div class="result-rule-notice mint"><div class="result-rule-icon">🚫</div><div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:3px;">외부강사 수업 · 교체 불가</div>
+      <div style="font-size:12px;color:var(--txt-mid);line-height:1.5;">외부강사 수업은 맞교환 후보에 포함하지 않습니다.<br>아래 동일 교과 대체 가능 선생님을 확인하세요.</div>
+    </div></div>`;
   } else if (isChatech) {
     html += `<div class="result-empty-msg"><i class="fas fa-info-circle"></i> 창체 시간은 맞교환 대상이 아닙니다.</div>`;
   } else if (info.isSelect || !info.grade) {
@@ -564,7 +600,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
     html += `<div class="result-empty-msg"><i class="fas fa-search"></i> 교체 가능한 대상이 없습니다.<br><span style="font-size:11px;color:var(--txt-light);">조건: 상대방이 내 반(${info.classLabel})에 수업이 있고, 서로 시간을 맞바꿀 수 있는 경우</span></div>`;
   } else {
     swapRes.forEach((r, i) => {
-      const rPeriodTime = PERIOD_TIMES[r.period]?.time || '';
+      const rPeriodTime = getPeriodTime(r.period, r.grade);
       html += `
         <div class="result-card swap">
           <div class="result-card-num swap">${i + 1}</div>
@@ -594,8 +630,8 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
   </div>`;
 
   if (subRes.length === 0) {
-    const subMap = SUBJECT_SUBSTITUTE_MAP[teacher];
-    const subj = subMap ? subMap.subject : '';
+    const groupEntry = Object.entries(getSubjectGroups()).find(([, teachers]) => teachers.includes(teacher));
+    const subj = groupEntry ? groupEntry[0] : '';
     html += `<div class="result-empty-msg"><i class="fas fa-search"></i>
       ${subj ? `[${subj}] 교과 중 이 시간에 공강인 선생님이 없습니다.` : '대체 가능한 선생님이 없습니다.'}
     </div>`;
@@ -633,7 +669,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes) {
       text += `   ※ 선택과목은 교체(맞교환) 불가\n`;
     } else {
       swapRes.forEach((r, i) => {
-        const rt = PERIOD_TIMES[r.period]?.time || '';
+        const rt = getPeriodTime(r.period, r.grade);
         text += `  ${i+1}. ${r.teacher} 선생님 — ${r.day}요일 ${r.period}교시 ${rt} (${r.subject})\n`;
       });
       if (swapRes.length === 0) text += `   해당 없음\n`;
@@ -735,48 +771,21 @@ function renderTeacherDetailTable(teacher) {
               ${DAYS.map(d => {
                 const key = d + p;
                 const val = sch[key] || '';
+                const externalValues = getExternalLessonValues(teacher, d, p);
                 const isChatech = isChatcheTime(teacher, d, p);
                 const blocked = isBlockedTime(teacher, d, p);
+                if (val || externalValues.length) {
+                  const blocks = [];
+                  if (val) blocks.push(buildSwapLessonBlock(val, teacher, d, p));
+                  externalValues.forEach((externalValue, index) => {
+                    blocks.push(buildSwapLessonBlock(externalValue, teacher, d, p, true, index));
+                  });
+                  return `<td style="padding:3px;background:white;"><div style="display:flex;flex-direction:column;gap:3px;">${blocks.join('')}</div></td>`;
+                }
                 if (isChatech && !val) return `<td style="background:var(--cell-chatech-bg);color:var(--cell-chatech-tx);font-size:11px;font-weight:700;">창체</td>`;
                 if (blocked) return `<td style="background:var(--cell-blocked-bg);font-size:10px;color:#c07070;">교체불가</td>`;
                 if (!val) return `<td></td>`;
-                const info = parseCellValue(val, teacher, key);
-                let tdStyle = '';
-                let clickFn = `onclick="onCellClick('${teacher}','${d}',${p})"`;
-                if (info.isSelect) {
-                  tdStyle = 'background:var(--cell-select-bg);border:1px solid var(--cell-select-bd);cursor:pointer;';
-                  return `<td style="${tdStyle}" ${clickFn} title="선택과목 (교체 불가, 대체만 가능)">
-                    <div class="cell-inner">
-                      <span style="font-size:11.5px;font-weight:700;">${info.subject}</span>
-                      <span style="font-size:10px;color:var(--txt-mid);">${info.classLabel}</span>
-                    </div>
-                  </td>`;
-                } else if (info.isMint) {
-                  tdStyle = 'background:var(--cell-mint-bg);border:1px solid var(--cell-mint-bd);cursor:pointer;';
-                  return `<td style="${tdStyle}" ${clickFn} title="시간강사·산학협력 (교체 불가)">
-                    <div class="cell-inner">
-                      <span style="font-size:11.5px;font-weight:700;">${info.subject}</span>
-                      <span style="font-size:10px;color:var(--cell-mint-tx);">${info.classLabel}</span>
-                    </div>
-                  </td>`;
-                } else if (info.isOnline) {
-                  tdStyle = 'background:#e8f5e9;border:1px solid #81c784;cursor:default;';
-                  clickFn = '';
-                  return `<td style="${tdStyle}" title="온라인 수업 (교사 없음)">
-                    <div class="cell-inner">
-                      <span style="font-size:10px;font-weight:700;color:#2e7d32;">온라인</span>
-                      <span style="font-size:9.5px;color:#388e3c;">${info.classLabel}</span>
-                    </div>
-                  </td>`;
-                } else {
-                  tdStyle = 'cursor:pointer;';
-                }
-                return `<td style="${tdStyle}" ${clickFn}>
-                  <div class="cell-inner">
-                    <span style="font-size:11.5px;font-weight:700;">${info.subject}</span>
-                    <span style="font-size:10px;color:var(--txt-mid);">${info.classLabel}</span>
-                  </div>
-                </td>`;
+                return `<td></td>`;
               }).join('')}
             </tr>`;
             return lunchRow + row;
@@ -1462,11 +1471,12 @@ function renderLabDetail(labName) {
   // 실습실에 등장하는 교사 목록 수집 → 색상 매핑
   const labTeachers = new Set();
   DAYS.forEach(d => PERIODS.forEach(p => {
-    const cell = (sched[d]||{})[p] || '';
-    if (cell) {
+    const rawCell = (sched[d]||{})[p] || '';
+    const cells = rawCell && typeof rawCell === 'object' ? Object.values(rawCell) : [rawCell];
+    cells.filter(Boolean).forEach(cell => {
       const tm = cell.match(/[가-힣]{2,4}$/);
       if (tm) labTeachers.add(tm[0]);
-    }
+    });
   }));
   const labTeacherArr = [...labTeachers].sort((a,b) => a.localeCompare(b,'ko'));
   const labColors = [
@@ -1496,13 +1506,17 @@ function renderLabDetail(labName) {
   });
   html += `</div>`;
 
-  PERIODS.forEach(p => {
+  function appendLabRow(p, gradeGroup = null) {
+    const time = gradeGroup ? getPeriodTime(p, gradeGroup === '3' ? '3' : '1') : getPeriodTime(p);
+    const gradeLabel = gradeGroup === '3' ? '3학년' : gradeGroup === '12' ? '1·2학년' : '';
     html += `<tr>
       <td class="teacher-td" style="text-align:center;font-weight:700;font-size:12px;padding:8px;">
-        ${p}교시<br><span style="font-size:10px;color:var(--txt-light);font-weight:400;">${PERIOD_TIMES[p]?.time||''}</span>
+        ${p}교시${gradeLabel ? `<br><span style="font-size:9px;color:var(--primary);">${gradeLabel}</span>` : ''}<br>
+        <span style="font-size:10px;color:var(--txt-light);font-weight:400;">${time}</span>
       </td>`;
     DAYS.forEach(d => {
-      const cell = (sched[d]||{})[p] || '';
+      const rawCell = (sched[d]||{})[p] || '';
+      const cell = gradeGroup && rawCell && typeof rawCell === 'object' ? (rawCell[gradeGroup] || '') : rawCell;
       if (cell) {
         const tm = cell.match(/[가-힣]{2,4}$/);
         const tName = tm ? tm[0] : '';
@@ -1521,6 +1535,15 @@ function renderLabDetail(labName) {
       }
     });
     html += `</tr>`;
+  }
+
+  PERIODS.forEach(p => {
+    if (p === 4) {
+      appendLabRow(4, '12');
+      appendLabRow(4, '3');
+    } else {
+      appendLabRow(p);
+    }
   });
   html += `</tbody></table></div>`;
   wrap.innerHTML = html;
@@ -1533,14 +1556,14 @@ function renderLabDetail(labName) {
 function getSubjectGroups() {
   // 세부 과목 → 상위 교과 매핑
   const SUBJ_ALIAS = {
-    '화법':'국어','고전':'국어','언매':'국어','실국':'국어','심국':'국어','국어1':'국어','문학':'국어','교육':'국어',
-    '수1':'수학','수2':'수학','수학1':'수학','수학2':'수학','확통':'수학','미적':'수학',
-    '영어1':'영어','영어2':'영어','영회':'영어','영독':'영어',
+    '화법':'국어','화언':'국어','화작':'국어','독서':'국어','고전':'국어','언매':'국어','실국':'국어','심국':'국어','국어1':'국어','국어2':'국어','문학':'국어','교육':'국어',
+    '수1':'수학','수2':'수학','수학1':'수학','수학2':'수학','확통':'수학','미적':'수학','미적1':'수학','경수':'수학','실수':'수학',
+    '영어1':'영어','영어2':'영어','영2':'영어','영회':'영어','영독':'영어','심영':'영어','실영':'영어',
     '일본어':'외국어','중어B':'외국어','중어C':'외국어','중특A':'외국어','중특B':'외국어',
-    '한국사':'사회','경제':'사회','정법':'사회','세지':'사회','한지':'사회','동아시아사':'사회','윤사':'사회','생윤':'사회',
-    '지과2':'과학','화학2':'과학','물리2':'과학','생명':'과학','지구':'과학','물리':'과학','화학':'과학',
+    '한국사':'사회','국사':'사회','통사2':'사회','경제':'사회','정법':'사회','법사':'사회','사탐':'사회','사문3':'사회','세지':'사회','한지':'사회','동사':'사회','동아시아사':'사회','윤리':'사회','윤사':'사회','생윤':'사회',
+    '통과2':'과학','과탐2':'과학','지과2':'과학','화학2':'과학','물리2':'과학','생명2':'과학','세포':'과학','역학':'과학','융과':'과학','과사':'과학','물질':'과학','생명':'과학','지구':'과학','물리':'과학','화학':'과학',
     '종교':'종교',
-    '체육1':'체육','운동과건강':'체육',
+    '체육1':'체육','체육2':'체육','스생':'체육','스생1':'체육','운동과건강':'체육',
   };
   const groups = {};
   // 1) SUBJECT_SUBSTITUTE_MAP 기반
@@ -1571,6 +1594,23 @@ function getSubjectGroups() {
     if (!groups[mainSubj]) groups[mainSubj] = [];
     if (!groups[mainSubj].includes(teacher)) groups[mainSubj].push(teacher);
   }
+  // 교과별 수업 탭의 확정 수정사항
+  for (const teachers of Object.values(groups)) {
+    ['홍민영','김제령','김지윤'].forEach(name => {
+      const index = teachers.indexOf(name);
+      if (index >= 0) teachers.splice(index, 1);
+    });
+  }
+  if (groups['디자인']) groups['디자인'] = groups['디자인'].filter(name => name !== '송준한');
+  if (groups['상업']) groups['상업'] = groups['상업'].filter(name => name !== '고대홍');
+  groups['디자인'] = [...new Set([...(groups['디자인'] || []), '김제령'])];
+  groups['체육'] = [...new Set([...(groups['체육'] || []), '김지윤'])];
+  delete groups['국어2'];
+  delete groups['체육2'];
+  Object.keys(groups).forEach(subject => {
+    groups[subject] = groups[subject].filter(name => TEACHER_SCHEDULE[name]);
+    if (!groups[subject].length) delete groups[subject];
+  });
   return groups;
 }
 
@@ -1614,13 +1654,13 @@ function renderSubjectClassTab_subject() {
 
 function getClassTeacherMap() {
   const SUBJ_ALIAS = {
-    '화법':'국어','고전':'국어','언매':'국어','실국':'국어','심국':'국어','국어1':'국어','문학':'국어','교육':'국어',
+    '화법':'국어','화언':'국어','화작':'국어','독서':'국어','고전':'국어','언매':'국어','실국':'국어','심국':'국어','국어1':'국어','국어2':'국어','문학':'국어','교육':'국어',
     '수1':'수학','수2':'수학','수학1':'수학','수학2':'수학','확통':'수학','미적':'수학',
     '영어1':'영어','영어2':'영어','영회':'영어','영독':'영어',
     '일본어':'외국어','중어B':'외국어','중어C':'외국어','중특A':'외국어','중특B':'외국어',
     '한국사':'사회','경제':'사회','정법':'사회','세지':'사회','한지':'사회','동아시아사':'사회','윤사':'사회','생윤':'사회',
     '지과2':'과학','화학2':'과학','물리2':'과학','생명':'과학','지구':'과학','물리':'과학','화학':'과학',
-    '종교':'종교','체육1':'체육','운동과건강':'체육',
+    '종교':'종교','체육1':'체육','체육2':'체육','스생':'체육','스생1':'체육','운동과건강':'체육',
   };
   const map = {}; // key: "1-1", value: [{teacher, subject, detail}]
   for (const [teacher, sched] of Object.entries(TEACHER_SCHEDULE)) {
@@ -1812,7 +1852,7 @@ function renderClassScheduleDetail(cls) {
     }
 
     html += `<tr>
-      <td style="text-align:center;font-weight:700;font-size:12px;padding:8px;">${p}교시<br><span style="font-size:10px;color:var(--txt-light);font-weight:400;">${PERIOD_TIMES[p]?.time||''}</span></td>`;
+      <td style="text-align:center;font-weight:700;font-size:12px;padding:8px;">${p}교시<br><span style="font-size:10px;color:var(--txt-light);font-weight:400;">${getPeriodTime(p, grade)}</span></td>`;
 
     DAYS.forEach(d => {
       const key = d + p;
@@ -1826,9 +1866,11 @@ function renderClassScheduleDetail(cls) {
       } else if (val) {
         // "교과 교사명" 형식 파싱
         const parts = val.split(' ');
-        const subj = parts[0] || '';
-        const tname = parts[1] || '';
-        content = `<div style="font-weight:700;color:var(--txt-dark);font-size:12px;">${subj}</div><div style="font-size:10.5px;color:var(--txt-mid);">${tname}</div>`;
+        const roomNames = new Set(['전상실','컴그실','만콘실','영상실','창구실','사행실','회계실']);
+        const room = roomNames.has(parts[parts.length - 1]) ? parts.pop() : '';
+        const tname = parts.pop() || '';
+        const subj = parts.join(' ') || '';
+        content = `<div style="font-weight:700;color:var(--txt-dark);font-size:12px;">${subj}</div><div style="font-size:10.5px;color:var(--txt-mid);">${tname}${room ? ' · ' + room : ''}</div>`;
       } else {
         cellStyle += 'color:var(--txt-muted);';
         content = '-';
@@ -2445,16 +2487,16 @@ function renderSubjectGroups() {
   const el = qs('#subjectGroupBody');
   if (!el) return;
   const groups = [
-    { subj:"국어",   cls:"badge-blue",   teachers:["황혜인","강승표","김연아","홍민영","김보민","오재원","홍원정"] },
+    { subj:"국어",   cls:"badge-blue",   teachers:["황혜인","강승표","김연아","김보민","오재원","홍원정"] },
     { subj:"수학",   cls:"badge-purple",  teachers:["공은표","강혜민","김한주","오소영","오재영","고지수"] },
     { subj:"영어",   cls:"badge-green",   teachers:["조설아","김희경","김민지","김도연","김지선","송진호"] },
     { subj:"사회",   cls:"badge-orange",  teachers:["강창규","안미진","양찬호","김민권","양정원","현은심","이상희","김대현","강부열","김민정"] },
     { subj:"과학",   cls:"badge-blue",    teachers:["박종찬","오승철","현창식","장진혁","김현정"] },
-    { subj:"체육",   cls:"badge-green",   teachers:["고세권","김재현","김형우"] },
+    { subj:"체육",   cls:"badge-green",   teachers:["고세권","김재현","김형우","김지윤"] },
     { subj:"정보",   cls:"badge-purple",  teachers:["김영주","문원호","임수진","박정민","오소연","김태환","고대홍","백은정","이상분","송주연","임홍재","김영조"] },
-    { subj:"상업",   cls:"badge-orange",  teachers:["고대홍","백은정","김지연","송주연","임홍재","김영조","강향아","김태환","김유리"] },
+    { subj:"상업",   cls:"badge-orange",  teachers:["백은정","김지연","송주연","임홍재","김영조","강향아","김태환","김유리"] },
     { subj:"미술",   cls:"badge-red",     teachers:["고지은","김윤주","김제령","백경민"] },
-    { subj:"디자인", cls:"badge-blue",    teachers:["김윤주","송준한","김제령","박정민","문원호","임수진","오소연","이상분"] },
+    { subj:"디자인", cls:"badge-blue",    teachers:["김윤주","김제령","박정민","문원호","임수진","오소연","이상분"] },
     { subj:"음악",   cls:"badge-green",   teachers:["강진석"] },
     { subj:"일본어", cls:"badge-orange",  teachers:["김수정"] },
     { subj:"종교",   cls:"badge-gray",    teachers:["이순규"] },
@@ -2714,8 +2756,8 @@ window.addEventListener('DOMContentLoaded', () => {
   initFirebase();
   setTimeout(startHeartbeatListener, 1000);
 
-  // 관리자 오버라이드 데이터 로드 (학사일정/교과선생님/학생명단)
-  setTimeout(loadAdminOverrides, 1500);
+  // 루트 관리자 페이지에서 제공하는 오버라이드가 있으면 로드한다.
+  if (typeof loadAdminOverrides === 'function') setTimeout(loadAdminOverrides, 1500);
 
   // 엔터키 지원
   qs('#contactPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')verifyContactPassword();});
