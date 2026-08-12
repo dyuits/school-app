@@ -1530,8 +1530,8 @@ let resState = {
   reservations: JSON.parse(localStorage.getItem('labReservations') || '[]')
 };
 
-const ROOMS = ['컴퓨터실 1','컴퓨터실 2','컴퓨터실 3','과학실험실','음악실','미술실','체육관','시청각실'];
-const PERIODS = [
+const RESERVATION_ROOMS = Object.keys(LAB_SCHEDULE);
+const RESERVATION_PERIODS = [
   {p:'1교시', t:'08:40~09:30'},
   {p:'2교시', t:'09:40~10:30'},
   {p:'3교시', t:'10:40~11:30'},
@@ -1542,6 +1542,11 @@ const PERIODS = [
 ];
 
 function initReservation() {
+  const roomSelect = document.getElementById('resFormRoom');
+  if (roomSelect) {
+    roomSelect.innerHTML = '<option value="">-- 선택 --</option>' +
+      RESERVATION_ROOMS.map(room => `<option value="${room}">${room}</option>`).join('');
+  }
   renderResRoomBtns();
   renderResCal();
   renderMyResList();
@@ -1552,7 +1557,7 @@ function initReservation() {
 function renderResRoomBtns() {
   const el = document.getElementById('resRoomBtns');
   if (!el) return;
-  el.innerHTML = ROOMS.map(r =>
+  el.innerHTML = RESERVATION_ROOMS.map(r =>
     `<button class="res-room-btn${resState.selectedRoom===r?' active':''}" onclick="selectResRoom('${r}')">${r}</button>`
   ).join('');
 }
@@ -1605,6 +1610,14 @@ function selectResDate(dateStr) {
   renderResTable();
 }
 
+function getRegularLabUse(room, dateStr, periodLabel) {
+  const date = new Date(dateStr + 'T00:00:00');
+  const day = ['일','월','화','수','목','금','토'][date.getDay()];
+  const period = parseInt(periodLabel, 10);
+  if (!DAYS.includes(day) || !period) return '';
+  return LAB_SCHEDULE[room]?.[day]?.[period] || '';
+}
+
 function renderResTable() {
   const tbody = document.getElementById('resTimeTableBody');
   const title = document.getElementById('resTableTitle');
@@ -1615,13 +1628,19 @@ function renderResTable() {
     return;
   }
   title.textContent = `${resState.selectedDate} · ${resState.selectedRoom}`;
-  tbody.innerHTML = PERIODS.map(({p, t}) => {
+  tbody.innerHTML = RESERVATION_PERIODS.map(({p, t}) => {
     const res = resState.reservations.find(r => r.date===resState.selectedDate && r.room===resState.selectedRoom && r.period===p);
+    const regularUse = getRegularLabUse(resState.selectedRoom, resState.selectedDate, p);
     if (res) {
       return `<tr><td class="period-label">${p}</td><td style="color:var(--txt-mid);">${t}</td>
         <td class="booked">${res.teacher}</td>
         <td class="booked">${res.purpose}</td>
         <td class="booked"><span style="font-size:11px;">예약완료</span></td></tr>`;
+    }
+    if (regularUse) {
+      return `<tr><td class="period-label">${p}</td><td style="color:var(--txt-mid);">${t}</td>
+        <td class="booked" colspan="2">${regularUse}</td>
+        <td class="booked"><span style="font-size:11px;">정규수업</span></td></tr>`;
     }
     return `<tr><td class="period-label">${p}</td><td style="color:var(--txt-mid);">${t}</td>
       <td class="available" colspan="3" onclick="quickBook('${p}')">
@@ -1647,6 +1666,8 @@ function submitReservation() {
     return;
   }
   const periodLabel = period + '교시';
+  const regularUse = getRegularLabUse(room, date, periodLabel);
+  if (regularUse) { alert(`정규수업이 있는 시간입니다.\n${regularUse}`); return; }
   const dup = resState.reservations.find(r => r.date===date && r.room===room && r.period===periodLabel);
   if (dup) { alert(`이미 예약된 시간입니다.\n예약자: ${dup.teacher}`); return; }
   resState.reservations.push({ room, date, period: periodLabel, teacher, purpose, class: cls, id: Date.now() });
@@ -1864,8 +1885,7 @@ const SETECH_DATA = {
   },
   '영어': {
     icon: '🌍',
-    keywords: ['독해','듣기','말
-하기','쓰기','어휘','문법','번역','발표','토론','에세이','요약','추론'],
+    keywords: ['독해','듣기','말하기','쓰기','어휘','문법','번역','발표','토론','에세이','요약','추론'],
     templates: [
       { title: '독해 능력', preview: '다양한 장르의 영어 지문을 정확히 이해하고 핵심 내용을 파악함.' },
       { title: '말하기·쓰기', preview: '영어로 자신의 의견을 논리적으로 표현하고 다양한 어휘를 활용함.' },
