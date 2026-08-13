@@ -3155,11 +3155,22 @@ function parseSetechPlans(content) {
   return [plan1, plan2];
 }
 
+function validateTwoPlans(content) {
+  const plans = parseSetechPlans(content || '');
+  return {
+    plans,
+    valid: plans.length === 2 && plans.every(plan => plan && plan.length >= 350 && plan.length <= 500)
+  };
+}
+
+const TWO_PLAN_REPAIR_PROMPT = `\n\n[형식 오류 방지 — 최우선]
+응답을 보내기 전에 반드시 글자 수를 직접 계산한다. [안 1]과 [안 2]를 모두 작성하고, 각 본문은 띄어쓰기 포함 350자 이상 500자 이하로 완성한다. 한 안이라도 없거나 350자 미만이면 출력하지 말고 스스로 다시 작성한다. 제목·분석·글자 수 설명 없이 정확히 [안 1]본문 다음 [안 2]본문만 출력한다.`;
+
 // 방향 A: OpenAI GPT-4o 호출
 async function generateSetechWithGPT(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment, resultEl, apiKey) {
   const { systemPrompt, userPrompt } = buildSetechPrompts(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment);
 
-  async function callOnce() {
+  async function callOnce(repair = false) {
     const resp = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -3170,7 +3181,7 @@ async function generateSetechWithGPT(grade, semester, dept, subject, achievement
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userPrompt + (repair ? TWO_PLAN_REPAIR_PROMPT : '') }
         ],
         max_tokens: 1200,
         temperature: 0.7
@@ -3205,7 +3216,13 @@ async function generateSetechWithGPT(grade, semester, dept, subject, achievement
         throw err;
       }
     }
-    const [plan1, plan2] = parseSetechPlans(content);
+    let checked = validateTwoPlans(content);
+    if (!checked.valid) checked = validateTwoPlans(await callOnce(true));
+    if (!checked.valid) {
+      generateSetechLocal(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment, resultEl);
+      return;
+    }
+    const [plan1, plan2] = checked.plans;
     renderSetechResult(plan1, plan2, resultEl, 'gpt');
   } catch(err) {
     resultEl.innerHTML = `<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> GPT 오류: ${err.message}<br><small>API Key를 확인하거나, 로컬 AI로 재시도하세요.</small></div>`;
@@ -3219,13 +3236,13 @@ const GEMINI_MODEL_FALLBACKS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-
 async function generateSetechWithGemini(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment, resultEl, apiKey) {
   const { systemPrompt, userPrompt } = buildSetechPrompts(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment);
 
-  async function callModel(model) {
+  async function callModel(model, repair = false) {
     const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: systemPrompt }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        contents: [{ role: 'user', parts: [{ text: userPrompt + (repair ? TWO_PLAN_REPAIR_PROMPT : '') }] }],
         generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
       })
     });
@@ -3247,11 +3264,11 @@ async function generateSetechWithGemini(grade, semester, dept, subject, achievem
     return err.status === 404 || err.status === 503 ||
       /no longer available|not found|not supported|overloaded|high demand|unavailable/i.test(err.message || '');
   }
-  async function callWithModelFallback() {
+  async function callWithModelFallback(repair = false) {
     let lastErr;
     for (const model of GEMINI_MODEL_FALLBACKS) {
       try {
-        return await callModel(model);
+        return await callModel(model, repair);
       } catch (err) {
         lastErr = err;
         if (!isModelUnavailable(err)) throw err;
@@ -3283,7 +3300,13 @@ async function generateSetechWithGemini(grade, semester, dept, subject, achievem
         throw err;
       }
     }
-    const [plan1, plan2] = parseSetechPlans(content);
+    let checked = validateTwoPlans(content);
+    if (!checked.valid) checked = validateTwoPlans(await callWithModelFallback(true));
+    if (!checked.valid) {
+      generateSetechLocal(grade, semester, dept, subject, achievement, planText, evalText, activityText, excelText, teacherComment, resultEl);
+      return;
+    }
+    const [plan1, plan2] = checked.plans;
     renderSetechResult(plan1, plan2, resultEl, 'gemini');
   } catch(err) {
     resultEl.innerHTML = `<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> Gemini 오류: ${err.message}<br><small>API Key를 확인하거나, 로컬 AI로 재시도하세요.</small></div>`;
@@ -3585,7 +3608,7 @@ ${existingText}
     }[grade] || '이러한 태도는 앞으로의 학습에도 긍정적인 영향을 줄 것으로 기대됨.';
     renderSetechResult(
       fitSetechLength(refined, [gradeGuideExtra, subjPart]),
-      fitSetechLength(refined, [growthPart, subjPart, gradeGuideExtra]),
+      fitSetechLength(`${refined} ${growthPart}`, [subjPart, gradeGuideExtra]),
       resultEl,
       'local'
     );
@@ -3605,8 +3628,9 @@ ${existingText}
       if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error?.message || 'API 오류 ' + resp.status); }
       const data = await resp.json();
       const content = data.choices[0].message.content.trim();
-      const [plan1, plan2] = parseSetechPlans(content);
-      renderSetechResult(plan1, plan2, resultEl, 'gpt');
+      const checked = validateTwoPlans(content);
+      if (!checked.valid) { renderLocalImprovement(); return; }
+      renderSetechResult(checked.plans[0], checked.plans[1], resultEl, 'gpt');
     } catch(err) {
       resultEl.innerHTML = `<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> GPT 오류: ${err.message}</div>`;
     }
@@ -3643,8 +3667,9 @@ ${existingText}
         }
       }
       if (!content) throw (lastErr || new Error('Gemini 응답에 내용이 없습니다.'));
-      const [plan1, plan2] = parseSetechPlans(content);
-      renderSetechResult(plan1, plan2, resultEl, 'gemini');
+      const checked = validateTwoPlans(content);
+      if (!checked.valid) { renderLocalImprovement(); return; }
+      renderSetechResult(checked.plans[0], checked.plans[1], resultEl, 'gemini');
     } catch(err) {
       // 모든 Gemini 모델이 과부하/한도 초과여도 사용자 작업을 중단시키지 않는다.
       renderLocalImprovement();
@@ -3718,30 +3743,33 @@ async function generateActivity() {
 
   const prompts = buildActivityPrompts(grade, dept, area, text, sourceText);
   try {
-    let content = '';
-    if (openaiKey) {
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+openaiKey},
-        body:JSON.stringify({model:'gpt-4o',messages:[{role:'system',content:prompts.systemPrompt},{role:'user',content:prompts.userPrompt}],max_tokens:1400,temperature:0.6})
-      });
-      if (!resp.ok) throw new Error('OpenAI API 오류 ' + resp.status);
-      content = (await resp.json()).choices?.[0]?.message?.content || '';
-    } else {
+    const requestContent = async repair => {
+      if (openaiKey) {
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+openaiKey},
+          body:JSON.stringify({model:'gpt-4o',messages:[{role:'system',content:prompts.systemPrompt},{role:'user',content:prompts.userPrompt+(repair?TWO_PLAN_REPAIR_PROMPT:'')}],max_tokens:1600,temperature:0.6})
+        });
+        if (!resp.ok) throw new Error('OpenAI API 오류 ' + resp.status);
+        return (await resp.json()).choices?.[0]?.message?.content || '';
+      }
       let lastError;
       for (const model of GEMINI_MODEL_FALLBACKS) {
         try {
           const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+geminiKey, {
             method:'POST', headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({systemInstruction:{parts:[{text:prompts.systemPrompt}]},contents:[{role:'user',parts:[{text:prompts.userPrompt}]}],generationConfig:{maxOutputTokens:1800,temperature:0.6}})
+            body:JSON.stringify({systemInstruction:{parts:[{text:prompts.systemPrompt}]},contents:[{role:'user',parts:[{text:prompts.userPrompt+(repair?TWO_PLAN_REPAIR_PROMPT:'')}]}],generationConfig:{maxOutputTokens:1800,temperature:0.6}})
           });
           if (!resp.ok) { const e = new Error('Gemini API 오류 '+resp.status); e.status=resp.status; throw e; }
-          content = (await resp.json()).candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
-          if (content) break;
+          const content = (await resp.json()).candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+          if (content) return content;
         } catch (error) { lastError=error; }
       }
-      if (!content) throw lastError || new Error('Gemini 응답 없음');
-    }
-    const [plan1, plan2] = parseSetechPlans(content);
+      throw lastError || new Error('Gemini 응답 없음');
+    };
+    let checked = validateTwoPlans(await requestContent(false));
+    if (!checked.valid) checked = validateTwoPlans(await requestContent(true));
+    if (!checked.valid) { generateAIRecordLocal(text || sourceText, 'activity', resultEl); return; }
+    const [plan1, plan2] = checked.plans;
     renderActivityPlans(plan1, plan2, resultEl);
   } catch (error) {
     // API 과부하나 네트워크 오류에도 입력 자료를 잃지 않고 로컬 보완안을 제공한다.
@@ -3766,13 +3794,13 @@ ${gradeGuide}\n${deptGuide}\n[영역 원칙] ${areaGuide}
 [문체] 교사의 직접 관찰 시점으로 쓰며 모든 문장을 ~함/~임/~됨/~보임 등 명사형으로 끝낸다. 기업·기관·대학·대회 실명은 일반 표현으로 바꾼다.
 [작성 구조] 첫 문장은 관찰 근거가 있는 총평, 둘째 문장은 호기심·동기와 활동 연결, 셋째 이후는 탐구·실행·피드백·수정 과정, 마지막은 자료에 근거한 성찰·확장으로 쓴다.
 내부적으로 학생 정보 요약, 핵심·학업·진로·공동체역량, 부족한 부분, 전형 관점, 개선 아이디어, 자기검증을 순서대로 수행하되 분석과 체크리스트는 출력하지 않는다.`;
-  const userPrompt = `[학생 정보]\n학년: ${grade||'미지정'}\n계열: ${dept||'보통과'}\n영역: ${area}\n\n[스캔·슈퍼스쿨·교사 관찰 자료]\n${sourceText||'(없음)'}\n\n[기존 초안·추가 의견]\n${draft||'(없음)'}\n\n실제 자료만 사용해 서로 다른 최종본 2가지를 작성한다. 1안은 과정과 공동체 영향을, 2안은 자기주도적 문제 해결과 성장·확장을 더 선명하게 하되 과장하지 않는다. 반드시 [안 1]본문 [안 2]본문 형식만 출력한다.`;
+  const userPrompt = `[학생 정보]\n학년: ${grade||'미지정'}\n계열: ${dept||'보통과'}\n영역: ${area}\n\n[스캔·슈퍼스쿨·교사 관찰 자료]\n${sourceText||'(없음)'}\n\n[기존 초안·추가 의견]\n${draft||'(없음)'}\n\n실제 자료만 사용해 서로 다른 최종본 2가지를 작성한다. 1안은 과정과 공동체 영향을, 2안은 자기주도적 문제 해결과 성장·확장을 더 선명하게 하되 과장하지 않는다. 각 안은 띄어쓰기 포함 반드시 350자 이상 500자 이하로 작성한다. 반드시 [안 1]본문 [안 2]본문 형식만 출력한다.`;
   return {systemPrompt,userPrompt};
 }
 
 function renderActivityPlans(plan1, plan2, resultEl) {
   const escapeHtml = value => String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const block = (plan, number) => `<div style="margin-bottom:12px;"><div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:5px;">${number}안</div><div id="aiPlan${number}_activity" style="padding:12px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(plan)}</div><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="useAIPlan('activityEditor','aiPlan${number}_activity')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;cursor:pointer;">← ${number}안 사용</button><button onclick="copyAIPlan('aiPlan${number}_activity')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;cursor:pointer;">복사</button></div></div>`;
+  const block = (plan, number) => `<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:5px;"><span>[안 ${number}]</span><span style="font-size:11px;color:#2e7d32;">${plan.length}자 (350~500자) ✓</span></div><div id="aiPlan${number}_activity" style="padding:12px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(plan)}</div><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="useAIPlan('activityEditor','aiPlan${number}_activity')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;cursor:pointer;">← ${number}안 사용</button><button onclick="copyAIPlan('aiPlan${number}_activity')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;cursor:pointer;">복사</button></div></div>`;
   resultEl.innerHTML = `<div style="padding:14px;background:#f3e5f5;border-radius:10px;border:1.5px solid #ce93d8;"><div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:12px;"><i class="fas fa-magic"></i> 자료 기반 최종안</div>${block(plan1,1)}${block(plan2,2)}</div>`;
 }
 
@@ -3818,18 +3846,23 @@ function generateAIRecordLocal(text, type, resultEl) {
     plan1 = plan1.split(from).join(to);
   });
 
-  // 1안: 추상어 → 증거어 교체 버전
-  // 2안: DDAR 구조 (Define-Design-Adapt-Reflect) 반영한 성장 서술 추가
-  const ddarSuffix = ' 이 과정에서 문제를 스스로 정의하고 해결 방법을 설계하며 시행착오를 통해 수정하는 과정을 반복함으로써 사고력이 성장하는 모습이 드러남.';
-  let plan2 = plan1;
-  // plan2가 500자 이내일 때만 suffix 추가
-  if ((plan2 + ddarSuffix).length <= 500) {
-    plan2 = plan2 + ddarSuffix;
-  } else {
-    // 500자에 맞게 자르고 suffix 추가
-    const maxLen = 500 - ddarSuffix.length;
-    plan2 = plan2.substring(0, maxLen) + ddarSuffix;
-  }
+  const localActivityEvidence = [
+    '주어진 자료에서 확인되는 행동을 중심으로 활동의 동기와 수행 과정을 자신의 언어로 정리함.',
+    '활동 과정에서 맡은 역할과 해결해야 할 문제를 구분하고, 진행 상황을 점검하며 필요한 부분을 보완함.',
+    '구성원과 의견이 다른 지점을 확인하고 근거를 나누며 공동의 방향을 조정하는 모습을 보임.',
+    '활동을 마친 뒤 처음의 생각과 달라진 점을 되짚고 다음 활동에서 보완할 부분을 구체화함.',
+    '관찰 자료에 나타난 경험을 바탕으로 배운 점을 정리하고 이를 이후 학교생활과 연결해 성찰함.'
+  ];
+  const localActivityGrowth = [
+    '자료에 드러난 문제 상황을 다시 살피고 해결 순서를 세워 실행한 뒤 결과를 점검하는 과정을 이어감.',
+    '과정 중 발견한 한계를 그대로 넘기지 않고 원인을 구분하여 가능한 대안을 비교하는 모습을 보임.',
+    '피드백에서 확인한 보완점을 다음 실행에 반영하고 변화한 결과를 이전 과정과 비교하여 설명함.',
+    '자신의 선택이 구성원과 활동 결과에 미친 영향을 돌아보며 이후 실천 방향을 구체적으로 정리함.',
+    '이 경험을 통해 새롭게 생긴 질문을 확인하고 다음 활동에서 더 살펴볼 내용을 자신의 언어로 표현함.'
+  ];
+  const activityBase = plan1;
+  plan1 = fitSetechLength(activityBase, localActivityEvidence);
+  let plan2 = fitSetechLength(`${activityBase} ${localActivityGrowth[0]}`, localActivityGrowth.slice(1));
 
   const bytes1 = new TextEncoder().encode(plan1).length;
   const bytes2 = new TextEncoder().encode(plan2).length;
@@ -3841,7 +3874,7 @@ function generateAIRecordLocal(text, type, resultEl) {
       <div style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:12.5px;font-weight:700;color:#6a1b9a;">🟣 1안 (추상어 → 증거어 교체)</span>
-          <span style="font-size:11px;color:#888;">${plan1.length}자 / ${bytes1} bytes</span>
+          <span style="font-size:11px;color:#2e7d32;">${plan1.length}자 (350~500자) ✓</span>
         </div>
         <div id="aiPlan1_${type}" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.8;">${plan1}</div>
         <div style="display:flex;gap:6px;margin-top:6px;">
@@ -3852,7 +3885,7 @@ function generateAIRecordLocal(text, type, resultEl) {
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:12.5px;font-weight:700;color:#6a1b9a;">🟢 2안 (DDAR 성장 서술 추가)</span>
-          <span style="font-size:11px;color:${bytes2 > 1500 ? '#c62828' : '#888'};">${plan2.length}자 / ${bytes2} bytes${bytes2 > 1500 ? ' ⚠️' : ''}</span>
+          <span style="font-size:11px;color:#2e7d32;">${plan2.length}자 (350~500자) ✓</span>
         </div>
         <div id="aiPlan2_${type}" style="padding:12px;background:#fff;border-radius:8px;font-size:13px;line-height:1.8;">${plan2}</div>
         <div style="display:flex;gap:6px;margin-top:6px;">
