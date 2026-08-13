@@ -1426,6 +1426,20 @@
 <section id="activityTab" class="tab-panel tool-tab-panel">
   <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark,#2c3e50);margin-bottom:4px;"><i class="fas fa-star" style="color:#1565c0;"></i> 창체 및 행특</h2>
   <p style="font-size:12.5px;color:var(--txt-light,#888);margin-bottom:18px;">창의적 체험활동 및 행동특성·종합의견 작성 보조 · 붙여넣기 시 AI 보완 예시 1안/2안 생성</p>
+  <div style="margin-bottom:14px;padding:14px 16px;background:#f8f9fa;border-radius:12px;border:1.5px solid #e0e0e0;">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px;">
+      <label style="font-size:11.5px;font-weight:700;color:#555;">학년
+        <select id="activityGrade" style="display:block;margin-top:4px;padding:7px 10px;border:1.5px solid #90caf9;border-radius:7px;background:#fff;"><option value="">선택</option><option>고1</option><option>고2</option><option>고3</option></select>
+      </label>
+      <label style="font-size:11.5px;font-weight:700;color:#555;">계열
+        <select id="activityDept" style="display:block;margin-top:4px;padding:7px 10px;border:1.5px solid #90caf9;border-radius:7px;background:#fff;"><option value="보통과">일반고(보통과)</option><option value="문화콘텐츠학과">문화콘텐츠과</option><option value="금융비즈니스학과">금융비즈니스과</option></select>
+      </label>
+      <label style="padding:8px 12px;background:#fff;border:1.5px dashed #90caf9;border-radius:8px;cursor:pointer;font-size:12px;color:#1565c0;font-weight:700;"><i class="fas fa-file-pdf"></i> 스캔/PDF·TXT 업로드<input type="file" accept=".pdf,.txt" style="display:none;" onchange="handleActivitySourceFile(this)"></label>
+      <label style="padding:8px 12px;background:#fff;border:1.5px dashed #81c784;border-radius:8px;cursor:pointer;font-size:12px;color:#2e7d32;font-weight:700;"><i class="fas fa-file-excel"></i> 슈퍼스쿨 XLSX/CSV 업로드<input type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleActivitySourceExcel(this)"></label>
+      <span id="activitySourceStatus" style="font-size:11px;color:#777;">선택된 자료 없음</span>
+    </div>
+    <textarea id="activitySourceText" rows="3" placeholder="스캔파일·슈퍼스쿨 파일에서 추출한 내용 또는 선생님의 직접 관찰 의견을 붙여넣으세요. 실제 관찰 자료에 없는 활동은 생성하지 않습니다." style="width:100%;padding:8px;border:1.5px solid #c5cae9;border-radius:8px;font-size:11.5px;line-height:1.6;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
+  </div>
   <div style="display:grid;grid-template-columns:180px 1fr;gap:16px;">
     <div>
       <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:8px;">영역 선택</div>
@@ -1444,7 +1458,7 @@
       <div style="font-size:12px;font-weight:700;color:var(--txt-mid,#666);margin-bottom:6px;">내용 작성 <span style="font-weight:400;color:#888;">(직접 작성 또는 기존 내용 붙여넣기 → AI 보완)</span></div>
       <textarea id="activityEditor" rows="8" placeholder="위 키워드/템플릿을 클릭하거나 직접 작성하세요.&#10;&#10;기존 내용을 붙여넣으면 AI 보완 예시 1안/2안이 자동 생성됩니다." style="width:100%;padding:12px;border:1.5px solid var(--border-lt,#e0e0e0);border-radius:10px;font-size:13px;line-height:1.7;resize:vertical;box-sizing:border-box;font-family:inherit;"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap;">
-        <button onclick="generateActivity()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> AI 보완 예시 생성</button>
+        <button onclick="generateActivity()" style="padding:7px 16px;background:#7b1fa2;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-magic"></i> 1안/2안 AI 생성</button>
         <button onclick="document.getElementById('activityEditor').value=''" style="padding:7px 14px;background:var(--border-lt,#e0e0e0);color:var(--txt-mid,#666);border:none;border-radius:8px;font-size:12px;cursor:pointer;">삭제</button>
         <button onclick="navigator.clipboard.writeText(document.getElementById('activityEditor').value)" style="padding:7px 14px;background:#e8f5e9;color:#2e7d32;border:1.5px solid #a5d6a7;border-radius:8px;font-size:12px;cursor:pointer;">복사</button>
         <button onclick="switchTab('recordCheck');setTimeout(()=>{document.getElementById('recordInput').value=document.getElementById('activityEditor').value;updateRecordCount();},100)" style="padding:7px 14px;background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9;border-radius:8px;font-size:12px;cursor:pointer;">생기부 점검</button>
@@ -1668,15 +1682,15 @@ window.addEventListener('load', function() {
   // 창체 영역 목록
   const ACTIVITIES = [
     {name:'자율활동',icon:'🏫',keywords:['학급회','학교행사','자치활동','지도력','공동체 의식'],
-      templates:['학급 자치 활동에서 리더십을 발휘하며 구성원의 의견을 조율하는 능력을 보임.','학교 행사에 적극적으로 참여하며 공동체 의식과 협력을 실천하는 모습을 보임.']},
+      templates:['학급 자치 활동에서 구성원의 의견을 듣고 역할을 조정하여 공동 과제를 마무리함.','학교 행사 준비 과정에서 맡은 일을 점검하고 필요한 부분을 구성원과 협의하여 보완함.']},
     {name:'동아리활동',icon:'🎭',keywords:['동아리 활동','전문성','협동','재능 계발','지속적 노력'],
       templates:['동아리 활동에 지속적으로 참여하며 전문성을 함양하고 협동을 실천하는 자세를 보임.']},
-    {name:'진로활동',icon:'🎯',keywords:['진로 탐색','직업 체험','자기이해','맹점관리','진로 설계'],
-      templates:['진로 탐색 활동에 적극적으로 참여하며 자신의 장단점을 파악하는 자기이해 능력을 기름.']},
-    {name:'봉사활동',icon:'🤝',keywords:['나눈의 실천','봉사정신','지역사회 기여','자원봉사'],
-      templates:['자원봉사 활동에 지속적으로 참여하며 나눈의 가치를 실천하고 지역사회에 기여하는 자세를 보임.']},
-    {name:'행동특성·종합의견',icon:'📋',keywords:['인성적 성장','적극적인 태도','대인관계','자기관리','송의'],
-      templates:['학교생활에서 성실하고 책임감 있는 태도를 유지하며 주변 사람들에게 깍정한 인상을 주는 학생임.']}
+    {name:'진로활동',icon:'🎯',keywords:['진로 탐색','직업 체험','자기이해','강점 관리','진로 설계'],
+      templates:['진로 탐색 자료를 비교하며 자신의 관심과 강점을 구체화하고 다음 탐색 과제를 정리함.']},
+    {name:'봉사활동',icon:'🤝',keywords:['나눔의 실천','봉사정신','지역사회 기여','자원봉사'],
+      templates:['자원봉사 과정에서 필요한 일을 찾아 역할을 맡고 구성원과 협력하여 활동을 마무리함.']},
+    {name:'행동특성·종합의견',icon:'📋',keywords:['인성적 성장','책임 있는 행동','대인관계','자기관리','배려'],
+      templates:['학급에서 맡은 일을 기한에 맞추어 수행하고 어려움을 겪는 구성원에게 필요한 도움을 먼저 확인함.']}
   ];
 
   const actList = document.getElementById('activityAreaList');
@@ -1686,6 +1700,7 @@ window.addEventListener('load', function() {
       btn.textContent = a.icon + ' ' + a.name;
       btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1.5px solid var(--border-lt,#e0e0e0);background:#fff;font-size:12.5px;cursor:pointer;text-align:left;';
       btn.onclick = () => {
+        window._selectedActivityArea = a.name;
         document.querySelectorAll('#activityAreaList button').forEach(b => b.style.background = '#fff');
         btn.style.background = '#e3f2fd';
         document.getElementById('activityTitle').textContent = a.icon + ' ' + a.name + ' 작성';
@@ -2882,12 +2897,13 @@ function getGradeGuideline(grade) {
   return '';
 }
 
-// 세특 3문장 골격 (사용자 지정 문장 구조, 두괄식)
-const SETECH_SENTENCE_STRUCTURE = `[문장 구조 — DDAR 구조를 두괄식으로 적용. 반드시 아래 3단계 흐름을 뼈대로 삼아 자연스럽게 확장할 것]
+// 세특 4단계 골격 (사용자 지정 문장 구조, 두괄식)
+const SETECH_SENTENCE_STRUCTURE = `[문장 구조 — DDAR 구조를 두괄식으로 적용. 반드시 아래 4단계 흐름을 뼈대로 삼아 자연스럽게 확장할 것]
 전체 문단은 두괄식으로 쓴다 — 1문장이 결론(수업 총평)을 먼저 제시하고, 이후 문장들이 그 근거와 과정(호기심→탐구)을 뒷받침하는 순서로 전개한다.
 1문장(수업 총평 개괄, 두괄식 결론): 수업 태도·참여 양상에 대한 개괄. 예시 톤 — "수업 태도가 훌륭하며 탐구활동을 하면서 궁금한 내용을 지나치지 않음."
 2문장(교과 연계 호기심, Discovery→Development): 학생의 관심 분야·원리를 교과 수업활동과 연결. 예시 톤 — "OO을 스스로 하는 방법을 구상하는 수업활동에서 관심분야인 OO적 원리를 적용함."
 3문장(탐구 과정 및 내용, Action→Reflection): 개념을 스스로 설명하고 심화 탐구로 나아간 과정. 예시 톤 — "OO의 개념을 스스로 도입하여 설명하고 이에 나아가 OO의 예시를 조사함."
+마지막 문장(성찰·확장): 입력 자료에서 학생이 실제로 밝힌 생각이나 후속 계획이 있을 때만 배움과 다음 탐구·발전 방향을 연결함. 자료에 포부나 후속 계획이 없으면 임의로 만들지 말고 관찰 가능한 성장 변화로 마무리함.
 예시 문장을 그대로 복사하지 말고, 학생 자료(평가계획서·수행평가·활동지·교사 총평)의 실제 내용으로 자연스럽게 바꿔 쓸 것.
 [분량 — 절대 규칙] 각 안은 반드시 띄어쓰기 포함 350자 이상 500자 이하여야 한다. 350자에 못 미치면 3문장 골격 이후에 성장·확장을 보여주는 문장을 추가로 이어 붙여서라도 반드시 350자를 넘길 것. 500자를 넘지 않도록 조정할 것. 350자 미만이거나 500자 초과는 절대 허용되지 않는다.`;
 
@@ -3022,7 +3038,9 @@ function buildSetechPrompts(grade, semester, dept, subject, achievement, planTex
   const subjectGuide = getSubjectGuideline(subject);
   const achievementGuide = getAchievementGuideline(achievement);
 
-  const systemPrompt = `당신은 대한민국 최고 수준의 생활기록부 전문 AI이다. 동시에 다음 역할을 모두 수행한다: 교육부 학교생활기록부 기재요령 전문가, 학생부종합전형 입학사정관, 현직 고등학교 교사, 교육과정·진로교육 전문가, 학생 성장 분석 전문가.
+  const systemPrompt = `당신은 대한민국 최고 수준의 생활기록부 전문 AI이다. 동시에 교육부 학교생활기록부 기재요령 전문가, 상위권 대학 학생부종합전형 입학사정관, 특성화고 특별전형 평가위원, 일반고 학생부종합전형 평가위원, 현직 고등학교 교사, 교육과정 전문가, 진로교육 전문가, NCS 기반 직업교육 전문가, 학생 성장 분석 전문가의 역할을 수행한다.
+
+[학교 특성] 이 학교는 일반고(보통과), 문화콘텐츠과, 금융비즈니스과가 함께 있는 종합고이다. 입력된 학과를 먼저 판별하고 해당 계열의 교육과정과 진로 맥락에 맞춘다.
 
 [절대 목표] 단순히 활동을 나열하지 않는다. 학생의 성장 스토리를 설계하여 "왜 이 학생을 선발해야 하는가"라는 질문에 세특 자체가 답이 되도록 작성한다.
 
@@ -3072,7 +3090,9 @@ ${gradeGuide}
 ${deptGuide}
 ${subjectGuide}
 
-[출력 전 자체 점검 — 출력하지 말고 내부적으로만 확인] 모든 문장이 "~함/~임/~됨/~보임" 등 명사형으로 끝나는가(하나라도 "~다/~했다/~였다"로 끝나면 반드시 수정)? 각 안이 350~500자인가? 성취기준·성취도에 부합하는가? 3문장 골격이 두괄식으로 자연스럽게 녹아 있는가? 활동 나열이 아닌 성장 과정이 드러나는가? 학생만의 차별성이 드러나는가? 교과 특성이 살아있는가? 이 조건을 모두 만족할 때만 최종 결과를 제시한다.`;
+[내부 분석 순서 — 출력하지 않음] 학생 정보 요약→핵심 역량→학업역량→진로역량→공동체역량→부족한 부분→학생부종합전형 관점→해당 시 특성화고 특별전형 관점→개선 아이디어→교과세특 초안→관련 자율·진로·동아리·행특 연결 가능성→입학사정관 평가→수정 제안→최종본 순서로 검토한다.
+
+[출력 전 자체 점검 — 출력하지 말고 내부적으로만 확인] 교육부 기재요령과 교사의 직접 관찰 범위를 지켰는가? 모든 문장이 "~함/~임/~됨/~보임" 등 명사형으로 끝나는가? 각 안이 350~500자인가? 성취기준·성취도에 부합하는가? 첫 문장 총평→교과 연계 호기심→탐구 과정→자료에 근거한 성찰·확장 흐름인가? 활동 나열이 아닌 성장 과정과 새로운 질문이 드러나는가? 학생만의 차별성·진로 연결·교과 특성이 실제 자료로 확인되는가? AI 상투문장이 남지 않았는가? 입학사정관이 학생의 모습을 그릴 수 있는가? 이 조건을 모두 만족할 때만 최종 결과를 제시한다.`;
 
   const userPrompt = `다음 정보를 바탕으로 ${grade} ${subject} ${semester} 교과 세특을 2가지 안으로 작성해주세요. (이 학생은 ${grade}이므로 위 [${grade} 핵심] 방향성에 맞게만 작성 — 다른 학년 내용은 절대 섞지 않습니다)
 
@@ -3675,17 +3695,100 @@ function generateSetech() {
 }
 
 // AI 보완 예시 생성 함수 (창체)
-function generateActivity() {
+async function generateActivity() {
   const text = document.getElementById('activityEditor').value.trim();
+  const sourceText = document.getElementById('activitySourceText').value.trim();
   const resultEl = document.getElementById('activityAIResult');
-  if (!text) {
+  if (!text && !sourceText) {
     resultEl.style.display = 'block';
     resultEl.innerHTML = '<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> 내용을 먼저 입력하세요.</div>';
     return;
   }
   resultEl.style.display = 'block';
   resultEl.innerHTML = '<div style="padding:16px;background:#f3e5f5;border-radius:8px;text-align:center;"><i class="fas fa-spinner fa-spin"></i> AI 보완 예시 생성 중...</div>';
-  generateAIRecordLocal(text, 'activity', resultEl);
+  const grade = document.getElementById('activityGrade').value;
+  const dept = document.getElementById('activityDept').value;
+  const area = window._selectedActivityArea || '자율활동';
+  const openaiKey = localStorage.getItem('openai_api_key') || '';
+  const geminiKey = localStorage.getItem('gemini_api_key') || '';
+  if (!openaiKey && !geminiKey) {
+    generateAIRecordLocal(text || sourceText, 'activity', resultEl);
+    return;
+  }
+
+  const prompts = buildActivityPrompts(grade, dept, area, text, sourceText);
+  try {
+    let content = '';
+    if (openaiKey) {
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+openaiKey},
+        body:JSON.stringify({model:'gpt-4o',messages:[{role:'system',content:prompts.systemPrompt},{role:'user',content:prompts.userPrompt}],max_tokens:1400,temperature:0.6})
+      });
+      if (!resp.ok) throw new Error('OpenAI API 오류 ' + resp.status);
+      content = (await resp.json()).choices?.[0]?.message?.content || '';
+    } else {
+      let lastError;
+      for (const model of GEMINI_MODEL_FALLBACKS) {
+        try {
+          const resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+geminiKey, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({systemInstruction:{parts:[{text:prompts.systemPrompt}]},contents:[{role:'user',parts:[{text:prompts.userPrompt}]}],generationConfig:{maxOutputTokens:1800,temperature:0.6}})
+          });
+          if (!resp.ok) { const e = new Error('Gemini API 오류 '+resp.status); e.status=resp.status; throw e; }
+          content = (await resp.json()).candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('') || '';
+          if (content) break;
+        } catch (error) { lastError=error; }
+      }
+      if (!content) throw lastError || new Error('Gemini 응답 없음');
+    }
+    const [plan1, plan2] = parseSetechPlans(content);
+    renderActivityPlans(plan1, plan2, resultEl);
+  } catch (error) {
+    // API 과부하나 네트워크 오류에도 입력 자료를 잃지 않고 로컬 보완안을 제공한다.
+    generateAIRecordLocal(text || sourceText, 'activity', resultEl);
+  }
+}
+
+function buildActivityPrompts(grade, dept, area, draft, sourceText) {
+  const gradeGuide = getGradeGuideline(grade);
+  const deptGuide = getDeptGuideline(dept);
+  const areaGuide = area === '행동특성·종합의견'
+    ? '언제 어떤 행동을 했고 그 행동이 공동체에 어떤 영향을 주었는지 교사의 직접 관찰 사실로 작성한다.'
+    : area === '진로활동'
+      ? '희망 직업명을 나열하지 말고 탐색 동기, 경험, 생각의 변화, 이후 발전 방향을 실제 자료 안에서 작성한다.'
+      : '활동의 동기, 수행 과정, 역할, 피드백과 수정, 배움과 다음 질문의 흐름을 실제 자료 안에서 작성한다.';
+  const systemPrompt = `당신은 교육부 학교생활기록부 기재요령, 학생부종합전형, 특성화고 특별전형, 교육과정·진로교육·NCS 직업교육을 이해하는 현직 고등학교 교사이다.
+종합고 학생의 ${area} 기록을 작성한다. 학업역량·진로역량·공동체역량을 분석하되 역량명을 나열하지 말고 관찰 가능한 행동으로 증명한다.
+DDAR(Discovery→Development→Action→Reflection)와 Why→How→What 구조를 적용하고 활동→성장→확장→새 질문의 흐름을 만든다.
+${gradeGuide}\n${deptGuide}\n[영역 원칙] ${areaGuide}
+[절대 사실성] 입력 자료에 없는 독서·탐구·발표·실험·논문·성과·횟수·진로를 만들지 않는다. 불명확한 내용은 일반화하거나 생략한다. 학생 수준을 넘는 표현을 쓰지 않는다.
+[금지 표현] 우수함, 성실함, 적극적임, 모범적임, 뛰어남, 잠재력이 있음. 해당 표현 대신 실제 행동과 영향으로 쓴다.
+[문체] 교사의 직접 관찰 시점으로 쓰며 모든 문장을 ~함/~임/~됨/~보임 등 명사형으로 끝낸다. 기업·기관·대학·대회 실명은 일반 표현으로 바꾼다.
+[작성 구조] 첫 문장은 관찰 근거가 있는 총평, 둘째 문장은 호기심·동기와 활동 연결, 셋째 이후는 탐구·실행·피드백·수정 과정, 마지막은 자료에 근거한 성찰·확장으로 쓴다.
+내부적으로 학생 정보 요약, 핵심·학업·진로·공동체역량, 부족한 부분, 전형 관점, 개선 아이디어, 자기검증을 순서대로 수행하되 분석과 체크리스트는 출력하지 않는다.`;
+  const userPrompt = `[학생 정보]\n학년: ${grade||'미지정'}\n계열: ${dept||'보통과'}\n영역: ${area}\n\n[스캔·슈퍼스쿨·교사 관찰 자료]\n${sourceText||'(없음)'}\n\n[기존 초안·추가 의견]\n${draft||'(없음)'}\n\n실제 자료만 사용해 서로 다른 최종본 2가지를 작성한다. 1안은 과정과 공동체 영향을, 2안은 자기주도적 문제 해결과 성장·확장을 더 선명하게 하되 과장하지 않는다. 반드시 [안 1]본문 [안 2]본문 형식만 출력한다.`;
+  return {systemPrompt,userPrompt};
+}
+
+function renderActivityPlans(plan1, plan2, resultEl) {
+  const escapeHtml = value => String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const block = (plan, number) => `<div style="margin-bottom:12px;"><div style="font-size:12.5px;font-weight:800;color:#6a1b9a;margin-bottom:5px;">${number}안</div><div id="aiPlan${number}_activity" style="padding:12px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;font-size:13px;line-height:1.8;white-space:pre-wrap;">${escapeHtml(plan)}</div><div style="display:flex;gap:6px;margin-top:6px;"><button onclick="useAIPlan('activityEditor','aiPlan${number}_activity')" style="padding:5px 12px;background:#7b1fa2;color:#fff;border:none;border-radius:6px;cursor:pointer;">← ${number}안 사용</button><button onclick="copyAIPlan('aiPlan${number}_activity')" style="padding:5px 12px;background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;border-radius:6px;cursor:pointer;">복사</button></div></div>`;
+  resultEl.innerHTML = `<div style="padding:14px;background:#f3e5f5;border-radius:10px;border:1.5px solid #ce93d8;"><div style="font-size:13px;font-weight:800;color:#7b1fa2;margin-bottom:12px;"><i class="fas fa-magic"></i> 자료 기반 최종안</div>${block(plan1,1)}${block(plan2,2)}</div>`;
+}
+
+function handleActivitySourceFile(input) {
+  const file=input.files[0], status=document.getElementById('activitySourceStatus'), target=document.getElementById('activitySourceText');
+  if (!file) return; status.textContent=file.name+' 분석 중...';
+  const reader=new FileReader();
+  reader.onload=async event=>{ try { if(file.type==='text/plain'){target.value=event.target.result;} else {const pdf=await pdfjsLib.getDocument({data:event.target.result}).promise;let text='';for(let i=1;i<=Math.min(pdf.numPages,30);i++){const page=await pdf.getPage(i);const content=await page.getTextContent();text+=content.items.map(x=>x.str).join(' ')+'\n';}target.value=text.trim();}status.textContent='✅ '+file.name+' 추출 완료';}catch(error){status.textContent='⚠️ 추출 실패 — 내용을 직접 붙여넣으세요';}};
+  file.type==='text/plain'?reader.readAsText(file,'utf-8'):reader.readAsArrayBuffer(file);
+}
+
+function handleActivitySourceExcel(input) {
+  const file=input.files[0], status=document.getElementById('activitySourceStatus'), target=document.getElementById('activitySourceText');
+  if(!file)return; status.textContent=file.name+' 분석 중...'; const reader=new FileReader();
+  reader.onload=event=>{try{const wb=XLSX.read(event.target.result,{type:'array'});target.value=wb.SheetNames.map(name=>`[${name}]\n${XLSX.utils.sheet_to_csv(wb.Sheets[name],{blankrows:false})}`).join('\n\n').trim();status.textContent='✅ '+file.name+' 분석 완료';}catch(error){status.textContent='⚠️ 분석 실패 — 내용을 직접 붙여넣으세요';}};
+  reader.readAsArrayBuffer(file);
 }
 
 // 로컬 기반 보완 (추상어 → 증거어 치환 + 성장 서술 추가)
