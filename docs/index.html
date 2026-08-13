@@ -3543,6 +3543,34 @@ ${existingText}
   const openaiKey = localStorage.getItem('openai_api_key') || '';
   const geminiKey = localStorage.getItem('gemini_api_key') || '';
 
+  function renderLocalImprovement() {
+    // API가 없거나 일시적으로 사용할 수 없을 때도 작업이 끊기지 않도록 로컬 보완안을 만든다.
+    const replacements = [
+      ['적극적으로', '스스로 질문을 제기하며'],['열심히', '지속적으로 수정·보완하며'],
+      ['우수한', '완성도 높은'],['우수함', '완성도 높게 수행함'],['우수하게', '완성도 높게'],
+      ['뛰어난', '두드러진'],['뛰어남', '두드러지게 나타남'],
+      ['성실한', '매 수업마다 준비하는'],['성실함', '매 수업마다 준비하며 임함'],
+      ['창의적인', '독자적 방식으로 접근한'],['창의적', '독자적 방식으로'],
+      ['적극적임', '스스로 문제를 제기함'],['모범적임', '공동체 규칙을 솔선수범함'],
+    ];
+    let refined = existingText;
+    replacements.forEach(([from, to]) => { refined = refined.split(from).join(to); });
+    const subjReq = (SUBJECT_REQUIRED[subject] || '').split(',')[0].trim();
+    const subjPart = subjReq ? `특히 ${subjReq} 등의 핵심 역량을 중심으로 탐구를 확장함.` : '';
+    const growthPart = '이 과정에서 스스로 문제를 정의하고 해결 방법을 설계하며 시행착오를 통해 수정하는 과정을 반복함으로써 사고력이 성장하는 모습이 드러남.';
+    const gradeGuideExtra = {
+      '고1': '이러한 학습 태도는 다음 학년의 심화 탐구로 이어질 기반이 됨.',
+      '고2': '이러한 융합적 접근은 전공 탐색과 후속 심화 학습으로 자연스럽게 연결됨.',
+      '고3': '이러한 주도적 탐구 태도는 전공 적합성과 향후 발전 가능성을 보여줌.',
+    }[grade] || '이러한 태도는 앞으로의 학습에도 긍정적인 영향을 줄 것으로 기대됨.';
+    renderSetechResult(
+      fitSetechLength(refined, [gradeGuideExtra, subjPart]),
+      fitSetechLength(refined, [growthPart, subjPart, gradeGuideExtra]),
+      resultEl,
+      'local'
+    );
+  }
+
   if (openaiKey) {
     try {
       const resp = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -3580,9 +3608,12 @@ ${existingText}
           if (!resp.ok) {
             const err = await resp.json().catch(()=>({}));
             const msg = err.error?.message || 'Gemini API 오류 ' + resp.status;
-            const isModelGone = resp.status === 404 || /no longer available|not found|not supported/i.test(msg);
-            if (isModelGone) { lastErr = new Error(msg); continue; }
-            throw new Error(msg);
+            const modelUnavailable = resp.status === 404 || resp.status === 429 || resp.status === 503 ||
+              /no longer available|not found|not supported|overloaded|high demand|unavailable/i.test(msg);
+            const apiError = new Error(msg);
+            apiError.status = resp.status;
+            if (modelUnavailable) { lastErr = apiError; continue; }
+            throw apiError;
           }
           const data = await resp.json();
           content = (data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '').trim();
@@ -3595,32 +3626,11 @@ ${existingText}
       const [plan1, plan2] = parseSetechPlans(content);
       renderSetechResult(plan1, plan2, resultEl, 'gemini');
     } catch(err) {
-      resultEl.innerHTML = `<div style="padding:12px;background:#fce4ec;border-radius:8px;color:#c62828;"><i class="fas fa-exclamation-circle"></i> Gemini 오류: ${err.message}</div>`;
+      // 모든 Gemini 모델이 과부하/한도 초과여도 사용자 작업을 중단시키지 않는다.
+      renderLocalImprovement();
     }
   } else {
-    // 로컬: 추상어 치환 + 학년/교과 원리 문장 보강
-    const replacements = [
-      ['적극적으로', '스스로 질문을 제기하며'],['열심히', '지속적으로 수정·보완하며'],
-      ['우수한', '완성도 높은'],['우수함', '완성도 높게 수행함'],['우수하게', '완성도 높게'],
-      ['뛰어난', '두드러진'],['뛰어남', '두드러지게 나타남'],
-      ['성실한', '매 수업마다 준비하는'],['성실함', '매 수업마다 준비하며 임함'],
-      ['창의적인', '독자적 방식으로 접근한'],['창의적', '독자적 방식으로'],
-      ['적극적임', '스스로 문제를 제기함'],['모범적임', '공동체 규칙을 솔선수범함'],
-    ];
-    let refined = existingText;
-    replacements.forEach(([f,t]) => { refined = refined.split(f).join(t); });
-    const subjReq = (SUBJECT_REQUIRED[subject] || '').split(',')[0].trim();
-    const subjPart = subjReq ? `특히 ${subjReq} 등의 핵심 역량을 중심으로 탐구를 확장함.` : '';
-    const growthPart = '이 과정에서 스스로 문제를 정의하고 해결 방법을 설계하며 시행착오를 통해 수정하는 과정을 반복함으로써 사고력이 성장하는 모습이 드러남.';
-    const gradeGuideExtra = {
-      '고1': '이러한 학습 태도는 다음 학년의 심화 탐구로 이어질 기반이 됨.',
-      '고2': '이러한 융합적 접근은 전공 탐색과 후속 심화 학습으로 자연스럽게 연결됨.',
-      '고3': '이러한 주도적 탐구 태도는 전공 적합성과 향후 발전 가능성을 보여줌.',
-    }[grade] || '이러한 태도는 앞으로의 학습에도 긍정적인 영향을 줄 것으로 기대됨.';
-
-    const plan1 = fitSetechLength(refined, [gradeGuideExtra, subjPart]);
-    const plan2 = fitSetechLength(refined, [growthPart, subjPart, gradeGuideExtra]);
-    renderSetechResult(plan1, plan2, resultEl, 'local');
+    renderLocalImprovement();
   }
 }
 
