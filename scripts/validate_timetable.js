@@ -142,6 +142,21 @@ const reportedSwapRegression = read(`(() => {
 assert(!reportedSwapRegression.shown, '김영주 금4 ↔ 김재현 화2 오류 후보가 다시 표시됨');
 assert(!reportedSwapRegression.valid && reportedSwapRegression.teacherConflicts.includes('김영주'), '김영주 화2 임장 충돌을 가상 맞교환 검증이 찾지 못함');
 
+const ohSeungcheolRegression = read(`(() => {
+  const sourceValue = TEACHER_SCHEDULE['김영주']['금4'];
+  const candidates = findSwapCandidates('김영주', '금', 4, sourceValue);
+  const wrongCandidates = candidates.filter(item => item.teacher === '오승철');
+  const selectedLesson = createLessonRecord('오승철', '금', 4, TEACHER_SCHEDULE['오승철']['금4']);
+  return {
+    wrongCandidates,
+    fridayFourthIsSelection: parseCellValue(selectedLesson.value, '오승철', '금4').isSelect,
+    busyAtSamePeriod: isTeacherBusyAt('오승철', '금', 4, parseCellValue(sourceValue, '김영주', '금4')),
+  };
+})()`);
+assert(ohSeungcheolRegression.fridayFourthIsSelection, '오승철 금4 선택과목 표시 누락');
+assert(ohSeungcheolRegression.busyAtSamePeriod, '학년별 시각 차이 때문에 오승철 금4 수업을 공강으로 판정함');
+assert(ohSeungcheolRegression.wrongCandidates.length === 0, '김영주 금4 교체 후보에 오승철이 표시됨');
+
 const baseCollisionAudit = read(`(() => {
   let teacherConflicts = 0;
   let classConflicts = 0;
@@ -220,6 +235,7 @@ console.log(JSON.stringify({
   industryCoTeachingSubstitutes: industryCoTeachingAudit.substituteCount,
   industryMeetingMisses: industryMeetingAudit.length,
   reportedSwapRegression,
+  ohSeungcheolRegression,
   teacherScheduleConflicts: baseCollisionAudit.teacherConflicts,
   classScheduleConflicts: baseCollisionAudit.classConflicts,
   specialRoomPolicyAudit,

@@ -202,6 +202,12 @@ function intervalsOverlap(a, b) {
   return !!a && !!b && a.start < b.end && b.start < a.end;
 }
 
+// 교체·대체의 교사 충돌은 학교 시간표의 요일·교시를 우선한다.
+// 학년별 실제 시각이 다르더라도 같은 '4교시' 수업 두 개를 한 교사가 맡을 수는 없다.
+function lessonSlotsConflict(a, b) {
+  return a.day === b.day && (a.period === b.period || intervalsOverlap(a.interval, b.interval));
+}
+
 function slotParts(slot) {
   const match = String(slot).match(/^(.+?)([1-7])$/);
   return match ? { day:match[1], period:Number(match[2]) } : null;
@@ -215,7 +221,7 @@ function isTeacherBusyAt(teacher, day, period, targetInfo, ignoreLessons = []) {
     if (!parts || parts.day !== day || !value) return false;
     if (ignoreLessons.some(x => x.teacher === teacher && x.day === parts.day && x.period === parts.period)) return false;
     const existingInfo = parseCellValue(value, teacher, slot);
-    return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+    return parts.period === period || intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
   });
   if (hasRegularLesson) return true;
 
@@ -229,7 +235,7 @@ function isTeacherBusyAt(teacher, day, period, targetInfo, ignoreLessons = []) {
     if (!parts || parts.day !== day) return false;
     return values.some(value => {
       const existingInfo = parseCellValue(value, teacher, slot, true);
-      return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+      return parts.period === period || intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
     });
   });
 }
@@ -306,7 +312,7 @@ function findScheduleRecordConflicts(records) {
   const conflicts = [];
   for (let i = 0; i < records.length; i++) {
     for (let j = i + 1; j < records.length; j++) {
-      if (records[i].day === records[j].day && intervalsOverlap(records[i].interval, records[j].interval)) {
+      if (lessonSlotsConflict(records[i], records[j])) {
         conflicts.push([records[i], records[j]]);
       }
     }
