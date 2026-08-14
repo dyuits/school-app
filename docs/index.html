@@ -93,6 +93,10 @@
           <i class="fas fa-exchange-alt"></i>
           <span>수업 교체·대체 찾기</span>
           <span style="font-size:11px;font-weight:400;color:var(--txt-mid);margin-left:4px;">수업 칸을 클릭 → 교체·대체 가능 선생님 자동 검색</span>
+          <div class="schedule-export-actions">
+            <button class="btn btn-outline btn-sm" onclick="copySchedulePanel('swapTableWrap',this)"><i class="fas fa-copy"></i> 복사</button>
+            <button class="btn btn-dark btn-sm" onclick="printSchedulePanel('swapTableWrap','교체·대체 시간표')"><i class="fas fa-print"></i> 출력</button>
+          </div>
           <div style="margin-left:auto;min-width:160px;">
             <div class="search-wrap">
               <i class="fas fa-search"></i>
@@ -137,6 +141,7 @@
 
     <!-- ── 2. 교사별 시간표 ── -->
     <section id="teacherTab" class="tab-panel">
+      <div class="schedule-tab-toolbar"><span><i class="fas fa-columns"></i> 선택 시간표 비교</span><div class="schedule-export-actions"><button class="btn btn-outline btn-sm" onclick="copySchedulePanel('teacherDetailPanel',this)"><i class="fas fa-copy"></i> 복사</button><button class="btn btn-dark btn-sm" onclick="printSchedulePanel('teacherDetailPanel','교사별 시간표')"><i class="fas fa-print"></i> 출력</button></div></div>
       <div class="side-btn-layout">
         <!-- 왼쪽: 교사 버튼 목록 -->
         <div class="side-btn-panel">
@@ -185,6 +190,7 @@
 
     <!-- ── 3. 학급별 시간표 ── -->
     <section id="classScheduleTab" class="tab-panel">
+      <div class="schedule-tab-toolbar"><span><i class="fas fa-school"></i> 학급 시간표 비교</span><div class="schedule-export-actions"><button class="btn btn-outline btn-sm" onclick="copySchedulePanel('classScheduleDetail',this)"><i class="fas fa-copy"></i> 복사</button><button class="btn btn-dark btn-sm" onclick="printSchedulePanel('classScheduleDetail','학급별 시간표')"><i class="fas fa-print"></i> 출력</button></div></div>
       <div class="side-btn-layout">
         <!-- 왼쪽: 학급 버튼 목록 -->
         <div class="side-btn-panel">
@@ -192,7 +198,7 @@
           <div class="side-btn-search">
             <div class="search-wrap">
               <i class="fas fa-search"></i>
-              <input type="text" class="search-input" id="classScheduleSearch" placeholder="학년·반 검색..." oninput="renderClassScheduleList()">
+              <input type="text" class="search-input" id="classScheduleSearch" placeholder="1-1, 1-2 (다중 비교)" oninput="renderClassScheduleList()" autocomplete="off">
             </div>
           </div>
           <div class="side-btn-list" id="classScheduleList">
