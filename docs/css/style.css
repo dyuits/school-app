@@ -483,6 +483,34 @@ a { text-decoration:none; color:inherit; }
 .teacher-list-item:hover { background: var(--sky-pale); color: var(--brown); }
 .teacher-list-item.active { background: var(--brown); color: #fff; }
 .teacher-list-item.active * { color: #fff; }
+.teacher-compare-summary {
+  padding: 10px 14px;
+  color: var(--txt-mid);
+  font-size: 12px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-lt);
+}
+.teacher-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  align-items: start;
+}
+.teacher-compare-grid.single { grid-template-columns: minmax(0, 1fr); }
+.teacher-compare-card {
+  min-width: 0;
+  overflow: hidden;
+  background: #fff;
+  border: 1.5px solid var(--border-lt);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(40,70,90,.06);
+}
+.teacher-compare-card .teacher-detail-header { border-radius: 0; }
+.teacher-compare-card.is-compact .teacher-detail-header { padding: 12px; }
+.teacher-compare-card.is-compact .teacher-avatar { width: 38px; height: 38px; font-size: 20px; }
+.teacher-compare-card.is-compact .teacher-detail-table th,
+.teacher-compare-card.is-compact .teacher-detail-table td { padding-left: 4px; padding-right: 4px; }
 
 /* ══════════════════════════════════════
    공강 탭
@@ -1890,6 +1918,7 @@ a { text-decoration:none; color:inherit; }
   .side-btn-layout { grid-template-columns: 1fr; }
   .side-btn-panel { position: static; }
   .side-btn-list { max-height: 200px; flex-direction: row; flex-wrap: wrap; }
+  .teacher-compare-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .app-header { padding: 12px 14px; }

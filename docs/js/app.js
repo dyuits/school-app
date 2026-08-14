@@ -14,7 +14,7 @@ const STATE = {
   blockTempDays: {},
   calendarMonth: new Date().getMonth() + 1,
   freeSelectedTeacher: null,
-  teacherScheduleSelected: null,
+  teacherScheduleSelected: [],
   contactDept: 'all',
   contactUnlocked: false,
   rosterUnlocked: false,
@@ -839,7 +839,18 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
 // ═══════════════════════════════════════════════
 // 교사별 시간표 탭
 // ═══════════════════════════════════════════════
-function renderTeacherScheduleTab() { renderTeacherListPanel(); }
+function getSelectedScheduleTeachers() {
+  const selected = STATE.teacherScheduleSelected;
+  if (Array.isArray(selected)) return selected.filter(name => ALL_TEACHERS.includes(name));
+  if (selected && ALL_TEACHERS.includes(selected)) return [selected];
+  return [];
+}
+
+function renderTeacherScheduleTab() {
+  renderTeacherListPanel();
+  const selected = getSelectedScheduleTeachers();
+  if (selected.length) renderTeacherDetailTable(selected);
+}
 
 function renderTeacherListPanel() {
   const rawSearch = (qs('#teacherScheduleSearch')?.value || '').trim();
@@ -850,11 +861,19 @@ function renderTeacherListPanel() {
   const filtered = ALL_TEACHERS.filter(t => !searchTerms.length || searchTerms.some(s => t.toLowerCase().includes(s)));
   if (!filtered.length) {
     listEl.innerHTML = `<div style="padding:14px;text-align:center;color:var(--txt-light);font-size:12px;">검색 결과 없음</div>`;
+    STATE.teacherScheduleSelected = [];
+    renderTeacherDetailTable([]);
     return;
   }
 
+  // 검색어가 있으면 일치하는 교사를 모두 선택하여 비교 시간표를 즉시 표시한다.
+  if (searchTerms.length) {
+    STATE.teacherScheduleSelected = filtered;
+    renderTeacherDetailTable(filtered);
+  }
+
   listEl.innerHTML = filtered.map(t => {
-    const active = STATE.teacherScheduleSelected === t ? 'active' : '';
+    const active = getSelectedScheduleTeachers().includes(t) ? 'active' : '';
     const homeroomCls = TEACHER_TO_CLASS[t] || '';
     return `<button class="side-btn-item ${active}" onclick="selectTeacherSchedule('${t}')">
       <span>${t} 선생님</span>
@@ -864,14 +883,12 @@ function renderTeacherListPanel() {
 }
 
 function selectTeacherSchedule(teacher) {
-  STATE.teacherScheduleSelected = teacher;
+  STATE.teacherScheduleSelected = [teacher];
   renderTeacherListPanel();
-  renderTeacherDetailTable(teacher);
+  renderTeacherDetailTable([teacher]);
 }
 
-function renderTeacherDetailTable(teacher) {
-  const panel = qs('#teacherDetailPanel');
-  if (!panel) return;
+function buildTeacherDetailCard(teacher, compact = false) {
   const sch = TEACHER_SCHEDULE[teacher] || {};
   const isHR = !!TEACHER_TO_CLASS[teacher];
   const gradeGroup = getTeacherGradeGroup(teacher);
@@ -885,7 +902,7 @@ function renderTeacherDetailTable(teacher) {
     if (!sch[d+p] && !isChatcheTime(teacher, d, p) && p <= 7) freeCount++;
   }));
 
-  panel.innerHTML = `
+  return `<article class="teacher-compare-card ${compact ? 'is-compact' : ''}">
     <div class="teacher-detail-header">
       <div class="teacher-avatar">👤</div>
       <div>
@@ -900,7 +917,7 @@ function renderTeacherDetailTable(teacher) {
       </div>
     </div>
     <div style="overflow-x:auto;padding:12px;">
-      <table class="teacher-detail-table" style="min-width:500px;">
+      <table class="teacher-detail-table" style="min-width:${compact ? '420px' : '500px'};">
         <thead>
           <tr>
             <th style="width:80px;">교시</th>
@@ -945,7 +962,19 @@ function renderTeacherDetailTable(teacher) {
           }).join('')}
         </tbody>
       </table>
-    </div>`;
+    </div></article>`;
+}
+
+function renderTeacherDetailTable(teachers) {
+  const panel = qs('#teacherDetailPanel');
+  if (!panel) return;
+  const selected = (Array.isArray(teachers) ? teachers : [teachers]).filter(name => ALL_TEACHERS.includes(name));
+  if (!selected.length) {
+    panel.innerHTML = `<div class="empty-state"><div class="empty-icon">👈</div><h3>왼쪽에서 선생님을 선택해주세요</h3><p>쉼표나 공백으로 여러 이름을 검색하면 시간표를 나란히 비교할 수 있습니다</p></div>`;
+    return;
+  }
+  const compact = selected.length > 1;
+  panel.innerHTML = `<div class="teacher-compare-summary"><i class="fas fa-columns"></i> ${selected.length}명 시간표 비교</div><div class="teacher-compare-grid ${selected.length === 1 ? 'single' : ''}">${selected.map(teacher => buildTeacherDetailCard(teacher, compact)).join('')}</div>`;
 }
 
 // ═══════════════════════════════════════════════
