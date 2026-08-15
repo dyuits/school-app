@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v28-timetable-reservations';
+var CACHE_NAME = 'school-app-v29-replies-modal';
 var ASSETS = [
   './',
   './index.html',
