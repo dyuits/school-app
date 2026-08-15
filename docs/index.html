@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260812-8">
-  <link rel="stylesheet" href="css/dashboard.css?v=20260815-1">
+  <link rel="stylesheet" href="css/dashboard.css?v=20260815-2">
   <!-- PDF.js: 세특 탭 PDF 업로드 텍스트 추출 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if(typeof pdfjsLib!=='undefined'){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
@@ -226,18 +226,7 @@
 
     <!-- ── 4. 실습실 시간표 ── -->
     <section id="labTab" class="tab-panel">
-      <!-- 서브탭 네비게이션 -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
-        <button id="labSubBtn-schedule" class="sub-tab-btn active" onclick="switchLabSub('schedule')" style="padding:7px 16px;border-radius:20px;border:1.5px solid var(--primary,#4f7ef8);background:var(--primary,#4f7ef8);color:#fff;font-weight:700;font-size:13px;cursor:pointer;">
-          <i class="fas fa-flask"></i> 실습실 시간표
-        </button>
-        <button id="labSubBtn-reservation" class="sub-tab-btn" onclick="switchLabSub('reservation')" style="padding:7px 16px;border-radius:20px;border:1.5px solid var(--sky-mid,#90caf9);background:var(--sky-pale,#eaf4ff);color:#1565c0;font-weight:700;font-size:13px;cursor:pointer;">
-          <i class="fas fa-calendar-plus"></i> 실습실 사용예약 <span style="font-size:9px;background:#e53935;color:#fff;border-radius:4px;padding:1px 4px;margin-left:3px;font-weight:700;">NEW</span>
-        </button>
-      </div>
-
-      <!-- 서브탭 패널: 실습실 시간표 -->
-      <div id="labSubPanel-schedule" class="sub-tab-panel active">
+      <div id="labSubPanel-schedule">
         <div class="side-btn-layout">
           <div class="side-btn-panel">
             <div class="side-btn-panel-header"><i class="fas fa-flask"></i> 실습실 목록</div>
@@ -253,80 +242,6 @@
         </div>
       </div>
 
-      <!-- 서브탭 패널: 실습실 사용예약 -->
-      <div id="labSubPanel-reservation" class="sub-tab-panel">
-        <div class="card" style="padding:20px;">
-          <h2 style="font-size:17px;font-weight:800;color:var(--txt-dark);margin-bottom:16px;"><i class="fas fa-calendar-plus" style="color:var(--primary);"></i> 실습실 사용예약</h2>
-          <div style="background:#fff8e1;border:1.5px solid #ffe082;border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:#7a5c00;">
-            <i class="fas fa-info-circle"></i> 실습실 예약은 모든 선생님에게 실시간으로 공유되며, 누구나 예약 내용을 수정·취소할 수 있습니다.
-          </div>
-
-          <!-- 예약 양식 -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px;">
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">실습실 선택</label>
-              <select id="resRoomSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
-                <option value="">실습실를 선택하세요</option>
-                <option>만콘실</option><option>영상실</option><option>컴그실</option>
-                <option>회계실</option><option>사행실</option><option>창구실</option><option>전상실</option>
-                <option>창림관</option><option>AI융합교실</option><option>과학실1</option><option>과학실2</option><option>미술실</option>
-                <option>자기주도학습실</option><option>정보교실</option><option>전자상거래실무실</option>
-                <option>온라인학점교실</option><option>학점제실1</option><option>학점제실2</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">요일</label>
-              <select id="resDaySelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
-                <option value="">요일 선택</option>
-                <option>월요일</option><option>화요일</option><option>수요일</option><option>목요일</option><option>금요일</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">교시</label>
-              <select id="resPeriodSelect" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;">
-                <option value="">교시 선택</option>
-                <option>1교시</option><option>2교시</option><option>3교시</option>
-                <option value="4교시-12">4교시 (1·2학년 11:40~12:30)</option>
-                <option value="4교시-3">4교시 (3학년 12:40~13:30)</option>
-                <option>5교시</option><option>6교시</option><option>7교시</option><option>8교시</option><option>방과후</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">예약자 (선생님 성함)</label>
-              <input type="text" id="resTeacherName" placeholder="예: 홍길동" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;box-sizing:border-box;">
-            </div>
-            <div>
-              <label style="font-size:12px;font-weight:700;color:var(--txt-mid);display:block;margin-bottom:4px;">사용 목적</label>
-              <input type="text" id="resPurpose" placeholder="예: 정보 수업, 코딩 실습" style="width:100%;padding:8px 10px;border:1.5px solid var(--border-lt);border-radius:8px;font-size:13px;box-sizing:border-box;">
-            </div>
-            <div style="display:flex;align-items:flex-end;">
-              <button id="reservationSubmitBtn" onclick="addReservation()" style="width:100%;padding:9px;background:var(--primary,#4f7ef8);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">
-                <i class="fas fa-plus"></i> 예약 신청
-              </button>
-            </div>
-          </div>
-
-          <!-- 예약 현황 테이블 -->
-          <div style="font-size:14px;font-weight:800;color:var(--txt-dark);margin-bottom:10px;">현재 예약 현황</div>
-          <div id="reservationTableWrap" style="overflow-x:auto;">
-            <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
-              <thead>
-                <tr style="background:var(--primary,#4f7ef8);color:#fff;">
-                  <th style="padding:9px 10px;text-align:center;border-radius:6px 0 0 0;">실습실</th>
-                  <th style="padding:9px 10px;text-align:center;">요일</th>
-                  <th style="padding:9px 10px;text-align:center;">교시</th>
-                  <th style="padding:9px 10px;text-align:center;">예약자</th>
-                  <th style="padding:9px 10px;text-align:center;">사용 목적</th>
-                  <th style="padding:9px 10px;text-align:center;border-radius:0 6px 0 0;">관리</th>
-                </tr>
-              </thead>
-              <tbody id="reservationTableBody">
-                <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--txt-light);"><i class="fas fa-calendar"></i> 등록된 예약이 없습니다</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </section>
 
 
@@ -3997,23 +3912,22 @@ function addReservation() {
   const period = document.getElementById('resPeriodSelect').value;
   const teacher = document.getElementById('resTeacherName').value.trim();
   const purpose = document.getElementById('resPurpose').value.trim();
-  if (!room || !day || !period || !teacher) { alert('실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return; }
+  if (!room || !day || !period || !teacher) { alert('실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return false; }
   const regularUse = getRegularUseForReservation(room, day, period);
   if (regularUse) {
     alert(`정규수업이 있는 시간입니다.\n${regularUse}`);
-    return;
+    return false;
   }
   if (reservationConflicts(room, day, period, editingReservationId)) {
     alert('해당 시간에 이미 예약이 있습니다.');
-    return;
+    return false;
   }
   const payload = { room, day, period, teacher, purpose:purpose||'미입력', updatedAt:Date.now() };
   const editedId = editingReservationId;
   if (firebaseDB) {
-    syncReservationToFirebase(payload, editedId)
-      .then(() => resetReservationForm())
-      .catch(() => alert('공유 예약 저장에 실패했습니다. 잠시 후 다시 시도해주세요.'));
-    return;
+    return syncReservationToFirebase(payload, editedId)
+      .then(() => { resetReservationForm(); return true; })
+      .catch(() => { alert('공유 예약 저장에 실패했습니다. 잠시 후 다시 시도해주세요.'); return false; });
   }
   if (editedId) {
     const index = reservations.findIndex(r => String(r.id) === String(editedId));
@@ -4024,6 +3938,8 @@ function addReservation() {
   saveReservationsLocally();
   renderReservations();
   resetReservationForm();
+  window.dispatchEvent(new CustomEvent('schoolapp:reservations-updated'));
+  return true;
 }
 function renderReservations() {
   const tbody = document.getElementById('reservationTableBody');
@@ -4050,6 +3966,10 @@ function renderReservations() {
 function editReservation(id) {
   const reservation = reservations.find(r => String(r.id) === String(id));
   if (!reservation) return;
+  if (!document.getElementById('resRoomSelect') && typeof dashboardOpenReservation === 'function') {
+    dashboardOpenReservation(id);
+    return;
+  }
   editingReservationId = String(id);
   document.getElementById('resRoomSelect').value = reservation.room;
   document.getElementById('resDaySelect').value = reservation.day;
@@ -4099,6 +4019,7 @@ function startSharedReservationListener() {
       reservations = Object.entries(data).map(([id, value]) => ({ ...(value || {}), id }));
       saveReservationsLocally();
       renderReservations();
+      window.dispatchEvent(new CustomEvent('schoolapp:reservations-updated'));
     });
   });
 }
@@ -4117,6 +4038,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js?v=20260812-8"></script>
 <script src="js/app.js?v=20260812-8"></script>
-<script src="js/dashboard.js?v=20260815-1"></script>
+<script src="js/dashboard.js?v=20260815-2"></script>
 </body>
 </html>
