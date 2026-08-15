@@ -2200,24 +2200,18 @@ function openClassLessonMatching(cls, day, period) {
     return;
   }
   const teacher = teachers[0];
-  switchTab('swap');
-  const search = qs('#swapSearch');
-  if (search) search.value = teacher;
-  renderSwapTable();
-  setTimeout(() => {
-    const value = (TEACHER_SCHEDULE[teacher] || {})[day + period];
-    if (value) {
-      onCellClick(teacher, day, period);
-      return;
-    }
-    const externalValues = getExternalLessonValues(teacher, day, period);
-    const externalIndex = externalValues.findIndex(item => {
-      const info = parseCellValue(item, teacher, day + period, true);
-      return `${info.grade}-${info.classNum}` === cls;
-    });
-    if (externalIndex >= 0) onExternalCellClick(teacher, day, period, externalIndex);
-    else openLessonMatching(teacher, day, period, '', false);
-  }, 0);
+  const value = (TEACHER_SCHEDULE[teacher] || {})[day + period];
+  if (value) {
+    onCellClick(teacher, day, period);
+    return;
+  }
+  const externalValues = getExternalLessonValues(teacher, day, period);
+  const externalIndex = externalValues.findIndex(item => {
+    const info = parseCellValue(item, teacher, day + period, true);
+    return `${info.grade}-${info.classNum}` === cls;
+  });
+  if (externalIndex >= 0) onExternalCellClick(teacher, day, period, externalIndex);
+  else openLessonMatching(teacher, day, period, '', false);
 }
 
 // ═══════════════════════════════════════════════

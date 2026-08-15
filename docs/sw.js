@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v33-calendar-2027-january';
+var CACHE_NAME = 'school-app-v34-class-popup-only';
 var ASSETS = [
   './',
   './index.html',
