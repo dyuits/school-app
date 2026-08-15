@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260812-8">
-  <link rel="stylesheet" href="css/dashboard.css?v=20260815-2">
+  <link rel="stylesheet" href="css/dashboard.css?v=20260815-3">
   <!-- PDF.js: 세특 탭 PDF 업로드 텍스트 추출 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if(typeof pdfjsLib!=='undefined'){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
@@ -3870,10 +3870,11 @@ function escapeReservationText(value) {
   })[char]);
 }
 
-function reservationConflicts(room, day, period, exceptId = null) {
+function reservationConflicts(room, day, period, exceptId = null, date = '') {
   const periodNumber = parseInt(period, 10);
   return reservations.some(r => {
     if (String(r.id) === String(exceptId) || r.room !== room || r.day !== day) return false;
+    if (date && r.date && r.date !== date) return false;
     if (r.period === period) return true;
     // 기존 '구분 없는 4교시' 예약은 두 시간대 모두를 보수적으로 보호한다.
     return periodNumber === 4 && r.period === '4교시';
@@ -3892,7 +3893,7 @@ function getRegularUseForReservation(room, day, period) {
 
 function resetReservationForm() {
   editingReservationId = null;
-  ['resRoomSelect','resDaySelect','resPeriodSelect','resTeacherName','resPurpose'].forEach(id => {
+  ['resDateSelect','resRoomSelect','resDaySelect','resPeriodSelect','resTeacherName','resPurpose'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -3907,22 +3908,25 @@ function syncReservationToFirebase(payload, id = null) {
 }
 
 function addReservation() {
+  const dateInput = document.getElementById('resDateSelect');
+  const date = dateInput ? dateInput.value : '';
   const room = document.getElementById('resRoomSelect').value;
   const day = document.getElementById('resDaySelect').value;
   const period = document.getElementById('resPeriodSelect').value;
   const teacher = document.getElementById('resTeacherName').value.trim();
   const purpose = document.getElementById('resPurpose').value.trim();
-  if (!room || !day || !period || !teacher) { alert('실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return false; }
+  if ((dateInput && !date) || !room || !day || !period || !teacher) { alert('날짜, 실습실, 요일, 교시, 예약자를 모두 입력해주세요.'); return false; }
   const regularUse = getRegularUseForReservation(room, day, period);
   if (regularUse) {
     alert(`정규수업이 있는 시간입니다.\n${regularUse}`);
     return false;
   }
-  if (reservationConflicts(room, day, period, editingReservationId)) {
+  if (reservationConflicts(room, day, period, editingReservationId, date)) {
     alert('해당 시간에 이미 예약이 있습니다.');
     return false;
   }
   const payload = { room, day, period, teacher, purpose:purpose||'미입력', updatedAt:Date.now() };
+  if (date) payload.date = date;
   const editedId = editingReservationId;
   if (firebaseDB) {
     return syncReservationToFirebase(payload, editedId)
@@ -3971,6 +3975,8 @@ function editReservation(id) {
     return;
   }
   editingReservationId = String(id);
+  const dateInput = document.getElementById('resDateSelect');
+  if (dateInput) dateInput.value = reservation.date || '';
   document.getElementById('resRoomSelect').value = reservation.room;
   document.getElementById('resDaySelect').value = reservation.day;
   document.getElementById('resPeriodSelect').value = reservation.period;
@@ -4038,6 +4044,6 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="js/firebase-config.js"></script>
 <script src="js/data.js?v=20260812-8"></script>
 <script src="js/app.js?v=20260812-8"></script>
-<script src="js/dashboard.js?v=20260815-3"></script>
+<script src="js/dashboard.js?v=20260815-4"></script>
 </body>
 </html>

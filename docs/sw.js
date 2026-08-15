@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v19-realtime-crud';
+var CACHE_NAME = 'school-app-v20-dashboard-layout';
 var ASSETS = [
   './',
   './index.html',
