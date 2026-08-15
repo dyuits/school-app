@@ -16,5 +16,21 @@ function initFirebase() {
     firebase.initializeApp(FIREBASE_CONFIG);
     firebaseDB = firebase.database();
     console.log('Firebase 연결 완료');
+    window.dispatchEvent(new CustomEvent('schoolapp:firebase-ready'));
+  }
+}
+
+// 관리자 페이지의 학사일정과 동일한 단일 원본을 메인 앱에도 반영한다.
+async function loadAdminOverrides() {
+  if (!firebaseDB || typeof ACADEMIC_CALENDAR === 'undefined') return;
+  try {
+    const snap = await firebaseDB.ref('adminData/calendar').once('value');
+    const calendar = snap.val();
+    if (Array.isArray(calendar) && calendar.length) {
+      ACADEMIC_CALENDAR.splice(0, ACADEMIC_CALENDAR.length, ...calendar);
+      window.dispatchEvent(new CustomEvent('schoolapp:calendar-updated'));
+    }
+  } catch (error) {
+    console.warn('관리자 학사일정 로드 실패, 기본 데이터를 사용합니다.', error);
   }
 }

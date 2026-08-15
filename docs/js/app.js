@@ -104,6 +104,7 @@ function switchTab(name) {
   STATE.currentTab = name;
   qsa('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   qsa('.tab-panel').forEach(p => p.classList.toggle('active', p.id === name + 'Tab'));
+  if (name === 'home' && typeof renderDashboard === 'function') renderDashboard();
   if (name === 'swap')          renderSwapTable();
   if (name === 'teacher')       renderTeacherScheduleTab();
   if (name === 'subjectClass')  renderSubjectClassTab();
@@ -3100,6 +3101,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Firebase 초기화
   initFirebase();
+  loadAdminOverrides();
   setTimeout(startHeartbeatListener, 1000);
   setTimeout(startSharedMemoListener, 1000);
 
@@ -3108,5 +3110,5 @@ window.addEventListener('DOMContentLoaded', () => {
   qs('#rosterPassword')?.addEventListener('keydown',e=>{if(e.key==='Enter')verifyRosterPassword();});
 
   // 첫 탭 렌더
-  switchTab('swap');
+  switchTab('home');
 });
