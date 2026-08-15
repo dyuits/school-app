@@ -1,11 +1,13 @@
-var CACHE_NAME = 'school-app-v10';
+var CACHE_NAME = 'school-app-v11-dashboard';
 var ASSETS = [
   './',
   './index.html',
   './classroom.html',
   './call.html',
   './css/style.css',
+  './css/dashboard.css',
   './js/app.js',
+  './js/dashboard.js',
   './js/data.js',
   './js/firebase-config.js',
   './icons/icon-192.png',
