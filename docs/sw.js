@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v24-top-shortcuts';
+var CACHE_NAME = 'school-app-v25-independent-dates';
 var ASSETS = [
   './',
   './index.html',
