@@ -14,7 +14,7 @@ const STATE = {
   blockTempDays: {},
   calendarMonth: new Date().getMonth() + 1,
   freeSelectedTeacher: null,
-  teacherScheduleSelected: null,
+  teacherScheduleSelected: [],
   contactDept: 'all',
   contactUnlocked: false,
   rosterUnlocked: false,
@@ -22,7 +22,7 @@ const STATE = {
   rosterUnlockedClass: null,
   subjectClassSelected: null,
   subjectClassView: 'subject',
-  classScheduleSelected: null,
+  classScheduleSelected: [],
   labSelected: null,
   memo: '',
 };
@@ -43,6 +43,32 @@ function copyToClipboard(text, btn) {
     btn.style.background = '#3da86a';
     setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
   }).catch(() => showAlert('클립보드 복사에 실패했습니다.'));
+}
+
+function copySchedulePanel(panelId, btn) {
+  const panel = qs('#' + panelId);
+  if (!panel) return;
+  const text = (panel.innerText || panel.textContent || '').replace(/\n{3,}/g, '\n\n').trim();
+  if (!text) { showAlert('복사할 시간표를 먼저 선택해주세요.'); return; }
+  copyToClipboard(text, btn);
+}
+
+function printSchedulePanel(panelId, title) {
+  const panel = qs('#' + panelId);
+  if (!panel || !(panel.innerText || panel.textContent || '').trim()) {
+    showAlert('출력할 시간표를 먼저 선택해주세요.');
+    return;
+  }
+  const printWindow = window.open('', '_blank', 'width=1200,height=850');
+  if (!printWindow) { showAlert('팝업 차단을 해제한 뒤 다시 출력해주세요.'); return; }
+  printWindow.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${title}</title><style>
+    *{box-sizing:border-box}body{font-family:"Noto Sans KR",Arial,sans-serif;color:#222;padding:18px}h1{font-size:20px;margin:0 0 14px}
+    .teacher-compare-grid,.class-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.teacher-compare-card,.class-compare-card{break-inside:avoid;border:1px solid #bbb;border-radius:8px;overflow:hidden}
+    table{width:100%;border-collapse:collapse;font-size:10px}th,td{border:1px solid #aaa;padding:4px;text-align:center}th{background:#eef4f7}.teacher-detail-header,.card-header{padding:10px;background:#eaf3f7;font-weight:700}.schedule-export-actions,button,.empty-state{display:none!important}
+    @media print{body{padding:0}@page{size:landscape;margin:8mm}}
+  </style></head><body><h1>${title}</h1>${panel.innerHTML}</body></html>`);
+  printWindow.document.close();
+  printWindow.onload = () => { printWindow.focus(); printWindow.print(); };
 }
 
 // ── 실시간 날짜/시간 업데이트 ──
@@ -203,6 +229,12 @@ function intervalsOverlap(a, b) {
   return !!a && !!b && a.start < b.end && b.start < a.end;
 }
 
+// 교체·대체의 교사 충돌은 학교 시간표의 요일·교시를 우선한다.
+// 학년별 실제 시각이 다르더라도 같은 '4교시' 수업 두 개를 한 교사가 맡을 수는 없다.
+function lessonSlotsConflict(a, b) {
+  return a.day === b.day && (a.period === b.period || intervalsOverlap(a.interval, b.interval));
+}
+
 function slotParts(slot) {
   const match = String(slot).match(/^(.+?)([1-7])$/);
   return match ? { day:match[1], period:Number(match[2]) } : null;
@@ -216,7 +248,7 @@ function isTeacherBusyAt(teacher, day, period, targetInfo, ignoreLessons = []) {
     if (!parts || parts.day !== day || !value) return false;
     if (ignoreLessons.some(x => x.teacher === teacher && x.day === parts.day && x.period === parts.period)) return false;
     const existingInfo = parseCellValue(value, teacher, slot);
-    return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+    return parts.period === period || intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
   });
   if (hasRegularLesson) return true;
 
@@ -230,7 +262,7 @@ function isTeacherBusyAt(teacher, day, period, targetInfo, ignoreLessons = []) {
     if (!parts || parts.day !== day) return false;
     return values.some(value => {
       const existingInfo = parseCellValue(value, teacher, slot, true);
-      return intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
+      return parts.period === period || intervalsOverlap(target, getLessonInterval(parts.period, existingInfo.grade));
     });
   });
 }
@@ -307,7 +339,7 @@ function findScheduleRecordConflicts(records) {
   const conflicts = [];
   for (let i = 0; i < records.length; i++) {
     for (let j = i + 1; j < records.length; j++) {
-      if (records[i].day === records[j].day && intervalsOverlap(records[i].interval, records[j].interval)) {
+      if (lessonSlotsConflict(records[i], records[j])) {
         conflicts.push([records[i], records[j]]);
       }
     }
@@ -834,7 +866,18 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
 // ═══════════════════════════════════════════════
 // 교사별 시간표 탭
 // ═══════════════════════════════════════════════
-function renderTeacherScheduleTab() { renderTeacherListPanel(); }
+function getSelectedScheduleTeachers() {
+  const selected = STATE.teacherScheduleSelected;
+  if (Array.isArray(selected)) return selected.filter(name => ALL_TEACHERS.includes(name));
+  if (selected && ALL_TEACHERS.includes(selected)) return [selected];
+  return [];
+}
+
+function renderTeacherScheduleTab() {
+  renderTeacherListPanel();
+  const selected = getSelectedScheduleTeachers();
+  if (selected.length) renderTeacherDetailTable(selected);
+}
 
 function renderTeacherListPanel() {
   const rawSearch = (qs('#teacherScheduleSearch')?.value || '').trim();
@@ -845,11 +888,19 @@ function renderTeacherListPanel() {
   const filtered = ALL_TEACHERS.filter(t => !searchTerms.length || searchTerms.some(s => t.toLowerCase().includes(s)));
   if (!filtered.length) {
     listEl.innerHTML = `<div style="padding:14px;text-align:center;color:var(--txt-light);font-size:12px;">검색 결과 없음</div>`;
+    STATE.teacherScheduleSelected = [];
+    renderTeacherDetailTable([]);
     return;
   }
 
+  // 검색어가 있으면 일치하는 교사를 모두 선택하여 비교 시간표를 즉시 표시한다.
+  if (searchTerms.length) {
+    STATE.teacherScheduleSelected = filtered;
+    renderTeacherDetailTable(filtered);
+  }
+
   listEl.innerHTML = filtered.map(t => {
-    const active = STATE.teacherScheduleSelected === t ? 'active' : '';
+    const active = getSelectedScheduleTeachers().includes(t) ? 'active' : '';
     const homeroomCls = TEACHER_TO_CLASS[t] || '';
     return `<button class="side-btn-item ${active}" onclick="selectTeacherSchedule('${t}')">
       <span>${t} 선생님</span>
@@ -859,14 +910,12 @@ function renderTeacherListPanel() {
 }
 
 function selectTeacherSchedule(teacher) {
-  STATE.teacherScheduleSelected = teacher;
+  STATE.teacherScheduleSelected = [teacher];
   renderTeacherListPanel();
-  renderTeacherDetailTable(teacher);
+  renderTeacherDetailTable([teacher]);
 }
 
-function renderTeacherDetailTable(teacher) {
-  const panel = qs('#teacherDetailPanel');
-  if (!panel) return;
+function buildTeacherDetailCard(teacher, compact = false) {
   const sch = TEACHER_SCHEDULE[teacher] || {};
   const isHR = !!TEACHER_TO_CLASS[teacher];
   const gradeGroup = getTeacherGradeGroup(teacher);
@@ -880,7 +929,7 @@ function renderTeacherDetailTable(teacher) {
     if (!sch[d+p] && !isChatcheTime(teacher, d, p) && p <= 7) freeCount++;
   }));
 
-  panel.innerHTML = `
+  return `<article class="teacher-compare-card ${compact ? 'is-compact' : ''}">
     <div class="teacher-detail-header">
       <div class="teacher-avatar">👤</div>
       <div>
@@ -895,7 +944,7 @@ function renderTeacherDetailTable(teacher) {
       </div>
     </div>
     <div style="overflow-x:auto;padding:12px;">
-      <table class="teacher-detail-table" style="min-width:500px;">
+      <table class="teacher-detail-table" style="min-width:${compact ? '420px' : '500px'};">
         <thead>
           <tr>
             <th style="width:80px;">교시</th>
@@ -940,7 +989,19 @@ function renderTeacherDetailTable(teacher) {
           }).join('')}
         </tbody>
       </table>
-    </div>`;
+    </div></article>`;
+}
+
+function renderTeacherDetailTable(teachers) {
+  const panel = qs('#teacherDetailPanel');
+  if (!panel) return;
+  const selected = (Array.isArray(teachers) ? teachers : [teachers]).filter(name => ALL_TEACHERS.includes(name));
+  if (!selected.length) {
+    panel.innerHTML = `<div class="empty-state"><div class="empty-icon">👈</div><h3>왼쪽에서 선생님을 선택해주세요</h3><p>쉼표나 공백으로 여러 이름을 검색하면 시간표를 나란히 비교할 수 있습니다</p></div>`;
+    return;
+  }
+  const compact = selected.length > 1;
+  panel.innerHTML = `<div class="teacher-compare-summary"><i class="fas fa-columns"></i> ${selected.length}명 시간표 비교</div><div class="teacher-compare-grid ${selected.length === 1 ? 'single' : ''}">${selected.map(teacher => buildTeacherDetailCard(teacher, compact)).join('')}</div>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -1936,18 +1997,37 @@ function renderSubjectClassDetail(subjectName, teachers) {
 // ═══════════════════════════════════════════════
 function renderClassScheduleTab() {
   renderClassScheduleList();
+  const selected = getSelectedScheduleClasses();
+  if (selected.length) renderClassScheduleDetail(selected);
+}
+
+function getSelectedScheduleClasses() {
+  const allClasses = Object.keys(CLASS_SCHEDULE);
+  const selected = STATE.classScheduleSelected;
+  if (Array.isArray(selected)) return selected.filter(cls => allClasses.includes(cls));
+  return selected && allClasses.includes(selected) ? [selected] : [];
 }
 
 function renderClassScheduleList() {
   const listEl = qs('#classScheduleList');
   if (!listEl) return;
-  const searchVal = (qs('#classScheduleSearch')?.value || '').toLowerCase();
+  const rawSearch = (qs('#classScheduleSearch')?.value || '').trim().toLowerCase();
+  const searchTerms = rawSearch ? rawSearch.split(/[,\s]+/).filter(Boolean) : [];
   const allClasses = Object.keys(CLASS_SCHEDULE);
-  const classes = allClasses.filter(c => !searchVal || c.includes(searchVal));
+  const classes = allClasses.filter(c => !searchTerms.length || searchTerms.some(term =>
+    allClasses.includes(term) ? c === term : c.includes(term)
+  ));
 
   if (!classes.length) {
     listEl.innerHTML = `<div style="padding:14px;text-align:center;color:var(--txt-light);font-size:12px;">검색 결과 없음</div>`;
+    STATE.classScheduleSelected = [];
+    renderClassScheduleDetail([]);
     return;
+  }
+
+  if (searchTerms.length) {
+    STATE.classScheduleSelected = classes;
+    renderClassScheduleDetail(classes);
   }
 
   // 학년별로 그룹핑
@@ -1962,7 +2042,7 @@ function renderClassScheduleList() {
   Object.keys(byGrade).sort().forEach(grade => {
     html += `<div class="side-btn-group-label">${grade}학년</div>`;
     byGrade[grade].forEach(cls => {
-      const active = STATE.classScheduleSelected === cls ? 'active' : '';
+      const active = getSelectedScheduleClasses().includes(cls) ? 'active' : '';
       const teacher = HOMEROOM_TEACHERS[cls] || '';
       html += `<button class="side-btn-item ${active}" onclick="selectClassSchedule('${cls}')">
         <span>${cls}반</span>
@@ -1975,31 +2055,28 @@ function renderClassScheduleList() {
 }
 
 function selectClassSchedule(cls) {
-  STATE.classScheduleSelected = cls;
+  STATE.classScheduleSelected = [cls];
   renderClassScheduleList();
-  renderClassScheduleDetail(cls);
+  renderClassScheduleDetail([cls]);
 }
 
-function renderClassScheduleDetail(cls) {
-  const panel = qs('#classScheduleDetail');
-  if (!panel) return;
+function buildClassScheduleCard(cls, compact = false) {
   const sched = CLASS_SCHEDULE[cls];
   const teacher = HOMEROOM_TEACHERS[cls] || '미지정';
   if (!sched) {
-    panel.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>시간표 데이터가 없습니다</h3></div>`;
-    return;
+    return `<article class="class-compare-card"><div class="empty-state"><div class="empty-icon">⚠️</div><h3>${cls} 시간표 데이터가 없습니다</h3></div></article>`;
   }
 
   // 학년 파악
   const grade = parseInt(cls.split('-')[0]);
   const isGrade3 = grade === 3;
 
-  let html = `<div class="card-header" style="border-radius:var(--r-lg) var(--r-lg) 0 0;">
+  let html = `<article class="class-compare-card ${compact ? 'is-compact' : ''}"><div class="card-header" style="border-radius:var(--r-lg) var(--r-lg) 0 0;">
     <i class="fas fa-th"></i> ${cls}반 주간 시간표
     <span style="margin-left:8px;font-size:11px;font-weight:400;color:var(--txt-light);">담임: ${teacher} 선생님</span>
   </div>
   <div style="overflow-x:auto;padding:16px;">
-    <table class="schedule-table" style="min-width:600px;">
+    <table class="schedule-table" style="min-width:${compact ? '440px' : '600px'};">
       <thead>
         <tr>
           <th style="min-width:60px;">교시</th>
@@ -2033,7 +2110,7 @@ function renderClassScheduleDetail(cls) {
 
       if (val === '창체') {
         cellStyle += 'background:var(--cell-chatech-bg);color:var(--cell-chatech-tx);font-weight:600;';
-        content = '🌸 창체';
+        content = `<button class="class-lesson-button" onclick="openClassLessonMatching('${cls}','${d}',${p})">🌸 창체</button>`;
       } else if (val) {
         // "교과 교사명" 형식 파싱
         const parts = val.split(' ');
@@ -2041,7 +2118,7 @@ function renderClassScheduleDetail(cls) {
         const room = roomNames.has(parts[parts.length - 1]) ? parts.pop() : '';
         const tname = parts.pop() || '';
         const subj = parts.join(' ') || '';
-        content = `<div style="font-weight:700;color:var(--txt-dark);font-size:12px;">${subj}</div><div style="font-size:10.5px;color:var(--txt-mid);">${tname}${room ? ' · ' + room : ''}</div>`;
+        content = `<button class="class-lesson-button" onclick="openClassLessonMatching('${cls}','${d}',${p})"><span style="font-weight:700;color:var(--txt-dark);font-size:12px;">${subj}</span><span style="font-size:10.5px;color:var(--txt-mid);">${tname}${room ? ' · ' + room : ''}</span></button>`;
       } else {
         cellStyle += 'color:var(--txt-muted);';
         content = '-';
@@ -2051,8 +2128,71 @@ function renderClassScheduleDetail(cls) {
     html += `</tr>`;
   });
 
-  html += `</tbody></table></div>`;
-  panel.innerHTML = html;
+  html += `</tbody></table></div></article>`;
+  return html;
+}
+
+function renderClassScheduleDetail(classes) {
+  const panel = qs('#classScheduleDetail');
+  if (!panel) return;
+  const selected = (Array.isArray(classes) ? classes : [classes]).filter(cls => CLASS_SCHEDULE[cls]);
+  if (!selected.length) {
+    panel.innerHTML = `<div class="empty-state"><div class="empty-icon">🏫</div><h3>왼쪽에서 학급을 선택해주세요</h3><p>쉼표나 공백으로 여러 학급을 검색하면 시간표를 나란히 비교할 수 있습니다</p></div>`;
+    return;
+  }
+  const compact = selected.length > 1;
+  panel.innerHTML = `<div class="class-compare-summary"><i class="fas fa-columns"></i> ${selected.length}개 학급 시간표 비교 · 수업 칸을 누르면 교체·대체 검색</div><div class="class-compare-grid ${selected.length === 1 ? 'single' : ''}">${selected.map(cls => buildClassScheduleCard(cls, compact)).join('')}</div>`;
+}
+
+function findTeachersForClassLesson(cls, day, period) {
+  const slot = day + period;
+  const classValue = (CLASS_SCHEDULE[cls] || {})[slot] || '';
+  if (classValue === '창체') return HOMEROOM_TEACHERS[cls] ? [HOMEROOM_TEACHERS[cls]] : [];
+
+  const roomNames = new Set(['전상실','컴그실','만콘실','영상실','창구실','사행실','회계실']);
+  const tokens = String(classValue).split(/\s+/).filter(Boolean);
+  if (roomNames.has(tokens[tokens.length - 1])) tokens.pop();
+  const namedTeacher = tokens[tokens.length - 1];
+  if (ALL_TEACHERS.includes(namedTeacher)) return [namedTeacher];
+
+  return ALL_TEACHERS.filter(teacher => {
+    const value = (TEACHER_SCHEDULE[teacher] || {})[slot];
+    if (value) {
+      const info = parseCellValue(value, teacher, slot);
+      if (`${info.grade}-${info.classNum}` === cls) return true;
+    }
+    return getExternalLessonValues(teacher, day, period).some(item => {
+      const info = parseCellValue(item, teacher, slot, true);
+      return `${info.grade}-${info.classNum}` === cls;
+    });
+  });
+}
+
+function openClassLessonMatching(cls, day, period) {
+  const teachers = findTeachersForClassLesson(cls, day, period);
+  if (!teachers.length) {
+    showAlert(`${cls}반 ${day}요일 ${period}교시의 담당 교사를 찾지 못했습니다.`);
+    return;
+  }
+  const teacher = teachers[0];
+  switchTab('swap');
+  const search = qs('#swapSearch');
+  if (search) search.value = teacher;
+  renderSwapTable();
+  setTimeout(() => {
+    const value = (TEACHER_SCHEDULE[teacher] || {})[day + period];
+    if (value) {
+      onCellClick(teacher, day, period);
+      return;
+    }
+    const externalValues = getExternalLessonValues(teacher, day, period);
+    const externalIndex = externalValues.findIndex(item => {
+      const info = parseCellValue(item, teacher, day + period, true);
+      return `${info.grade}-${info.classNum}` === cls;
+    });
+    if (externalIndex >= 0) onExternalCellClick(teacher, day, period, externalIndex);
+    else openLessonMatching(teacher, day, period, '', false);
+  }, 0);
 }
 
 // ═══════════════════════════════════════════════
