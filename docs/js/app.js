@@ -1365,9 +1365,12 @@ function renderCalendarTab() {
   monthList.innerHTML = `<div class="cal-month-list">` +
     months.map(m => {
       const cnt = ACADEMIC_CALENDAR.filter(e => parseInt(e.date.split('-')[1]) === m).length;
-      return `<button class="cal-month-btn ${m === STATE.calendarMonth ? 'active' : ''}" onclick="selectCalendarMonth(${m})">
-        ${labels[m]} <span style="font-size:10px;opacity:0.7;font-weight:400;">(${cnt})</span>
-      </button>`;
+      return `<div class="cal-month-row">
+        <button class="cal-month-btn ${m === STATE.calendarMonth ? 'active' : ''}" onclick="selectCalendarMonth(${m})">
+          ${labels[m]} <span style="font-size:10px;opacity:0.7;font-weight:400;">(${cnt})</span>
+        </button>
+        <button class="cal-month-print" onclick="printCalendarMonth(${m})" title="${labels[m]}만 출력" aria-label="${labels[m]} 출력"><i class="fas fa-print"></i></button>
+      </div>`;
     }).join('') +
   `</div>`;
 
@@ -1377,6 +1380,23 @@ function renderCalendarTab() {
 function selectCalendarMonth(m) {
   STATE.calendarMonth = m;
   renderCalendarTab();
+}
+
+function printCalendarMonth(month) {
+  STATE.calendarMonth = month;
+  renderCalendarTab();
+  const content = qs('#calendarContent');
+  if (!content) return;
+  const printWindow = window.open('', '_blank', 'width=1100,height=850');
+  if (!printWindow) { showAlert('팝업 차단을 해제한 뒤 다시 출력해주세요.'); return; }
+  printWindow.document.write(`<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>2026년 ${month}월 학사일정</title><style>
+    *{box-sizing:border-box}body{font-family:"Noto Sans KR",Arial,sans-serif;color:#293548;margin:0;padding:8mm}h1{text-align:center;font-size:21px;margin:0 0 12px}.print-sub{text-align:right;font-size:10px;color:#748094;margin-bottom:8px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.cal-header-cell{text-align:center;font-size:11px;font-weight:700;padding:5px;background:#edf3f6}.cal-cell{min-height:78px;border:1px solid #cfd8df;padding:5px;overflow:hidden}.cal-cell.other-month{background:#f4f5f6}.cal-cell.sunday .cal-day-num{color:#d64b4b}.cal-cell.saturday .cal-day-num{color:#3977b8}.cal-day-num{font-size:12px;font-weight:800;margin-bottom:4px}.cal-event{font-size:9px;padding:2px 4px;border-radius:4px;margin-bottom:2px;white-space:normal}.cal-event.important{background:#fff4b8}.cal-event.exam{background:#ffe0e0}.cal-event.holiday{background:#dff1df}.cal-event.vacation{background:#eadfff}.cal-event.event{background:#ffead0}
+    .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:700}.badge-blue{background:#dfe9ff}.badge-red{background:#ffe0e0}.badge-green{background:#dff1df}.badge-purple{background:#eadfff}.badge-orange{background:#ffead0}
+    .calendar-month-heading{display:none!important}.calendar-event-list{padding:10px 0!important;border-top:2px solid #aeb9c3!important}button{display:none!important}@page{size:A4 landscape;margin:8mm}@media print{body{padding:0}}
+  </style></head><body><h1>제주중앙고등학교 2026년 ${month}월 학사일정</h1><div class="print-sub">${new Date().toLocaleDateString('ko-KR')} 출력</div><div id="calendarContent">${content.innerHTML}</div></body></html>`);
+  printWindow.document.close();
+  printWindow.onload = () => { printWindow.focus(); printWindow.print(); };
 }
 
 function renderCalendarGrid(month) {
@@ -1403,7 +1423,7 @@ function renderCalendarGrid(month) {
 
   const DAY_LABELS = ['일','월','화','수','목','금','토'];
 
-  let html = `<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border-lt);background:var(--sky-pale);">
+  let html = `<div class="calendar-month-heading" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--border-lt);background:var(--sky-pale);">
     <span style="font-size:18px;font-weight:800;color:var(--brown);">📅 ${year}년 ${month}월</span>
   </div>
   <div class="cal-grid">`;
@@ -1457,7 +1477,7 @@ function renderCalendarGrid(month) {
   // 이달 이벤트 목록 (간결하게)
   const monthEvents = ACADEMIC_CALENDAR.filter(e => parseInt(e.date.split('-')[1]) === month);
   if (monthEvents.length > 0) {
-    html += `<div style="border-top:2px solid var(--border-lt);padding:12px 14px;">
+    html += `<div class="calendar-event-list" style="border-top:2px solid var(--border-lt);padding:12px 14px;">
       <div style="font-size:12px;font-weight:700;color:var(--txt-mid);margin-bottom:8px;">📋 ${month}월 일정 목록</div>`;
     monthEvents.forEach(ev => {
       const d = new Date(ev.date);
