@@ -2692,12 +2692,7 @@ function loadBlockSettings() {
 // 금일 일정 요약 탭
 // ═══════════════════════════════════════════════
 function renderUtilTab() {
-  const memo = qs('#memoArea');
-  if (memo && !memo.value) {
-    try { memo.value = localStorage.getItem('memo') || ''; } catch(e) {}
-  }
   renderTodayStatus();
-  renderTodayCalendar();
   renderHomeroomList();
   renderSubjectGroups();
 }

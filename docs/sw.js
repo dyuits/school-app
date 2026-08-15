@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v22-rooms-classrooms';
+var CACHE_NAME = 'school-app-v23-summary-home-layout';
 var ASSETS = [
   './',
   './index.html',
