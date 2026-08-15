@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v29-replies-modal';
+var CACHE_NAME = 'school-app-v30-dashboard-permissions';
 var ASSETS = [
   './',
   './index.html',

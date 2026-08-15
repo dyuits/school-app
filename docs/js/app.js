@@ -117,6 +117,7 @@ function switchTab(name) {
   if (name === 'contact')       renderContactTab();
   if (name === 'block')         renderBlockTab();
   if (name === 'util')          renderUtilTab();
+  if (name === 'dashboardAdmin' && typeof renderDashboardAdmin === 'function') renderDashboardAdmin();
 }
 
 // ═══════════════════════════════════════════════
