@@ -30,6 +30,7 @@
     const root=$('schoolDashboard'); if(!root)return;
     if(!D.initialized){
       root.innerHTML=`<div class="dashboard-shell">
+        <div class="dashboard-shortcut-bar">${card('links','external-link-alt','업무 바로가기','ivory',true,'span-links')}</div>
         <div class="dashboard-hero"><div><h2>학교 업무 통합 대시보드</h2><p>제주중앙고등학교 교직원 공동 업무 공간</p></div><div class="dashboard-clock"><span id="dashToday">-</span><strong id="dashClock">--:--</strong></div></div>
         <div class="dashboard-grid">
           ${card('schedule','calendar-day','오늘의 학사일정','mint',true)}
@@ -39,7 +40,6 @@
           ${card('suggestions','comments','소통과 제안','gray',true)}
           <div class="dashboard-operations">
             ${card('major','calendar-check','주요 일정','lavender',false,'span-major')}
-            ${card('links','external-link-alt','업무 바로가기','ivory',true,'span-links')}
             ${card('reservations','door-open','오늘의 예약','sky',false,'span-reservations')}
           </div>
           ${card('meal','utensils','오늘의 급식','mint',false,'span-4')}
