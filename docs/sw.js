@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v32-calendar-month-print';
+var CACHE_NAME = 'school-app-v33-calendar-2027-january';
 var ASSETS = [
   './',
   './index.html',
