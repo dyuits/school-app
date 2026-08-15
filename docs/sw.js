@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v18-home-reservation';
+var CACHE_NAME = 'school-app-v19-realtime-crud';
 var ASSETS = [
   './',
   './index.html',
