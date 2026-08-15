@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v27-taller-cards';
+var CACHE_NAME = 'school-app-v28-timetable-reservations';
 var ASSETS = [
   './',
   './index.html',
