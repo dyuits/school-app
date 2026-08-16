@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v34-class-popup-only';
+var CACHE_NAME = 'school-app-v35-draggable-modals';
 var ASSETS = [
   './',
   './index.html',

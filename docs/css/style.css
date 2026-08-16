@@ -1531,6 +1531,8 @@ a { text-decoration:none; color:inherit; }
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   flex-shrink: 0;
 }
+.result-modal-header,.modal-header,.alert-modal-body{cursor:grab;touch-action:none;user-select:none}
+.modal.is-dragging{cursor:grabbing;transition:none!important}
 .result-modal-title {
   font-size: 15px;
   font-weight: 800;

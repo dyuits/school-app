@@ -91,13 +91,58 @@ function updateDateTime() {
 // ── 알림 모달 ──
 function showAlert(msg) {
   qs('#alertMsg').innerHTML = msg.replace(/\n/g, '<br>');
+  resetDraggableModal(qs('#alertModal'));
   qs('#alertModal').classList.add('open');
 }
 function closeAlert() { qs('#alertModal').classList.remove('open'); }
 
 // ── 결과 모달 ──
-function openModal() { qs('#resultModal').classList.add('open'); }
+function openModal() { resetDraggableModal(qs('#resultModal')); qs('#resultModal').classList.add('open'); }
 function closeModal() { qs('#resultModal').classList.remove('open'); }
+
+// ── 공통 팝업 드래그 ──
+function resetDraggableModal(target) {
+  const panel = target?.matches?.('.modal,.dashboard-modal-panel') ? target : target?.querySelector?.('.modal,.dashboard-modal-panel');
+  if (!panel) return;
+  panel.dataset.dragX = '0';
+  panel.dataset.dragY = '0';
+  panel.style.transform = 'translate(0px, 0px)';
+}
+
+function initDraggableModals() {
+  if (document.documentElement.dataset.modalDragReady) return;
+  document.documentElement.dataset.modalDragReady = 'yes';
+  document.addEventListener('pointerdown', event => {
+    if (event.button !== undefined && event.button !== 0) return;
+    const handle = event.target.closest('.result-modal-header,.modal-header,.alert-modal-body,.dashboard-modal-heading');
+    if (!handle || event.target.closest('button,a,input,textarea,select,label')) return;
+    const panel = handle.closest('.modal,.dashboard-modal-panel');
+    if (!panel) return;
+    event.preventDefault();
+    const startX = event.clientX, startY = event.clientY;
+    const originX = Number(panel.dataset.dragX || 0), originY = Number(panel.dataset.dragY || 0);
+    const rect = panel.getBoundingClientRect();
+    handle.setPointerCapture?.(event.pointerId);
+    panel.classList.add('is-dragging');
+    const move = moveEvent => {
+      const deltaX = Math.max(8 - rect.left, Math.min(window.innerWidth - 8 - rect.right, moveEvent.clientX - startX));
+      const deltaY = Math.max(8 - rect.top, Math.min(window.innerHeight - 8 - rect.bottom, moveEvent.clientY - startY));
+      const nextX = originX + deltaX, nextY = originY + deltaY;
+      panel.dataset.dragX = String(nextX);
+      panel.dataset.dragY = String(nextY);
+      panel.style.transform = `translate(${nextX}px, ${nextY}px)`;
+    };
+    const end = () => {
+      panel.classList.remove('is-dragging');
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', end);
+      handle.removeEventListener('pointercancel', end);
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', end);
+    handle.addEventListener('pointercancel', end);
+  });
+}
 
 // ── 탭 전환 ──
 function switchTab(name) {
@@ -3080,6 +3125,7 @@ document.addEventListener('keydown', e => {
 
 // ── 초기화 ──
 window.addEventListener('DOMContentLoaded', () => {
+  initDraggableModals();
   // 실시간 날짜/시간 시작
   updateDateTime();
   setInterval(updateDateTime, 1000);

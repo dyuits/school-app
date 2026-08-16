@@ -147,6 +147,6 @@
   window.dashboardAdminLogout=()=>{D.admin=false;sessionStorage.removeItem('dashboardAdmin');renderDashboardAdmin();};
   window.dashboardAdminEdit=(type,id,date)=>{if(type==='memos'&&date)D.dates.memos=new Date(`${date}T00:00:00`);if(type==='reservations')return dashboardOpenReservation(id);return dashboardEdit(type,id);};
   window.dashboardAdminDelete=(type,id,date)=>{if(type==='memos'&&date)D.dates.memos=new Date(`${date}T00:00:00`);if(type==='reservations')return cancelReservation(id);return Promise.resolve(dashboardDelete(type,id)).then(()=>setTimeout(renderDashboardAdmin,250));};
-  function openModal(title,body){$('dashboardModalTitle').textContent=title;$('dashboardModalBody').innerHTML=body;$('dashboardModal').classList.add('open');}
+  function openModal(title,body){$('dashboardModalTitle').textContent=title;$('dashboardModalBody').innerHTML=body;window.resetDraggableModal?.($('dashboardModal'));$('dashboardModal').classList.add('open');}
   window.dashboardCloseModal=()=>$('dashboardModal')?.classList.remove('open');
 })();
