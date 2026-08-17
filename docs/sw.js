@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v38-explicit-date-picker';
+var CACHE_NAME = 'school-app-v39-clickable-reservation-slots';
 var ASSETS = [
   './',
   './index.html',
