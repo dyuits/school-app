@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v41-clean-empty-slots';
+var CACHE_NAME = 'school-app-v42-collapsible-items';
 var ASSETS = [
   './',
   './index.html',
