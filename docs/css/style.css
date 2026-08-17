@@ -186,9 +186,8 @@ a { text-decoration:none; color:inherit; }
    탭 네비게이션
 ══════════════════════════════════════ */
 .tab-nav {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: stretch;
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 10px 12px;
   background: var(--white);
@@ -196,33 +195,6 @@ a { text-decoration:none; color:inherit; }
   margin-bottom: 14px;
   box-shadow: var(--shadow-xs);
   border: 2px solid var(--border);
-}
-.tab-nav-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  align-content: center;
-  gap: 6px;
-  min-width: 0;
-}
-.tab-nav-clock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  min-width: 150px;
-  padding: 4px 10px 4px 14px;
-  border-left: 1px solid var(--border);
-  color: var(--txt-mid);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.4;
-  text-align: right;
-  white-space: nowrap;
-}
-.tab-nav-clock strong {
-  color: var(--brown);
-  font-size: 19px;
-  letter-spacing: .5px;
 }
 .tab-btn {
   display: flex;
@@ -1995,8 +1967,6 @@ a { text-decoration:none; color:inherit; }
   .header-title h1 { font-size: 16px; }
   .datetime-time { font-size: 18px; }
   .tab-btn { padding: 7px 10px; font-size: 11px; }
-  .tab-nav { grid-template-columns: 1fr; }
-  .tab-nav-clock { align-items: flex-start; min-width: 0; padding: 6px 4px 0; border-left: 0; border-top: 1px solid var(--border); text-align: left; }
   .contact-grid { grid-template-columns: repeat(2, 1fr); }
   .util-grid { grid-template-columns: 1fr; }
   .cal-cell { min-height: 48px; }
