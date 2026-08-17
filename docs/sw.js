@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v43-memo-titles';
+var CACHE_NAME = 'school-app-v44-major-dates';
 var ASSETS = [
   './',
   './index.html',
