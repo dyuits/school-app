@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v37-dashboard-date-pickers';
+var CACHE_NAME = 'school-app-v38-explicit-date-picker';
 var ASSETS = [
   './',
   './index.html',
