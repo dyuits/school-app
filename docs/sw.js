@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v40-quick-reservation';
+var CACHE_NAME = 'school-app-v41-clean-empty-slots';
 var ASSETS = [
   './',
   './index.html',
