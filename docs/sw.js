@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v49-clock-beside-title';
+var CACHE_NAME = 'school-app-v48-clock-beside-tabs';
 var ASSETS = [
   './',
   './index.html',

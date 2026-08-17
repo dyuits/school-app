@@ -40,8 +40,8 @@
     const root=$('schoolDashboard'); if(!root)return;
     if(!D.initialized){
       root.innerHTML=`<div class="dashboard-shell">
-        <div class="dashboard-hero"><h2>학교 업무 통합 대시보드</h2><div class="dashboard-hero-clock"><span id="dashToday">-</span><strong id="dashClock">--:--</strong></div></div>
         <div class="dashboard-shortcut-bar">${card('links','external-link-alt','업무 바로가기','ivory',true,'span-links')}</div>
+        <div class="dashboard-hero"><h2>학교 업무 통합 대시보드</h2></div>
         <div class="dashboard-grid">
           ${card('schedule','calendar-day','오늘의 학사일정','mint',true)}
           ${card('major','calendar-check','주요 일정','lavender',false)}
