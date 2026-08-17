@@ -224,6 +224,12 @@ a { text-decoration:none; color:inherit; }
   font-size: 19px;
   letter-spacing: .5px;
 }
+.tab-nav-clock small {
+  color: var(--txt-light);
+  font-size: 10.5pt;
+  font-weight: 600;
+  line-height: 1.25;
+}
 .tab-btn {
   display: flex;
   align-items: center;
