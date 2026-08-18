@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v54-duty-teacher-notice';
+var CACHE_NAME = 'school-app-v55-reservation-list-view';
 var ASSETS = [
   './',
   './index.html',
