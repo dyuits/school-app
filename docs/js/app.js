@@ -2028,43 +2028,13 @@ function renderClassTeacherDetail(classKey, entries) {
 
 function buildSubjectClassDetail(subjectName, teachers, compact = false) {
   let html = `<section class="subject-overview-card ${compact ? 'is-compact' : ''}"><div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과 (${teachers.length}명)</div>`;
-  html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
-
+  html += `<div class="subject-teacher-schedule-grid ${teachers.length === 1 ? 'single' : ''}">`;
   teachers.forEach(teacher => {
-    // 백경민은 요청대로 교과 목록에만 표시하고 '시간표 없음'으로 안내한다.
-    const sched = teacher === '백경민' ? null : TEACHER_SCHEDULE[teacher];
-    let classes = [];
-    if (sched) {
-      const classSet = new Map();
-      for (const val of Object.values(sched)) {
-        const m = String(val).match(/([1-3])(\d{2})\s+(.+)/);
-        if (m) {
-          const grade = m[1], cn = parseInt(m[2]), subject = m[3];
-          const label = cn > 10 ? `${grade}학년 선택(${subject})` : `${grade}-${cn} ${subject}`;
-          classSet.set(label, true);
-        }
-      }
-      classes = [...classSet.keys()].sort((a, b) => {
-        const pa = a.match(/(\d)-(\d+)/), pb = b.match(/(\d)-(\d+)/);
-        if (pa && pb) return (parseInt(pa[1])*100+parseInt(pa[2])) - (parseInt(pb[1])*100+parseInt(pb[2]));
-        if (pa && !pb) return -1;
-        if (!pa && pb) return 1;
-        return a.localeCompare(b);
-      });
-    }
-    const clickAction = sched ? `onclick="STATE.teacherScheduleSelected='${teacher}';switchTab('teacher');"` : '';
-    html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:${sched ? 'pointer' : 'default'};" ${clickAction}>`;
-    html += `<div style="font-weight:700;font-size:14px;color:var(--brown,#5a3e2b);margin-bottom:${classes.length?6:0}px;">${teacher} 선생님</div>`;
-    if (classes.length > 0) {
-      html += `<div style="display:flex;flex-wrap:wrap;gap:4px;">`;
-      html += classes.map(c => `<span style="display:inline-block;background:white;border:1px solid var(--border-lt);border-radius:10px;padding:2px 9px;font-size:11.5px;color:var(--txt-mid);">${c}</span>`).join('');
-      html += `</div>`;
-    } else {
-      html += `<span style="font-size:12px;color:var(--txt-light);">시간표 없음</span>`;
-    }
-    html += `</div>`;
+    const hasSchedule = teacher !== '백경민' && !!TEACHER_SCHEDULE[teacher];
+    html += hasSchedule
+      ? buildTeacherDetailCard(teacher, true)
+      : `<article class="teacher-compare-card subject-no-schedule"><div class="teacher-detail-header"><div class="teacher-avatar">👤</div><div><strong>${teacher} 선생님</strong><p>등록된 시간표가 없습니다.</p></div></div></article>`;
   });
-
   html += `</div></section>`;
   return html;
 }
