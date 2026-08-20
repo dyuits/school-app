@@ -532,6 +532,12 @@ a { text-decoration:none; color:inherit; }
   align-items: start;
 }
 .teacher-compare-grid.single { grid-template-columns: minmax(0, 1fr); }
+.subject-overview-summary { margin: 12px 12px 0; padding: 9px 12px; border-radius: 10px; background: var(--sky-pale); color: var(--txt-mid); font-size: 12px; font-weight: 700; }
+.subject-overview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 12px; }
+.subject-overview-card { min-width: 0; overflow: hidden; border: 1px solid var(--border-lt); border-radius: var(--r-lg); background: #fff; }
+.subject-overview-card:not(.is-compact) { border: 0; border-radius: 0; }
+.subject-overview-card.is-compact .card-header { font-size: 12px; }
+.subject-overview-card.is-compact > div:last-child { padding: 10px !important; gap: 7px !important; }
 .teacher-compare-card {
   min-width: 0;
   overflow: hidden;
@@ -2014,6 +2020,7 @@ a { text-decoration:none; color:inherit; }
   .side-btn-panel { position: static; }
   .side-btn-list { max-height: 200px; flex-direction: row; flex-wrap: wrap; }
   .teacher-compare-grid { grid-template-columns: minmax(0, 1fr); }
+  .subject-overview-grid { grid-template-columns: minmax(0, 1fr); }
   .class-compare-grid { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {

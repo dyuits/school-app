@@ -922,7 +922,7 @@ function getSelectedScheduleTeachers() {
 function renderTeacherScheduleTab() {
   renderTeacherListPanel();
   const selected = getSelectedScheduleTeachers();
-  if (selected.length) renderTeacherDetailTable(selected);
+  renderTeacherDetailTable(selected.length ? selected : ALL_TEACHERS);
 }
 
 function renderTeacherListPanel() {
@@ -1949,7 +1949,15 @@ function renderSubjectClassTab_subject() {
   });
   if (STATE.subjectClassSelected && groups[STATE.subjectClassSelected]) {
     renderSubjectClassDetail(STATE.subjectClassSelected, groups[STATE.subjectClassSelected]);
+  } else {
+    renderAllSubjectClassDetails(subjects, groups);
   }
+}
+
+function renderAllSubjectClassDetails(subjects, groups) {
+  const panel = qs('#subjectClassDetail');
+  if (!panel) return;
+  panel.innerHTML = `<div class="subject-overview-summary"><i class="fas fa-book-open"></i> 전체 ${subjects.length}개 교과 수업</div><div class="subject-overview-grid">${subjects.map(subject => buildSubjectClassDetail(subject, groups[subject], true)).join('')}</div>`;
 }
 
 function getClassTeacherMap() {
@@ -2018,9 +2026,8 @@ function renderClassTeacherDetail(classKey, entries) {
   panel.innerHTML = html;
 }
 
-function renderSubjectClassDetail(subjectName, teachers) {
-  const panel = qs('#subjectClassDetail');
-  let html = `<div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과 (${teachers.length}명)</div>`;
+function buildSubjectClassDetail(subjectName, teachers, compact = false) {
+  let html = `<section class="subject-overview-card ${compact ? 'is-compact' : ''}"><div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과 (${teachers.length}명)</div>`;
   html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
 
   teachers.forEach(teacher => {
@@ -2058,8 +2065,14 @@ function renderSubjectClassDetail(subjectName, teachers) {
     html += `</div>`;
   });
 
-  html += `</div>`;
-  panel.innerHTML = html;
+  html += `</div></section>`;
+  return html;
+}
+
+function renderSubjectClassDetail(subjectName, teachers) {
+  const panel = qs('#subjectClassDetail');
+  if (!panel) return;
+  panel.innerHTML = buildSubjectClassDetail(subjectName, teachers);
 }
 
 // ═══════════════════════════════════════════════
@@ -2068,7 +2081,7 @@ function renderSubjectClassDetail(subjectName, teachers) {
 function renderClassScheduleTab() {
   renderClassScheduleList();
   const selected = getSelectedScheduleClasses();
-  if (selected.length) renderClassScheduleDetail(selected);
+  renderClassScheduleDetail(selected.length ? selected : Object.keys(CLASS_SCHEDULE));
 }
 
 function getSelectedScheduleClasses() {

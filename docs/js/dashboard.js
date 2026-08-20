@@ -26,6 +26,9 @@
   function pathSet(path,id,payload){ if(!firebaseDB){ alert('공유 DB 연결 후 다시 시도해주세요.'); return Promise.reject(new Error('Firebase unavailable')); } const r=ref(path); return id?r.child(id).update(payload):r.push(payload); }
   function remove(path,id){ if(!confirm('정말 삭제하시겠습니까?'))return Promise.resolve(false); if(!firebaseDB){alert('공유 DB 연결 후 다시 시도해주세요.');return Promise.resolve(false);}return ref(path).child(id).remove().then(()=>true).catch(error=>{console.error(error);alert('삭제하지 못했습니다. Firebase 권한과 네트워크를 확인해주세요.');return false;}); }
   const PROTECTED_TYPES=new Set(['notices','memos','meetings','suggestions']);
+  const OBSOLETE_MEMO_PHRASES=['문에싀항혹인필요한부분있으면여기에적어주세요','문의사항확인필요한부분있으면여기에적어주세요'];
+  function isObsoleteMemo(item){const text=`${item?.title||''}${item?.content||''}`.replace(/[\s~～]+/g,'');return OBSOLETE_MEMO_PHRASES.some(phrase=>text.includes(phrase));}
+  function cleanObsoleteMemos(data,purge=false){const cleaned={};Object.entries(data||{}).forEach(([date,items])=>{const kept={};Object.entries(items||{}).forEach(([id,item])=>{if(isObsoleteMemo(item)){if(purge)ref(`shared/dashboard/memos/${date}/${id}`)?.remove().catch(error=>console.warn('오래된 알림장 안내 삭제 실패',error));}else kept[id]=item;});if(Object.keys(kept).length)cleaned[date]=kept;});return cleaned;}
   const ADMIN_PASSWORD_HASH='92aee2892ebd7d4342a6e7fe954db3f2b2f39e5270d2ecf8448464060f850a32';
   async function digest(text){const bytes=new TextEncoder().encode(String(text)),hash=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(hash)].map(v=>v.toString(16).padStart(2,'0')).join('');}
   function newSalt(){return crypto.getRandomValues(new Uint32Array(4)).join('-');}
@@ -66,7 +69,7 @@
     if(!firebaseDB){ setTimeout(bindFirebase,500); return; }
     D.listeners=true;
     const paths={notices:'shared/dashboard/notices',memos:'shared/dashboard/memos',meetings:'shared/dashboard/meetings',suggestions:'shared/dashboard/suggestions',majorEvents:'shared/dashboard/majorEvents'};
-    Object.entries(paths).forEach(([key,path])=>{ D.refs[key]=ref(path); D.refs[key].on('value',s=>{D.data[key]=s.val()||{};renderSection(key==='majorEvents'?'major':key);if(D.admin)renderDashboardAdmin();}); });
+    Object.entries(paths).forEach(([key,path])=>{ D.refs[key]=ref(path); D.refs[key].on('value',s=>{const value=s.val()||{};D.data[key]=key==='memos'?cleanObsoleteMemos(value,true):value;renderSection(key==='majorEvents'?'major':key);if(D.admin)renderDashboardAdmin();}); });
     ref('adminData/calendar').on('value',snap=>{const calendar=snap.val();if(Array.isArray(calendar)&&calendar.length){ACADEMIC_CALENDAR.splice(0,ACADEMIC_CALENDAR.length,...calendar);renderSchedule();renderMajor();}});
     migrateLegacyMemo();
   }
