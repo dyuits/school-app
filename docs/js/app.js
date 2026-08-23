@@ -42,6 +42,55 @@ function getLabDisplayName(labName) {
   return LAB_DISPLAY_NAMES[labName] || String(labName || '').replace(/\([^)]+\)/, '').trim();
 }
 
+function getTimeGroupCode(lessonValue) {
+  const match = String(lessonValue || '').match(/(?:^|\s)([A-J]_[^\s]+)/);
+  return match ? match[1] : '';
+}
+
+function getTimeGroupRooms(lessonValue) {
+  const code = getTimeGroupCode(lessonValue);
+  return code && typeof TIME_GROUP_ROOM_ASSIGNMENTS !== 'undefined'
+    ? [...(TIME_GROUP_ROOM_ASSIGNMENTS[code] || [])]
+    : [];
+}
+
+function isClassroomOccupiedByLesson(classKey, lessonValue) {
+  const assignedRooms = getTimeGroupRooms(lessonValue);
+  return !assignedRooms.length || assignedRooms.includes(classKey);
+}
+
+function getTimeGroupRoomUse(room, day, period, gradeGroup = null) {
+  const slot = day + period;
+  const uses = [];
+  Object.entries(TEACHER_SCHEDULE || {}).forEach(([teacher, schedule]) => {
+    const lessonValue = schedule[slot] || '';
+    if (!lessonValue || !getTimeGroupRooms(lessonValue).includes(room)) return;
+    const lessonGrade = String(lessonValue).match(/^([1-3])\d{2}\s/)?.[1] || '';
+    if (gradeGroup === '3' && lessonGrade !== '3') return;
+    if (gradeGroup === '12' && !['1','2'].includes(lessonGrade)) return;
+    const code = getTimeGroupCode(lessonValue);
+    if (!uses.some(use => use.code === code)) uses.push({ code, teacher, lessonValue });
+  });
+  return uses;
+}
+
+function getTimeGroupRoomForClass(classKey, lessonValue) {
+  const assignedRooms = getTimeGroupRooms(lessonValue);
+  if (!assignedRooms.length || assignedRooms.includes(classKey)) return '';
+  return assignedRooms.find(room => !/^\d-\d+$/.test(room)) || assignedRooms[0];
+}
+
+function getTimeGroupAssignedRoom(lessonValue, preferredClassKey = '') {
+  const assignedRooms = getTimeGroupRooms(lessonValue);
+  if (!assignedRooms.length) return '';
+  const classNumber = String(lessonValue || '').match(/^([1-3])(\d{2})\s/)?.slice(1, 3);
+  const inferredClassKey = classNumber ? `${classNumber[0]}-${Number(classNumber[1])}` : '';
+  const classKey = preferredClassKey || inferredClassKey;
+  return assignedRooms.includes(classKey)
+    ? classKey
+    : (assignedRooms.find(room => !/^\d-\d+$/.test(room)) || assignedRooms[0]);
+}
+
 // ── 유틸리티 ──
 function qs(sel, parent = document) { return parent.querySelector(sel); }
 function qsa(sel, parent = document) { return [...parent.querySelectorAll(sel)]; }
@@ -508,6 +557,8 @@ function buildSwapLessonBlock(value, teacher, day, period, isExternal = false, e
     style += 'background:var(--cell-select-bg);border:1px solid var(--cell-select-bd);';
     label = `${label} · 교체불가`;
   }
+  const assignedRoom = getTimeGroupAssignedRoom(value);
+  if (assignedRoom) label = `${label} · ${getLabDisplayName(assignedRoom)}`;
   return `<div style="${style}" onclick="${clickFn}">
     <div class="cell-subject">${info.subject}</div>
     <div class="cell-class" style="font-size:8px;">${label}</div>
@@ -989,9 +1040,10 @@ function renderTeacherListPanel() {
   listEl.innerHTML = filtered.map(t => {
     const active = getSelectedScheduleTeachers().includes(t) ? 'active' : '';
     const homeroomCls = TEACHER_TO_CLASS[t] || '';
-    return `<button class="side-btn-item ${active}" onclick="selectTeacherSchedule('${t}')">
-      <span>${t} 선생님</span>
-      ${homeroomCls ? `<span class="side-btn-sub">${homeroomCls} 담임</span>` : ''}
+    return `<button class="side-btn-item premium-selector-button teacher-schedule-button ${active}" onclick="selectTeacherSchedule('${t}')">
+      <span class="premium-selector-icon"><i class="fas fa-user"></i></span>
+      <span class="premium-selector-copy"><strong>${t} 선생님</strong><small>${homeroomCls ? `${homeroomCls} 담임` : '주간 시간표 보기'}</small></span>
+      <i class="fas fa-chevron-right premium-selector-arrow" aria-hidden="true"></i>
     </button>`;
   }).join('');
 }
@@ -1018,20 +1070,20 @@ function buildTeacherDetailCard(teacher, compact = false) {
 
   return `<article class="teacher-compare-card ${compact ? 'is-compact' : ''}">
     <div class="teacher-detail-header">
-      <div class="teacher-avatar">👤</div>
-      <div>
-        <div style="font-size:17px;font-weight:800;">${teacher} 선생님</div>
-        <div style="font-size:12.5px;opacity:.85;margin-top:3px;">
+      <div class="teacher-avatar"><i class="fas fa-user-tie"></i></div>
+      <div class="teacher-card-identity">
+        <div class="teacher-card-title">${teacher} 선생님</div>
+        <div class="teacher-card-meta">
           ${isHR ? cls + '반 담임 · ' : ''}${subMap ? subMap.subject : ''} 교과
         </div>
-        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+        <div class="teacher-card-badges">
           <span class="badge ${gradeGroup==='3'?'badge-orange':'badge-blue'}">${gradeGroup==='3'?'3학년 일과':'1·2학년 일과'}</span>
           <span class="badge badge-green">공강 ${freeCount}교시</span>
         </div>
       </div>
     </div>
-    <div style="overflow-x:auto;padding:12px;">
-      <table class="teacher-detail-table" style="min-width:${compact ? '420px' : '500px'};">
+    <div class="premium-schedule-scroll">
+      <table class="teacher-detail-table teacher-premium-table" style="min-width:${compact ? '420px' : '600px'};">
         <thead>
           <tr>
             <th style="width:80px;">교시</th>
@@ -1042,13 +1094,13 @@ function buildTeacherDetailCard(teacher, compact = false) {
           ${PERIODS.map(p => {
             let lunchRow = '';
             if (p === lunchAfter + 1) {
-              lunchRow = `<tr>
-                <td class="period-label" style="font-size:9.5px;color:#b8860b;">점심</td>
-                ${DAYS.map(()=>`<td style="background:#fff8ea;font-size:10px;color:#b8860b;text-align:center;padding:6px;">${lunchLabel}</td>`).join('')}
+              lunchRow = `<tr class="premium-lunch-row">
+                <td class="period-label premium-lunch-label">점심</td>
+                ${DAYS.map(()=>`<td class="premium-lunch-cell">${lunchLabel}</td>`).join('')}
               </tr>`;
             }
             const row = `<tr>
-              <td class="period-label">
+              <td class="period-label premium-period-cell">
                 <div style="font-weight:700;font-size:12px;">${PERIOD_TIMES[p].label}</div>
                 <div style="font-size:9.5px;color:var(--txt-light);">${PERIOD_TIMES[p].time}</div>
               </td>
@@ -1068,7 +1120,7 @@ function buildTeacherDetailCard(teacher, compact = false) {
                 }
                 if (isChatech && !val) return `<td style="background:var(--cell-chatech-bg);color:var(--cell-chatech-tx);font-size:11px;font-weight:700;">창체</td>`;
                 if (blocked) return `<td style="background:var(--cell-blocked-bg);font-size:10px;color:#c07070;">교체불가</td>`;
-                if (!val) return `<td></td>`;
+                if (!val) return `<td class="teacher-free-cell"><span>공강</span></td>`;
                 return `<td></td>`;
               }).join('')}
             </tr>`;
@@ -2173,9 +2225,10 @@ function renderClassScheduleList() {
     byGrade[grade].forEach(cls => {
       const active = getSelectedScheduleClasses().includes(cls) ? 'active' : '';
       const teacher = HOMEROOM_TEACHERS[cls] || '';
-      html += `<button class="side-btn-item ${active}" onclick="selectClassSchedule('${cls}')">
-        <span>${cls}반</span>
-        ${teacher ? `<span class="side-btn-sub">담임 ${teacher}</span>` : ''}
+      html += `<button class="side-btn-item premium-selector-button class-schedule-button ${active}" onclick="selectClassSchedule('${cls}')">
+        <span class="premium-selector-icon"><i class="fas fa-school"></i></span>
+        <span class="premium-selector-copy"><strong>${cls}반</strong><small>${teacher ? `담임 ${teacher}` : '주간 시간표 보기'}</small></span>
+        <i class="fas fa-chevron-right premium-selector-arrow" aria-hidden="true"></i>
       </button>`;
     });
   });
@@ -2200,12 +2253,12 @@ function buildClassScheduleCard(cls, compact = false) {
   const grade = parseInt(cls.split('-')[0]);
   const isGrade3 = grade === 3;
 
-  let html = `<article class="class-compare-card ${compact ? 'is-compact' : ''}"><div class="card-header" style="border-radius:var(--r-lg) var(--r-lg) 0 0;">
-    <i class="fas fa-th"></i> ${cls}반 주간 시간표
-    <span style="margin-left:8px;font-size:11px;font-weight:400;color:var(--txt-light);">담임: ${teacher} 선생님</span>
+  let html = `<article class="class-compare-card ${compact ? 'is-compact' : ''}"><div class="card-header class-detail-header">
+    <span class="class-detail-icon"><i class="fas fa-school"></i></span>
+    <span class="class-detail-copy"><small>CLASS TIMETABLE</small><strong>${cls}반 주간 시간표</strong><em>담임 ${teacher} 선생님</em></span>
   </div>
-  <div style="overflow-x:auto;padding:16px;">
-    <table class="schedule-table" style="min-width:${compact ? '440px' : '600px'};">
+  <div class="premium-schedule-scroll class-schedule-scroll">
+    <table class="schedule-table class-premium-table" style="min-width:${compact ? '440px' : '650px'};">
       <thead>
         <tr>
           <th style="min-width:60px;">교시</th>
@@ -2217,19 +2270,19 @@ function buildClassScheduleCard(cls, compact = false) {
   PERIODS.forEach(p => {
     // 점심 행 삽입
     if (isGrade3 && p === 4) {
-      html += `<tr style="background:#fff8ea;">
-        <td style="text-align:center;font-size:11px;color:#b8860b;font-style:italic;">점심</td>
-        <td colspan="5" style="text-align:center;font-size:11px;color:#b8860b;font-style:italic;">11:30 ~ 13:40 (점심시간)</td>
+      html += `<tr class="premium-lunch-row">
+        <td class="premium-lunch-label">점심</td>
+        <td colspan="5" class="premium-lunch-cell">11:30 ~ 13:40 (점심시간)</td>
       </tr>`;
     } else if (!isGrade3 && p === 5) {
-      html += `<tr style="background:#fff8ea;">
-        <td style="text-align:center;font-size:11px;color:#b8860b;font-style:italic;">점심</td>
-        <td colspan="5" style="text-align:center;font-size:11px;color:#b8860b;font-style:italic;">12:30 ~ 13:40 (점심시간)</td>
+      html += `<tr class="premium-lunch-row">
+        <td class="premium-lunch-label">점심</td>
+        <td colspan="5" class="premium-lunch-cell">12:30 ~ 13:40 (점심시간)</td>
       </tr>`;
     }
 
     html += `<tr>
-      <td style="text-align:center;font-weight:700;font-size:12px;padding:8px;">${p}교시<br><span style="font-size:10px;color:var(--txt-light);font-weight:400;">${getPeriodTime(p, grade)}</span></td>`;
+      <td class="premium-period-cell"><strong>${p}교시</strong><span>${getPeriodTime(p, grade)}</span></td>`;
 
     DAYS.forEach(d => {
       const key = d + p;
@@ -2247,12 +2300,18 @@ function buildClassScheduleCard(cls, compact = false) {
         const room = roomNames.has(parts[parts.length - 1]) ? parts.pop() : '';
         const tname = parts.pop() || '';
         const subj = parts.join(' ') || '';
-        content = `<button class="class-lesson-button" onclick="openClassLessonMatching('${cls}','${d}',${p})"><span style="font-weight:700;color:var(--txt-dark);font-size:12px;">${subj}</span><span style="font-size:10.5px;color:var(--txt-mid);">${tname}${room ? ' · ' + room : ''}</span></button>`;
+        const movementRoom = getTimeGroupRoomForClass(cls, val);
+        const displayedRoom = movementRoom || room;
+        content = `<button class="class-lesson-button ${movementRoom ? 'is-moving-room' : ''}" onclick="openClassLessonMatching('${cls}','${d}',${p})">
+          <span class="class-lesson-subject">${subj}</span>
+          <span class="class-lesson-meta">${tname}${displayedRoom ? ' · ' + getLabDisplayName(displayedRoom) : ''}</span>
+          ${movementRoom ? '<span class="class-movement-badge"><i class="fas fa-person-walking-arrow-right"></i> 이동수업 · 교실 비움</span>' : ''}
+        </button>`;
       } else {
         cellStyle += 'color:var(--txt-muted);';
         content = '-';
       }
-      html += `<td style="${cellStyle}">${content}</td>`;
+      html += `<td class="class-schedule-cell" style="${cellStyle}">${content}</td>`;
     });
     html += `</tr>`;
   });

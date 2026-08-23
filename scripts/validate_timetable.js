@@ -275,6 +275,34 @@ assert(labMarkup.includes('lab-browser-layout') && labMarkup.includes('lab-selec
 assert(labStyles.includes('.lab-detail-header') && labStyles.includes('.lab-room-button.active'), '실습실 고급형 디자인 CSS 누락');
 assert(dashboardSource.includes('displayRoom(room)') && dashboardSource.includes('value="${esc(room)}"'), '예약 화면 정식 명칭 표시 또는 내부 키 보존 누락');
 
+const movingRoomAudit = read(`(() => {
+  const codes = new Set();
+  Object.values(TEACHER_SCHEDULE).forEach(schedule => Object.values(schedule).forEach(value => {
+    const code = getTimeGroupCode(value); if (code) codes.add(code);
+  }));
+  const unmappedCodes = [...codes].filter(code => !TIME_GROUP_ROOM_ASSIGNMENTS[code]);
+  return {
+    assignmentCount: Object.keys(TIME_GROUP_ROOM_ASSIGNMENTS).length,
+    unmappedCodes,
+    psychologyRooms: getTimeGroupRooms('204 A_심리'),
+    psychologyUse: getTimeGroupRoomUse('자기주도학습실', '월', 4, '12'),
+    home204Occupied: isClassroomOccupiedByLesson('2-4', CLASS_SCHEDULE['2-4']['월4']),
+    home201Occupied: isClassroomOccupiedByLesson('2-1', CLASS_SCHEDULE['2-1']['월4']),
+    infoRoomUse: getTimeGroupRoomUse('정보교실', '월', 4, '12').map(use => use.code),
+    creditRoomUse: getTimeGroupRoomUse('학점제실1', '월', 4, '3').map(use => use.code),
+  };
+})()`);
+assert(movingRoomAudit.assignmentCount >= 80, 'PDF 타임별 강의실 매핑 수 부족');
+assert(movingRoomAudit.unmappedCodes.length === 0, `타임별 강의실 미매핑: ${movingRoomAudit.unmappedCodes.join(', ')}`);
+assert(JSON.stringify(movingRoomAudit.psychologyRooms) === JSON.stringify(['자기주도학습실']), 'A_심리 강의실 매핑 오류');
+assert(movingRoomAudit.psychologyUse.some(use => use.code === 'A_심리' && use.teacher === '홍원정'), 'A_심리 특별실 정규 사용 누락');
+assert(!movingRoomAudit.home204Occupied && movingRoomAudit.home201Occupied, '이동수업 교실 비움/일반 교실 사용 판정 오류');
+assert(movingRoomAudit.infoRoomUse.includes('A_경제'), '정보교실 A_경제 정규 사용 누락');
+assert(movingRoomAudit.creditRoomUse.includes('A_고전'), '학점제실1 A_고전 정규 사용 누락');
+assert(dashboardSource.includes('isClassroomOccupiedByLesson(classKey,lesson)') && dashboardSource.includes('getTimeGroupRoomUse(room,day,p,group)'), '오늘의 예약 이동수업 판정 연결 누락');
+assert(labMarkup.includes('isClassroomOccupiedByLesson(classKey, lesson)') && labMarkup.includes('getTimeGroupRoomUse(room, dayKey, periodNumber, gradeGroup)'), '예약 저장 시 이동수업 판정 연결 누락');
+assert(labStyles.includes('.teacher-schedule-tab .teacher-detail-header') && labStyles.includes('.class-detail-header'), '교사/학급 프리미엄 디자인 CSS 누락');
+
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
   let badSubstitutes = 0, placeholderSubstitutes = 0, invalidSubstitutes = 0;
@@ -334,6 +362,8 @@ console.log(JSON.stringify({
   specialRoomDataAudit,
   labDisplayAudit,
   labPremiumDesign: true,
+  movingRoomAudit,
+  premiumTeacherAndClassDesign: true,
   onlineSubjectTeachers: onlineSubjectTeachers.length,
   songJunhanLessonCount,
   teacherPopupLinked: true,

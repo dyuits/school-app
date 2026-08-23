@@ -6,7 +6,7 @@
   <title>제주중앙고등학교 대시보드</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260824-2">
+  <link rel="stylesheet" href="css/style.css?v=20260824-3">
   <link rel="stylesheet" href="css/dashboard.css?v=20260817-12">
   <!-- PDF.js: 세특 탭 PDF 업로드 텍스트 추출 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -145,12 +145,12 @@
     </section>
 
     <!-- ── 2. 교사별 시간표 ── -->
-    <section id="teacherTab" class="tab-panel">
+    <section id="teacherTab" class="tab-panel premium-schedule-tab teacher-schedule-tab">
       <div class="schedule-tab-toolbar"><span><i class="fas fa-columns"></i> 선택 시간표 비교</span><div class="schedule-export-actions"><button class="btn btn-outline btn-sm" onclick="copySchedulePanel('teacherDetailPanel',this)"><i class="fas fa-copy"></i> 복사</button><button class="btn btn-dark btn-sm" onclick="printSchedulePanel('teacherDetailPanel','교사별 시간표')"><i class="fas fa-print"></i> 출력</button></div></div>
-      <div class="side-btn-layout">
+      <div class="side-btn-layout premium-schedule-layout">
         <!-- 왼쪽: 교사 버튼 목록 -->
-        <div class="side-btn-panel">
-          <div class="side-btn-panel-header"><i class="fas fa-chalkboard-teacher"></i> 교사 목록</div>
+        <div class="side-btn-panel premium-schedule-selector">
+          <div class="side-btn-panel-header premium-teacher-selector-header"><i class="fas fa-chalkboard-teacher"></i> 교사 목록</div>
           <div class="side-btn-search">
             <div class="search-wrap">
               <i class="fas fa-search"></i>
@@ -194,12 +194,12 @@
     </section>
 
     <!-- ── 3. 학급별 시간표 ── -->
-    <section id="classScheduleTab" class="tab-panel">
+    <section id="classScheduleTab" class="tab-panel premium-schedule-tab class-schedule-tab">
       <div class="schedule-tab-toolbar"><span><i class="fas fa-school"></i> 학급 시간표 비교</span><div class="schedule-export-actions"><button class="btn btn-outline btn-sm" onclick="copySchedulePanel('classScheduleDetail',this)"><i class="fas fa-copy"></i> 복사</button><button class="btn btn-dark btn-sm" onclick="printSchedulePanel('classScheduleDetail','학급별 시간표')"><i class="fas fa-print"></i> 출력</button></div></div>
-      <div class="side-btn-layout">
+      <div class="side-btn-layout premium-schedule-layout">
         <!-- 왼쪽: 학급 버튼 목록 -->
-        <div class="side-btn-panel">
-          <div class="side-btn-panel-header"><i class="fas fa-th"></i> 학급 목록</div>
+        <div class="side-btn-panel premium-schedule-selector">
+          <div class="side-btn-panel-header premium-class-selector-header"><i class="fas fa-th"></i> 학급 목록</div>
           <div class="side-btn-search">
             <div class="search-wrap">
               <i class="fas fa-search"></i>
@@ -3885,13 +3885,20 @@ function getRegularUseForReservation(room, day, period) {
   if (classroom) {
     const grade = Number(classroom[1]);
     if (periodNumber === 4 && ((grade === 3 && period === '4교시-12') || (grade < 3 && period === '4교시-3'))) return '';
-    return CLASS_SCHEDULE[`${grade}-${classroom[2]}`]?.[`${dayKey}${periodNumber}`] || '';
+    const classKey = `${grade}-${classroom[2]}`;
+    const lesson = CLASS_SCHEDULE[classKey]?.[`${dayKey}${periodNumber}`] || '';
+    return typeof isClassroomOccupiedByLesson === 'function' && !isClassroomOccupiedByLesson(classKey, lesson) ? '' : lesson;
   }
   const gradeGroup = period === '4교시-3' ? '3' : period === '4교시-12' ? '12' : null;
   const rawRegularUse = LAB_SCHEDULE[room]?.[dayKey]?.[periodNumber] || '';
-  return gradeGroup && rawRegularUse && typeof rawRegularUse === 'object'
+  const labUse = gradeGroup && rawRegularUse && typeof rawRegularUse === 'object'
     ? (rawRegularUse[gradeGroup] || '')
     : rawRegularUse;
+  if (labUse) return labUse;
+  const movingUses = typeof getTimeGroupRoomUse === 'function'
+    ? getTimeGroupRoomUse(room, dayKey, periodNumber, gradeGroup)
+    : [];
+  return movingUses.map(use => `${use.code} ${use.teacher}`).join(' / ');
 }
 
 function resetReservationForm() {
@@ -4047,8 +4054,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-config.js"></script>
-<script src="js/data.js?v=20260823-2"></script>
-<script src="js/app.js?v=20260824-2"></script>
-<script src="js/dashboard.js?v=20260824-1"></script>
+<script src="js/data.js?v=20260824-1"></script>
+<script src="js/app.js?v=20260824-3"></script>
+<script src="js/dashboard.js?v=20260824-2"></script>
 </body>
 </html>
