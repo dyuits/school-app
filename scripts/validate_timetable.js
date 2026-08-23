@@ -177,6 +177,7 @@ const teacherPopupAudit = read(`({
 assert(teacherPopupAudit.link.includes("openTeacherSchedulePopup('김영주')") && teacherPopupAudit.link.includes('시간표 보기'), '매칭 결과 교사 이름에 시간표 팝업 연결 누락');
 assert(!teacherPopupAudit.unknown.includes('openTeacherSchedulePopup'), '시간표가 없는 이름에 팝업 링크가 생성됨');
 assert(teacherPopupAudit.openHandler === 'function' && teacherPopupAudit.closeHandler === 'function', '교사 시간표 팝업 함수 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('buildTeacherDetailCard(teacher, false, true)'), '교사 팝업 전용 시간표 렌더링 누락');
 const teacherPopupMarkup = fs.readFileSync(path.join(root, 'docs/index.html'), 'utf8');
 assert(teacherPopupMarkup.includes('id="teacherScheduleModal"') && teacherPopupMarkup.includes('id="teacherScheduleModalBody"'), '교사 시간표 팝업 마크업 누락');
 
@@ -320,6 +321,7 @@ assert(appSource.includes('href="tel:${phoneDigits}"') && appSource.includes('co
 assert(labStyles.includes('.contact-phone-actions') && labStyles.includes('min-height: 44px'), '연락처 모바일 터치 영역 CSS 누락');
 assert(appSource.includes('class="teacher-period-number">${p}교시</strong>') && appSource.includes('class="teacher-period-time">${getPeriodTime(p, gradeGroup === \'3\' ? \'3\' : \'1\')}</span>'), '교사 시간표 교시/시간 두 줄 표시 누락');
 assert(labStyles.includes('.teacher-period-number') && labStyles.includes('white-space: nowrap'), '교시명이 한 줄로 고정되지 않음');
+assert(labStyles.includes('.teacher-schedule-popup-body .teacher-period-number') && labStyles.includes('width: 92px !important'), '교사 팝업의 교시/시간 두 줄 고정 CSS 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
 assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');

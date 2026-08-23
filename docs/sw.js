@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v70-period-label-layout';
+var CACHE_NAME = 'school-app-v71-teacher-popup-period-layout';
 var ASSETS = [
   './',
   './index.html',

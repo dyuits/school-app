@@ -178,7 +178,7 @@ function openTeacherSchedulePopup(teacher) {
   const body = qs('#teacherScheduleModalBody');
   if (!modal || !title || !body) return;
   title.textContent = `${teacher} 선생님 시간표`;
-  body.innerHTML = buildTeacherDetailCard(teacher, false);
+  body.innerHTML = buildTeacherDetailCard(teacher, false, true);
   resetDraggableModal(modal);
   modal.classList.add('open');
   qs('#teacherScheduleModalClose')?.focus();
@@ -1054,7 +1054,7 @@ function selectTeacherSchedule(teacher) {
   renderTeacherDetailTable([teacher]);
 }
 
-function buildTeacherDetailCard(teacher, compact = false) {
+function buildTeacherDetailCard(teacher, compact = false, popup = false) {
   const sch = TEACHER_SCHEDULE[teacher] || {};
   const isHR = !!TEACHER_TO_CLASS[teacher];
   const gradeGroup = getTeacherGradeGroup(teacher);
@@ -1068,7 +1068,7 @@ function buildTeacherDetailCard(teacher, compact = false) {
     if (!sch[d+p] && !isChatcheTime(teacher, d, p) && p <= 7) freeCount++;
   }));
 
-  return `<article class="teacher-compare-card ${compact ? 'is-compact' : ''}">
+  return `<article class="teacher-compare-card ${compact ? 'is-compact' : ''} ${popup ? 'teacher-popup-card' : ''}">
     <div class="teacher-detail-header">
       <div class="teacher-avatar"><i class="fas fa-user-tie"></i></div>
       <div class="teacher-card-identity">

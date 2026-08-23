@@ -2657,6 +2657,25 @@ a { text-decoration:none; color:inherit; }
 .teacher-schedule-popup-body { padding: 14px; overflow: auto; background: #f8fafc; }
 .teacher-schedule-popup-body .teacher-compare-card { max-width: none; }
 .teacher-schedule-popup-body .teacher-detail-table [onclick] { pointer-events: none; cursor: default !important; }
+.teacher-schedule-popup-body .teacher-premium-table { min-width: 660px !important; }
+.teacher-schedule-popup-body .teacher-period-heading,
+.teacher-schedule-popup-body .teacher-period-cell {
+  display: table-cell !important;
+  width: 92px !important;
+  min-width: 92px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+.teacher-schedule-popup-body .teacher-period-number,
+.teacher-schedule-popup-body .teacher-period-time {
+  display: block !important;
+  width: 100%;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+.teacher-schedule-popup-body .teacher-period-time { margin-top: 3px !important; }
 .lab-lesson-button {
   display: flex;
   flex-direction: column;
