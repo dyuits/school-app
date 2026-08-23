@@ -320,8 +320,12 @@ assert(appSource.includes('href="tel:${phoneDigits}"') && appSource.includes('co
 assert(labStyles.includes('.contact-phone-actions') && labStyles.includes('min-height: 44px'), '연락처 모바일 터치 영역 CSS 누락');
 assert(appSource.includes('<strong>${PERIOD_TIMES[p].label}</strong>') && appSource.includes("getPeriodTime(p, gradeGroup === '3' ? '3' : '1')"), '교사 시간표 교시/시간 두 줄 표시 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
+assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');
 assert(appSource.includes('subject-selector-button') && labStyles.includes('.subject-browser-layout') && labStyles.includes('--subject-blue'), '교과별 수업 하늘색 디자인 누락');
+assert(labMarkup.includes('premium-meeting-tab') && labMarkup.includes('meeting-tab-toolbar') && labMarkup.includes('meeting-selector-header'), '협의시간 프리미엄 레이아웃 마크업 누락');
+assert(labStyles.includes('@container meeting-panel') && labStyles.includes('.premium-meeting-tab .meeting-th-day') && appSource.includes('meeting-teacher-icon'), '협의시간 옅은 노랑 반응형 디자인 누락');
+assert(!labMarkup.includes('class="new-tab-badge"'), '상단 탭 NEW 배지가 남아 있음');
 
 const movingRoomAudit = read(`(() => {
   const codes = new Set();

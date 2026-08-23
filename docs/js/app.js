@@ -1279,8 +1279,9 @@ function renderMeetingTab() {
         : `<span class="meeting-grade-badge grade12">1·2학년</span>`;
       return `<button class="side-btn-item meeting-teacher-btn ${selected ? 'selected' : ''}"
           onclick="toggleMeetingTeacher('${t}', ${!selected})">
-        <span class="meeting-btn-name">${t} 선생님</span>
-        <span class="meeting-btn-meta">${grpBadge}${selected ? '<span class="meeting-check">✓</span>' : ''}</span>
+        <span class="meeting-teacher-icon"><i class="fas fa-user"></i></span>
+        <span class="meeting-btn-copy"><span class="meeting-btn-name">${t} 선생님</span><span class="meeting-btn-meta">${grpBadge}</span></span>
+        <span class="meeting-check">${selected ? '✓' : '<i class="fas fa-chevron-right"></i>'}</span>
       </button>`;
     }).join('');
   }
