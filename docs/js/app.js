@@ -27,6 +27,21 @@ const STATE = {
   memo: '',
 };
 
+// 예약·시간표 데이터의 기존 키는 보존하고 화면에는 정식 실습실 명칭을 표시한다.
+const LAB_DISPLAY_NAMES = Object.freeze({
+  '만콘실': '만화콘텐츠 제작실',
+  '영상실': '영상제작실',
+  '컴그실': '컴퓨터그래픽실',
+  '회계실': '회계실무실',
+  '사행실': '사무행정실',
+  '창구실': '창구사무실',
+  '전상실': '전자상거래실',
+});
+
+function getLabDisplayName(labName) {
+  return LAB_DISPLAY_NAMES[labName] || String(labName || '').replace(/\([^)]+\)/, '').trim();
+}
+
 // ── 유틸리티 ──
 function qs(sel, parent = document) { return parent.querySelector(sel); }
 function qsa(sel, parent = document) { return [...parent.querySelectorAll(sel)]; }
@@ -1747,10 +1762,14 @@ function renderLabTab() {
       // 괄호 안 호실 추출: e.g. "컴퓨터실1(308호)" → "308호"
       const roomMatch = name.match(/\(([^)]+)\)/);
       const roomLabel = roomMatch ? roomMatch[1] : '';
-      const displayName = name.replace(/\([^)]+\)/, '').trim();
-      return `<button class="side-btn-item ${active}" data-lab="${name}" onclick="selectLab('${name}')">
-        <span>${displayName}</span>
-        ${roomLabel ? `<span class="side-btn-room">${roomLabel}</span>` : ''}
+      const displayName = getLabDisplayName(name);
+      return `<button class="side-btn-item lab-room-button ${active}" data-lab="${name}" onclick="selectLab('${name}')" aria-pressed="${active ? 'true' : 'false'}">
+        <span class="lab-room-button-icon"><i class="fas fa-door-open"></i></span>
+        <span class="lab-room-button-copy">
+          <span class="lab-room-button-name">${displayName}</span>
+          <span class="lab-room-button-meta">주간 사용 현황${roomLabel ? ` · ${roomLabel}` : ''}</span>
+        </span>
+        <i class="fas fa-chevron-right lab-room-button-arrow" aria-hidden="true"></i>
       </button>`;
     }).join('');
   }
@@ -1763,7 +1782,9 @@ function selectLab(labName) {
   STATE.labSelected = labName;
   // 사이드 버튼 active 업데이트
   qsa('#labSideList .side-btn-item').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lab === labName);
+    const selected = btn.dataset.lab === labName;
+    btn.classList.toggle('active', selected);
+    btn.setAttribute('aria-pressed', String(selected));
   });
   renderLabDetail(labName);
 }
@@ -1777,16 +1798,23 @@ function renderLabDetail(labName) {
     return;
   }
 
+  const displayLabName = getLabDisplayName(labName);
   let html = `
-    <div class="card-header" style="border-radius:var(--r-lg) var(--r-lg) 0 0;">
-      <i class="fas fa-flask"></i> ${labName} 주간 시간표
+    <div class="lab-detail-header">
+      <span class="lab-detail-icon"><i class="fas fa-flask"></i></span>
+      <div class="lab-detail-heading">
+        <span class="lab-detail-eyebrow">SPECIAL CLASSROOM</span>
+        <h2>${displayLabName}</h2>
+        <p>요일별 정규수업과 담당 교사를 한눈에 확인하세요.</p>
+      </div>
+      <span class="lab-detail-status"><i class="fas fa-calendar-check"></i> 2학기</span>
     </div>
-    <div style="overflow-x:auto;padding:14px;">
-      <table class="schedule-table lab-table" style="min-width:580px;">
+    <div class="lab-table-scroll">
+      <table class="schedule-table lab-table">
         <thead>
           <tr>
-            <th class="teacher-th" style="min-width:62px;">교시</th>
-            ${DAYS.map(d=>`<th class="day-header" style="min-width:100px;">${d}요일</th>`).join('')}
+            <th class="teacher-th lab-period-head">교시</th>
+            ${DAYS.map(d=>`<th class="day-header">${d}요일</th>`).join('')}
           </tr>
         </thead>
         <tbody>`;
@@ -1803,18 +1831,18 @@ function renderLabDetail(labName) {
   }));
   const labTeacherArr = [...labTeachers].sort((a,b) => a.localeCompare(b,'ko'));
   const labColors = [
-    {bg:'#EBF5FF',bd:'#90BEE8',tx:'#1A4A7A'},
-    {bg:'#FFF4E6',bd:'#F0C070',tx:'#7A4A00'},
-    {bg:'#F0E8FF',bd:'#B896E6',tx:'#5A2A8A'},
-    {bg:'#E8F8EE',bd:'#80CCA0',tx:'#1A6040'},
-    {bg:'#FFF0F0',bd:'#E8A0A0',tx:'#8A2020'},
-    {bg:'#FFF8CC',bd:'#D4B840',tx:'#6A5000'},
-    {bg:'#E8F0F8',bd:'#88B0D0',tx:'#2A4A6A'},
-    {bg:'#FCE8F0',bd:'#D090B0',tx:'#7A2050'},
-    {bg:'#F0FAF0',bd:'#90C890',tx:'#2A6A2A'},
-    {bg:'#F8F0E8',bd:'#C8A880',tx:'#5A4020'},
-    {bg:'#E8F0FF',bd:'#80A8E0',tx:'#1A3A7A'},
-    {bg:'#FFF0FA',bd:'#E0A0D0',tx:'#6A2060'},
+    {bg:'#EFF5F6',bd:'#8CAEB3',tx:'#284F55'},
+    {bg:'#F8F3EA',bd:'#C7A76C',tx:'#664A1E'},
+    {bg:'#F2F0F7',bd:'#9E91B5',tx:'#4A3D63'},
+    {bg:'#EDF5F1',bd:'#7FA793',tx:'#285846'},
+    {bg:'#F8EEEE',bd:'#C49393',tx:'#6A3535'},
+    {bg:'#F4F2E9',bd:'#B9AA73',tx:'#5D5327'},
+    {bg:'#EEF1F5',bd:'#8E9FB4',tx:'#33485F'},
+    {bg:'#F6EEF2',bd:'#B28DA0',tx:'#623B50'},
+    {bg:'#EFF4ED',bd:'#91A887',tx:'#3F5936'},
+    {bg:'#F5F0EB',bd:'#B09A83',tx:'#574432'},
+    {bg:'#EDF2F8',bd:'#819BB8',tx:'#2E4967'},
+    {bg:'#F5EFF5',bd:'#AA90AA',tx:'#5A3D5A'},
   ];
   const teacherColorMap = {};
   labTeacherArr.forEach((t, i) => {
@@ -1822,10 +1850,10 @@ function renderLabDetail(labName) {
   });
 
   // 범례
-  html += `<div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border-lt);background:var(--bg-soft);">`;
+  html += `<div class="lab-teacher-legend"><span class="lab-legend-title"><i class="fas fa-user-tie"></i> 담당 교사</span>`;
   labTeacherArr.forEach(t => {
     const c = teacherColorMap[t];
-    html += `<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${c.bg};color:${c.tx};border:1.5px solid ${c.bd};">${t}</span>`;
+    html += `<span class="lab-teacher-chip" style="--lab-chip-bg:${c.bg};--lab-chip-border:${c.bd};--lab-chip-text:${c.tx};"><i class="fas fa-circle"></i>${t}</span>`;
   });
   html += `</div>`;
 
@@ -1833,9 +1861,9 @@ function renderLabDetail(labName) {
     const time = gradeGroup ? getPeriodTime(p, gradeGroup === '3' ? '3' : '1') : getPeriodTime(p);
     const gradeLabel = gradeGroup === '3' ? '3학년' : gradeGroup === '12' ? '1·2학년' : '';
     html += `<tr>
-      <td class="teacher-td" style="text-align:center;font-weight:700;font-size:12px;padding:8px;">
-        ${p}교시${gradeLabel ? `<br><span style="font-size:9px;color:var(--primary);">${gradeLabel}</span>` : ''}<br>
-        <span style="font-size:10px;color:var(--txt-light);font-weight:400;">${time}</span>
+      <td class="teacher-td lab-period-cell">
+        <strong>${p}교시</strong>${gradeLabel ? `<span class="lab-period-grade">${gradeLabel}</span>` : ''}
+        <span class="lab-period-time">${time}</span>
       </td>`;
     DAYS.forEach(d => {
       const rawCell = (sched[d]||{})[p] || '';
@@ -1849,12 +1877,12 @@ function renderLabDetail(labName) {
         const roomClass = parts[0] || '';
         const subj = parts[1] || '';
         const teacher = parts[2] || tName;
-        html += `<td class="lab-lesson-cell" style="background:${c.bg};border:1.5px solid ${c.bd};padding:0;text-align:center;vertical-align:middle;" title="${cell}"><button class="lab-lesson-button" onclick="openLabLessonMatching('${labName}','${d}',${p},'${gradeGroup || ''}')">
-          <div style="font-size:11.5px;font-weight:700;color:${c.tx};line-height:1.3;">${subj || roomClass}</div>
-          <div style="font-size:9.5px;color:${c.tx};opacity:0.7;">${roomClass}${teacher && teacher !== subj ? ' · '+teacher : ''}</div>
+        html += `<td class="lab-lesson-cell" style="--lab-cell-bg:${c.bg};--lab-cell-border:${c.bd};--lab-cell-text:${c.tx};" title="${cell}"><button class="lab-lesson-button" onclick="openLabLessonMatching('${labName}','${d}',${p},'${gradeGroup || ''}')">
+          <span class="lab-lesson-subject">${subj || roomClass}</span>
+          <span class="lab-lesson-meta">${roomClass}${teacher && teacher !== subj ? ' · '+teacher : ''}</span>
         </button></td>`;
       } else {
-        html += `<td class="lab-cell-empty">-</td>`;
+        html += `<td class="lab-cell-empty"><span aria-hidden="true">—</span><small>비어 있음</small></td>`;
       }
     });
     html += `</tr>`;
@@ -1879,7 +1907,7 @@ function openLabLessonMatching(labName, day, period, gradeGroup = '') {
   const teacherMatch = String(cell).match(/([가-힣]{2,8})$/);
   const teacher = teacherMatch ? teacherMatch[1] : '';
   if (!teacher || !TEACHER_SCHEDULE[teacher]) {
-    showAlert(`${labName} ${day}요일 ${period}교시의 담당 교사를 찾지 못했습니다.`);
+    showAlert(`${getLabDisplayName(labName)} ${day}요일 ${period}교시의 담당 교사를 찾지 못했습니다.`);
     return;
   }
   const parts = String(cell).split(/\s+/);

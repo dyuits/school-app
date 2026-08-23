@@ -260,6 +260,21 @@ assert(specialRoomDataAudit.gradeMisplacements === 0, '특별실 4교시 학년 
 assert(specialRoomDataAudit.unmatchedLessons === 0, '특별실 시간표가 교사 시간표와 일치하지 않음');
 assert(specialRoomDataAudit.popupHandler, '실습실 교체·대체 팝업 연결 누락');
 
+const labDisplayAudit = read(`Object.fromEntries(Object.keys(LAB_SCHEDULE).map(name => [name, getLabDisplayName(name)]))`);
+assert(labDisplayAudit['만콘실'] === '만화콘텐츠 제작실', '만콘실 정식 명칭 오류');
+assert(labDisplayAudit['영상실'] === '영상제작실', '영상실 정식 명칭 오류');
+assert(labDisplayAudit['컴그실'] === '컴퓨터그래픽실', '컴그실 정식 명칭 오류');
+assert(labDisplayAudit['회계실'] === '회계실무실', '회계실 정식 명칭 오류');
+assert(labDisplayAudit['사행실'] === '사무행정실', '사행실 정식 명칭 오류');
+assert(labDisplayAudit['창구실'] === '창구사무실', '창구실 정식 명칭 오류');
+assert(labDisplayAudit['전상실'] === '전자상거래실', '전상실 정식 명칭 오류');
+const labMarkup = fs.readFileSync(path.join(root, 'docs/index.html'), 'utf8');
+const labStyles = fs.readFileSync(path.join(root, 'docs/css/style.css'), 'utf8');
+const dashboardSource = fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8');
+assert(labMarkup.includes('lab-browser-layout') && labMarkup.includes('lab-selector-header'), '실습실 고급형 레이아웃 마크업 누락');
+assert(labStyles.includes('.lab-detail-header') && labStyles.includes('.lab-room-button.active'), '실습실 고급형 디자인 CSS 누락');
+assert(dashboardSource.includes('displayRoom(room)') && dashboardSource.includes('value="${esc(room)}"'), '예약 화면 정식 명칭 표시 또는 내부 키 보존 누락');
+
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
   let badSubstitutes = 0, placeholderSubstitutes = 0, invalidSubstitutes = 0;
@@ -317,6 +332,8 @@ console.log(JSON.stringify({
   classScheduleConflicts: baseCollisionAudit.classConflicts,
   specialRoomPolicyAudit,
   specialRoomDataAudit,
+  labDisplayAudit,
+  labPremiumDesign: true,
   onlineSubjectTeachers: onlineSubjectTeachers.length,
   songJunhanLessonCount,
   teacherPopupLinked: true,

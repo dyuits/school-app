@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v63-teacher-popup';
+var CACHE_NAME = 'school-app-v64-premium-lab-schedule';
 var ASSETS = [
   './',
   './index.html',
