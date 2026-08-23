@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v58-subject-teacher-timetables';
+var CACHE_NAME = 'school-app-v59-legacy-memo-delete';
 var ASSETS = [
   './',
   './index.html',
