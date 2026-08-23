@@ -124,6 +124,47 @@ const contactMoves = read(`({
 assert(contactMoves.kimYuri?.dept === '본교무실' && !contactMoves.kimYuri.role.includes('휴직'), '김유리 본교무실 연락처 이동 오류');
 assert(contactMoves.hongWonjeong?.dept === '학생생활안전부' && !contactMoves.hongWonjeong.role.includes('휴직'), '홍원정 학생부 연락처 이동 오류');
 
+const contactDirectoryAudit = read(`(() => {
+  const find = (dept, name) => STAFF_CONTACTS.find(c => c.dept === dept && c.name === name);
+  return {
+    count: STAFF_CONTACTS.length,
+    byDept: Object.fromEntries([...new Set(STAFF_CONTACTS.map(c => c.dept))].map(dept => [dept, STAFF_CONTACTS.filter(c => c.dept === dept).length])),
+    exactDuplicates: STAFF_CONTACTS.filter((c, index, all) => all.findIndex(other => other.dept === c.dept && other.name === c.name) !== index).length,
+    invalidPhones: STAFF_CONTACTS.filter(c => !/^(010-\\d{4}-\\d{4}|\\d{3}-\\d{4})$/.test(c.phone || '')).length,
+    kimYuri: find('본교무실', '김유리'),
+    jeongGicheol: find('행정실', '정기철'),
+    kangJinseokInfo: find('교육정보부', '강진석'),
+    hongMinyoung: find('학생생활안전부', '홍민영'),
+    hongWonjeong: find('학생생활안전부', '홍원정'),
+    kimJeryeongBroadcast: find('방송실', '김제령'),
+    kimJeryeongHomeroom: find('3학년부', '김제령'),
+    officeMain: find('행정실', '학교 대표전화'),
+    officeFax: find('행정실', '행정실 팩스'),
+    cafeteriaFax: find('급식소', '급식소 팩스'),
+    addedPeople: ['오금선','김창희','고영숙','김경양','이승경','장혜순','장경아','강정숙','정진옥','이수정','강영철','신종영'].map(name => STAFF_CONTACTS.find(c => c.name === name)),
+    staleJeongPhone: STAFF_CONTACTS.some(c => c.phone === '010-6563-0628'),
+    kimYuriLeave: find('휴직', '김유리'),
+    musicRoom: find('음악실(체육관)', '강진석'),
+    corporateOffice: find('법인사무국', '김하석')
+  };
+})()`);
+assert(contactDirectoryAudit.count === 95, '최신 교직원 연락망 항목 수 오류');
+assert(JSON.stringify(contactDirectoryAudit.byDept) === JSON.stringify({
+  '교장실':1, '본교무실':14, '행정실':10, '교육정보부':4, '취업부':1, '학생생활안전부':4,
+  '예술건강부':2, '보건실':1, '방송실':1, '교목실':1, '상담실':1, '급식소':13,
+  '1학년부':11, '2학년부':11, '3학년부':11, '음악실(체육관)':1, '도서관':1,
+  '법인사무국':1, '환경미화실':1, '배움터지킴이':1, '축구부':3, '휴직':1
+}), '최신 교직원 연락망 부서별 인원 수 오류');
+assert(contactDirectoryAudit.exactDuplicates === 0 && contactDirectoryAudit.invalidPhones === 0, '연락처 중복 또는 전화번호 형식 오류');
+assert(contactDirectoryAudit.kimYuri?.role === '특성화교육' && contactDirectoryAudit.kimYuri.ext === '815' && !contactDirectoryAudit.kimYuriLeave, '김유리 연락처 배치 오류');
+assert(contactDirectoryAudit.jeongGicheol?.phone === '010-8182-8306' && !contactDirectoryAudit.staleJeongPhone, '정기철 변경 전화번호 오류');
+assert(contactDirectoryAudit.kangJinseokInfo?.ext === '819', '교육정보부 강진석 내선 오류');
+assert(contactDirectoryAudit.hongMinyoung?.ext === '821' && contactDirectoryAudit.hongWonjeong?.role === '상담지원' && contactDirectoryAudit.hongWonjeong.ext === '821', '학생생활안전부 상담지원 연락처 오류');
+assert(contactDirectoryAudit.kimJeryeongBroadcast?.ext === '833' && contactDirectoryAudit.kimJeryeongHomeroom?.ext === '856', '김제령 위치별 내선 오류');
+assert(contactDirectoryAudit.officeMain?.phone === '721-1152' && contactDirectoryAudit.officeFax?.phone === '750-3888' && contactDirectoryAudit.cafeteriaFax?.phone === '750-3889', '대표전화 또는 팩스 연락처 오류');
+assert(contactDirectoryAudit.addedPeople.every(Boolean), '급식소·배움터지킴이·축구부 신규 연락처 누락');
+assert(contactDirectoryAudit.musicRoom?.ext === '846' && contactDirectoryAudit.corporateOffice?.role === '사무국장', '음악실 또는 법인사무국 연락처 오류');
+
 const externalBlock = read(`buildSwapLessonBlock('201 독서', '강승표', '월', 1, true, 0)`);
 assert(externalBlock.includes('var(--cell-mint-bg)') && !externalBlock.includes('[강사]'), '교체·대체 민트 수업에 [강사] 표시가 남아 있음');
 

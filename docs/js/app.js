@@ -1678,9 +1678,9 @@ function verifyContactPassword() {
     if (hint) { hint.textContent = '4자리 숫자를 입력해주세요.'; hint.style.color = '#c0392b'; }
     return;
   }
-  // 연락처에 등록된 전화번호 뒷 4자리와 일치하는지 확인
+  // 연락처에 등록된 교직원 휴대전화 뒷 4자리와 일치하는지 확인
   const matched = STAFF_CONTACTS.some(c => {
-    if (!c.phone || c.phone === '-') return false;
+    if (!/^010-\d{4}-\d{4}$/.test(c.phone || '')) return false;
     const digits = c.phone.replace(/-/g,'');
     return digits.slice(-4) === pw;
   });
@@ -1826,7 +1826,7 @@ function renderContactList() {
       <div class="contact-avatar">${avatarEmoji}</div>
       <div class="contact-name">${c.name}</div>
       <div class="contact-role">${roleDisplay}</div>
-      <div class="contact-ext"><i class="fas fa-phone"></i> 내선 ${c.ext}</div>
+      ${c.ext ? `<div class="contact-ext"><i class="fas fa-phone"></i> 내선 ${c.ext}</div>` : ''}
       ${c.phone && c.phone !== '-' ? `<div class="contact-phone-actions">
         <a class="contact-phone-link" href="tel:${phoneDigits}" aria-label="${c.name} 선생님 ${c.phone} 전화 걸기" title="${c.phone} 전화 걸기">
           <i class="fas fa-phone-alt" aria-hidden="true"></i><span>${c.phone}</span>
