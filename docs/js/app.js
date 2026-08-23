@@ -98,7 +98,32 @@ function closeAlert() { qs('#alertModal').classList.remove('open'); }
 
 // ── 결과 모달 ──
 function openModal() { resetDraggableModal(qs('#resultModal')); qs('#resultModal').classList.add('open'); }
-function closeModal() { qs('#resultModal').classList.remove('open'); }
+function closeModal() {
+  closeTeacherSchedulePopup();
+  qs('#resultModal').classList.remove('open');
+}
+
+function closeTeacherSchedulePopup() {
+  qs('#teacherScheduleModal')?.classList.remove('open');
+}
+
+function openTeacherSchedulePopup(teacher) {
+  if (!ALL_TEACHERS.includes(teacher)) return;
+  const modal = qs('#teacherScheduleModal');
+  const title = qs('#teacherScheduleModalTitle');
+  const body = qs('#teacherScheduleModalBody');
+  if (!modal || !title || !body) return;
+  title.textContent = `${teacher} 선생님 시간표`;
+  body.innerHTML = buildTeacherDetailCard(teacher, false);
+  resetDraggableModal(modal);
+  modal.classList.add('open');
+  qs('#teacherScheduleModalClose')?.focus();
+}
+
+function teacherScheduleLink(teacher, innerHtml, className = '') {
+  if (!ALL_TEACHERS.includes(teacher)) return `<span class="${className}">${innerHtml}</span>`;
+  return `<button type="button" class="result-teacher-link ${className}" onclick="openTeacherSchedulePopup('${teacher}')" title="${teacher} 선생님 시간표 보기">${innerHtml}</button>`;
+}
 
 // ── 공통 팝업 드래그 ──
 function resetDraggableModal(target) {
@@ -752,7 +777,7 @@ function renderResultModal_blocked(teacher, day, period, val, msg) {
         <span class="result-subject-name">${info.subject || val || '-'}</span>
         <span class="result-class-badge mint">${info.classLabel || ''}</span>
       </div>
-      <div class="result-my-teacher">${teacher} 선생님</div>
+      ${teacherScheduleLink(teacher, `${teacher} 선생님`, 'result-my-teacher')}
       <div class="result-rule-badge mint"><i class="fas fa-palette"></i> 시간강사·산학협력교사 수업 (민트색)</div>
     </div>`;
   qs('#modalSwapList').innerHTML = `
@@ -789,7 +814,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
         ${info.classLabel ? `<span class="result-class-badge ${info.isSelect ? 'select' : ''}">${info.classLabel}</span>` : ''}
         ${isChatech ? '<span class="result-class-badge chatech">창체</span>' : ''}
       </div>
-      <div class="result-my-teacher">${teacher} 선생님${homeroomCls ? ' · ' + homeroomCls + '반 담임' : ''}</div>
+      ${teacherScheduleLink(teacher, `${teacher} 선생님${homeroomCls ? ' · ' + homeroomCls + '반 담임' : ''}`, 'result-my-teacher')}
       ${info.isSelect ? '<div class="result-rule-badge select"><i class="fas fa-palette"></i> 선택과목 (노란색) — 대체만 가능, 교체 불가</div>' : ''}
       ${externalLesson ? '<div class="result-rule-badge mint"><i class="fas fa-user-clock"></i> 외부강사 수업 (민트색) — 교체 불가</div>' : ''}
     </div>`;
@@ -834,9 +859,8 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
         <div class="result-card swap">
           <div class="result-card-num swap">${i + 1}</div>
           <div class="result-card-info">
-            <div class="result-card-name">${r.teacher} 선생님
-              ${TEACHER_TO_CLASS[r.teacher] ? `<span style="font-size:10.5px;font-weight:400;color:var(--txt-light);margin-left:4px;">${TEACHER_TO_CLASS[r.teacher]}담임</span>` : ''}
-            </div>
+            ${teacherScheduleLink(r.teacher, `${r.teacher} 선생님
+              ${TEACHER_TO_CLASS[r.teacher] ? `<span style="font-size:10.5px;font-weight:400;color:var(--txt-light);margin-left:4px;">${TEACHER_TO_CLASS[r.teacher]}담임</span>` : ''}`, 'result-card-name')}
             <div class="result-card-detail">
               <span class="result-detail-chip day">${r.day}요일 ${r.period}교시</span>
               ${rPeriodTime ? `<span class="result-detail-chip time">${rPeriodTime}</span>` : ''}
@@ -870,9 +894,8 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
         <div class="result-card sub">
           <div class="result-card-check">✓</div>
           <div class="result-card-info">
-            <div class="result-card-name">${r.teacher} 선생님
-              ${TEACHER_TO_CLASS[r.teacher] ? `<span style="font-size:10.5px;font-weight:400;color:var(--txt-light);margin-left:4px;">${TEACHER_TO_CLASS[r.teacher]}담임</span>` : ''}
-            </div>
+            ${teacherScheduleLink(r.teacher, `${r.teacher} 선생님
+              ${TEACHER_TO_CLASS[r.teacher] ? `<span style="font-size:10.5px;font-weight:400;color:var(--txt-light);margin-left:4px;">${TEACHER_TO_CLASS[r.teacher]}담임</span>` : ''}`, 'result-card-name')}
             <div class="result-card-detail">
               <span class="result-detail-chip free">${day}요일 ${period}교시 공강</span>
               <span class="result-detail-chip subj">${r.subject} 교과</span>
@@ -3128,7 +3151,10 @@ function sendCallMessage() {
 
 // ── 키보드 이벤트 ──
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeAlert(); }
+  if (e.key === 'Escape') {
+    if (qs('#teacherScheduleModal')?.classList.contains('open')) closeTeacherSchedulePopup();
+    else { closeModal(); closeAlert(); }
+  }
 });
 
 // ── 초기화 ──

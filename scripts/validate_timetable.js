@@ -127,6 +127,18 @@ assert(contactMoves.hongWonjeong?.dept === '학생생활안전부' && !contactMo
 const externalBlock = read(`buildSwapLessonBlock('201 독서', '강승표', '월', 1, true, 0)`);
 assert(externalBlock.includes('var(--cell-mint-bg)') && !externalBlock.includes('[강사]'), '교체·대체 민트 수업에 [강사] 표시가 남아 있음');
 
+const teacherPopupAudit = read(`({
+  link: teacherScheduleLink('김영주', '김영주 선생님', 'result-card-name'),
+  unknown: teacherScheduleLink('없는교사', '없는교사', 'result-card-name'),
+  openHandler: typeof openTeacherSchedulePopup,
+  closeHandler: typeof closeTeacherSchedulePopup,
+})`);
+assert(teacherPopupAudit.link.includes("openTeacherSchedulePopup('김영주')") && teacherPopupAudit.link.includes('시간표 보기'), '매칭 결과 교사 이름에 시간표 팝업 연결 누락');
+assert(!teacherPopupAudit.unknown.includes('openTeacherSchedulePopup'), '시간표가 없는 이름에 팝업 링크가 생성됨');
+assert(teacherPopupAudit.openHandler === 'function' && teacherPopupAudit.closeHandler === 'function', '교사 시간표 팝업 함수 누락');
+const teacherPopupMarkup = fs.readFileSync(path.join(root, 'docs/index.html'), 'utf8');
+assert(teacherPopupMarkup.includes('id="teacherScheduleModal"') && teacherPopupMarkup.includes('id="teacherScheduleModalBody"'), '교사 시간표 팝업 마크업 누락');
+
 const industryCoTeachingAudit = read(`(() => {
   let substituteCount = 0;
   for (const teacher of INDUSTRY_CO_TEACHING_TEACHERS) {
@@ -307,6 +319,7 @@ console.log(JSON.stringify({
   specialRoomDataAudit,
   onlineSubjectTeachers: onlineSubjectTeachers.length,
   songJunhanLessonCount,
+  teacherPopupLinked: true,
   pdfColorCounts,
   invalidSubstitutes: candidateAudit.invalidSubstitutes,
   invalidVirtualSwaps: candidateAudit.invalidVirtualSwaps,

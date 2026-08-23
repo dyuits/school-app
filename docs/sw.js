@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v62-mint-external-policy';
+var CACHE_NAME = 'school-app-v63-teacher-popup';
 var ASSETS = [
   './',
   './index.html',
