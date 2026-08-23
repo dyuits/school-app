@@ -1101,8 +1101,8 @@ function buildTeacherDetailCard(teacher, compact = false) {
             }
             const row = `<tr>
               <td class="period-label premium-period-cell">
-                <div style="font-weight:700;font-size:12px;">${PERIOD_TIMES[p].label}</div>
-                <div style="font-size:9.5px;color:var(--txt-light);">${PERIOD_TIMES[p].time}</div>
+                <strong>${PERIOD_TIMES[p].label}</strong>
+                <span>${getPeriodTime(p, gradeGroup === '3' ? '3' : '1')}</span>
               </td>
               ${DAYS.map(d => {
                 const key = d + p;
@@ -2095,15 +2095,17 @@ function renderSubjectClassTab() {
   // 토글 버튼 스타일
   const btnS = qs('#scViewSubject'), btnC = qs('#scViewClass');
   if (btnS && btnC) {
-    btnS.className = view === 'subject' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
-    btnC.className = view === 'class' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+    btnS.className = `subject-view-button ${view === 'subject' ? 'active' : ''}`;
+    btnC.className = `subject-view-button ${view === 'class' ? 'active' : ''}`;
+    btnS.setAttribute('aria-pressed', view === 'subject' ? 'true' : 'false');
+    btnC.setAttribute('aria-pressed', view === 'class' ? 'true' : 'false');
   }
   const header = qs('#scPanelHeader');
   if (view === 'subject') {
-    if (header) header.innerHTML = '<i class="fas fa-book"></i> 교과 목록';
+    if (header) header.innerHTML = '<span class="subject-selector-header-icon"><i class="fas fa-book"></i></span><span><strong>교과 선택</strong><small>확인할 교과를 선택하세요</small></span>';
     renderSubjectClassTab_subject();
   } else {
-    if (header) header.innerHTML = '<i class="fas fa-school"></i> 학년-반 목록';
+    if (header) header.innerHTML = '<span class="subject-selector-header-icon"><i class="fas fa-school"></i></span><span><strong>학년·반 선택</strong><small>담당 교사를 확인할 반을 선택하세요</small></span>';
     renderSubjectClassTab_class();
   }
 }
@@ -2118,8 +2120,8 @@ function renderSubjectClassTab_subject() {
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
   subjects.forEach(subj => {
-    const btn = cel('button', 'side-btn-item' + (STATE.subjectClassSelected === subj ? ' active' : ''));
-    btn.textContent = subj + ' (' + groups[subj].length + '명)';
+    const btn = cel('button', 'side-btn-item subject-selector-button' + (STATE.subjectClassSelected === subj ? ' active' : ''));
+    btn.innerHTML = `<span class="subject-selector-icon"><i class="fas fa-book-open"></i></span><span class="subject-selector-copy"><strong>${subj}</strong><small>담당 교사 ${groups[subj].length}명</small></span><i class="fas fa-chevron-right subject-selector-arrow" aria-hidden="true"></i>`;
     btn.onclick = () => { STATE.subjectClassSelected = subj; renderSubjectClassTab(); };
     listEl.appendChild(btn);
   });
@@ -2172,13 +2174,16 @@ function renderSubjectClassTab_class() {
     return (ag * 100 + ac) - (bg * 100 + bc);
   });
   classes.forEach(cls => {
-    const btn = cel('button', 'side-btn-item' + (STATE.subjectClassSelected === cls ? ' active' : ''));
-    btn.textContent = cls;
+    const btn = cel('button', 'side-btn-item subject-selector-button' + (STATE.subjectClassSelected === cls ? ' active' : ''));
+    btn.innerHTML = `<span class="subject-selector-icon"><i class="fas fa-school"></i></span><span class="subject-selector-copy"><strong>${cls}반</strong><small>담당 교사 ${map[cls].length}명</small></span><i class="fas fa-chevron-right subject-selector-arrow" aria-hidden="true"></i>`;
     btn.onclick = () => { STATE.subjectClassSelected = cls; renderSubjectClassTab(); };
     listEl.appendChild(btn);
   });
   if (STATE.subjectClassSelected && map[STATE.subjectClassSelected]) {
     renderClassTeacherDetail(STATE.subjectClassSelected, map[STATE.subjectClassSelected]);
+  } else {
+    const panel = qs('#subjectClassDetail');
+    if (panel) panel.innerHTML = `<div class="empty-state subject-empty-state"><div class="empty-icon">🏫</div><h3>학년·반을 선택해주세요</h3><p>선택한 학급의 교과별 담당 교사를 보여드립니다</p></div>`;
   }
 }
 
@@ -2189,21 +2194,20 @@ function renderClassTeacherDetail(classKey, entries) {
     const ai = subjectOrder.indexOf(a.bigSubj), bi = subjectOrder.indexOf(b.bigSubj);
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
   });
-  let html = `<div class="card-header"><i class="fas fa-school"></i> ${classKey} 담당 교사 (${entries.length}명)</div>`;
-  html += `<div style="padding:16px;display:flex;flex-direction:column;gap:10px;">`;
+  let html = `<div class="card-header subject-detail-heading"><i class="fas fa-school"></i><span><strong>${classKey}반 담당 교사</strong><small>총 ${entries.length}명</small></span></div>`;
+  html += `<div class="subject-class-teacher-list">`;
   entries.forEach(e => {
-    html += `<div style="background:var(--sky-pale,#eef6fb);border:1.5px solid var(--sky-soft,#c8e2f0);border-radius:16px;padding:14px 18px;cursor:pointer;display:flex;align-items:center;gap:12px;" onclick="STATE.teacherScheduleSelected='${e.teacher}';switchTab('teacher');">`;
-    html += `<span style="display:inline-block;background:var(--primary);color:white;border-radius:10px;padding:3px 10px;font-size:11.5px;font-weight:700;min-width:48px;text-align:center;">${e.bigSubj}</span>`;
-    html += `<span style="font-weight:700;font-size:14px;color:var(--brown,#5a3e2b);">${e.teacher} 선생님</span>`;
-    if (e.detail !== e.bigSubj) html += `<span style="font-size:12px;color:var(--txt-light);">(${e.detail})</span>`;
-    html += `</div>`;
+    html += `<button class="subject-class-teacher-row" onclick="STATE.teacherScheduleSelected='${e.teacher}';switchTab('teacher');">`;
+    html += `<span class="subject-class-badge">${e.bigSubj}</span>`;
+    html += `<span class="subject-class-teacher-copy"><strong>${e.teacher} 선생님</strong>${e.detail !== e.bigSubj ? `<small>${e.detail}</small>` : '<small>시간표 보기</small>'}</span>`;
+    html += `<i class="fas fa-chevron-right" aria-hidden="true"></i></button>`;
   });
   html += `</div>`;
   panel.innerHTML = html;
 }
 
 function buildSubjectClassDetail(subjectName, teachers, compact = false) {
-  let html = `<section class="subject-overview-card ${compact ? 'is-compact' : ''}"><div class="card-header"><i class="fas fa-book"></i> ${subjectName} 교과 (${teachers.length}명)</div>`;
+  let html = `<section class="subject-overview-card ${compact ? 'is-compact' : ''}"><div class="card-header subject-detail-heading"><i class="fas fa-book"></i><span><strong>${subjectName} 교과</strong><small>담당 교사 ${teachers.length}명</small></span></div>`;
   html += `<div class="subject-teacher-schedule-grid ${teachers.length === 1 ? 'single' : ''}">`;
   teachers.forEach(teacher => {
     const hasSchedule = teacher !== '백경민' && !!TEACHER_SCHEDULE[teacher];

@@ -2977,3 +2977,332 @@ a { text-decoration:none; color:inherit; }
   white-space: nowrap;
   word-break: keep-all;
 }
+
+/* 교사 목록: 공통 세로 버튼 규칙보다 카드형 그리드를 우선한다. */
+.teacher-schedule-tab .teacher-schedule-button {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 56px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  line-height: 1.3;
+}
+.teacher-schedule-tab .premium-selector-icon {
+  grid-column: 1;
+  grid-row: 1;
+}
+.teacher-schedule-tab .premium-selector-copy {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.teacher-schedule-tab .premium-selector-copy strong,
+.teacher-schedule-tab .premium-selector-copy small {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.teacher-schedule-tab .premium-selector-copy strong {
+  font-size: clamp(11.5px, 1.1vw, 12.5px);
+}
+.teacher-schedule-tab .premium-selector-copy small {
+  margin-top: 3px;
+  font-size: 9.5px;
+}
+.teacher-schedule-tab .premium-selector-arrow {
+  grid-column: 3;
+  grid-row: 1;
+}
+.teacher-schedule-tab .teacher-schedule-button.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #347A74, #5A9AA4);
+  box-shadow: 0 8px 18px rgba(52,122,116,.22);
+  transform: none;
+}
+.teacher-schedule-tab .teacher-schedule-button.active .premium-selector-copy small {
+  color: rgba(255,255,255,.7);
+}
+.teacher-schedule-tab .premium-period-cell strong,
+.subject-browser-tab .premium-period-cell strong {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.25;
+}
+.teacher-schedule-tab .premium-period-cell span,
+.subject-browser-tab .premium-period-cell span {
+  display: block;
+  margin-top: 4px;
+  color: #87999A;
+  font-size: 8.5px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.teacher-schedule-tab .teacher-premium-table .premium-period-cell,
+.subject-browser-tab .teacher-premium-table .premium-period-cell {
+  display: table-cell !important;
+  text-align: center !important;
+  vertical-align: middle;
+}
+
+/* ══════════════════════════════════════
+   교과별 수업 — 하늘색 브라우저형 디자인
+══════════════════════════════════════ */
+.subject-browser-tab {
+  --subject-blue-deep: #2F6F9D;
+  --subject-blue: #4B95C5;
+  --subject-blue-bright: #76B9DE;
+  --subject-blue-soft: #DDEFF8;
+  --subject-blue-pale: #F2F9FD;
+  --subject-line: #D1E5F0;
+  container-type: inline-size;
+  container-name: subject-browser;
+}
+.subject-view-toggle {
+  display: inline-flex;
+  gap: 5px;
+  margin-bottom: 12px;
+  padding: 4px;
+  border: 1px solid var(--subject-line);
+  border-radius: 14px;
+  background: #F5FAFD;
+  box-shadow: 0 5px 14px rgba(47,111,157,.06);
+}
+.subject-view-button {
+  min-height: 44px;
+  padding: 8px 15px;
+  border: 0;
+  border-radius: 10px;
+  color: #638095;
+  background: transparent;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .18s ease, color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.subject-view-button:hover { color: var(--subject-blue-deep); background: #E8F4FA; }
+.subject-view-button.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--subject-blue-deep), var(--subject-blue));
+  box-shadow: 0 6px 13px rgba(47,111,157,.22);
+}
+.subject-browser-layout {
+  grid-template-columns: minmax(230px, 260px) minmax(0, 1fr);
+  gap: clamp(14px, 2vw, 22px);
+}
+.subject-selector-panel {
+  border: 1px solid rgba(47,111,157,.16);
+  border-radius: 20px;
+  box-shadow: 0 14px 34px rgba(47,111,157,.10);
+}
+.subject-selector-header {
+  min-height: 76px;
+  padding: 14px 16px;
+  gap: 11px;
+  color: #fff;
+  border: 0;
+  background: linear-gradient(140deg, var(--subject-blue-deep), var(--subject-blue) 64%, var(--subject-blue-bright));
+}
+.subject-selector-header-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255,255,255,.23);
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(255,255,255,.13);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+}
+.subject-selector-header strong,
+.subject-selector-header small { display: block; }
+.subject-selector-header strong { font-size: 14px; line-height: 1.35; letter-spacing: -.02em; }
+.subject-selector-header small { margin-top: 2px; color: rgba(255,255,255,.72); font-size: 10px; font-weight: 500; }
+.subject-selector-panel .side-btn-list {
+  max-height: 74vh;
+  padding: 10px;
+  gap: 7px;
+  background: linear-gradient(180deg, #FBFDFF, #F3F9FC);
+}
+.subject-selector-panel .subject-selector-button {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 62px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #D9E9F2;
+  border-radius: 14px;
+  color: #355A70;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 3px 10px rgba(47,111,157,.04);
+  text-align: left;
+  transform: none;
+}
+.subject-selector-panel .subject-selector-button:hover {
+  color: var(--subject-blue-deep);
+  border-color: #8FC2DE;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(47,111,157,.11);
+  transform: translateY(-1px);
+}
+.subject-selector-panel .subject-selector-button.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--subject-blue-deep), var(--subject-blue));
+  box-shadow: 0 10px 22px rgba(47,111,157,.24);
+  transform: none;
+}
+.subject-selector-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  color: var(--subject-blue-deep);
+  background: var(--subject-blue-soft);
+  font-size: 13px;
+}
+.subject-selector-button.active .subject-selector-icon { color: #fff; background: rgba(255,255,255,.16); }
+.subject-selector-copy,
+.subject-selector-copy strong,
+.subject-selector-copy small { display: block; min-width: 0; }
+.subject-selector-copy strong { font-size: 12.5px; line-height: 1.35; word-break: keep-all; }
+.subject-selector-copy small { margin-top: 3px; color: #829CAC; font-size: 9.5px; font-weight: 600; }
+.subject-selector-button.active .subject-selector-copy small { color: rgba(255,255,255,.7); }
+.subject-selector-arrow { color: #A7BCC8; font-size: 10px; }
+.subject-selector-button.active .subject-selector-arrow { color: #DDF2FF; }
+.subject-detail-panel {
+  border: 1px solid rgba(47,111,157,.14);
+  border-radius: 20px;
+  background: #FBFDFF;
+  box-shadow: 0 14px 34px rgba(47,111,157,.09);
+}
+.subject-browser-tab .subject-overview-summary {
+  color: #3B7194;
+  border: 1px solid #D8EAF4;
+  background: #ECF7FC;
+}
+.subject-browser-tab .subject-overview-card {
+  border-color: #D5E7F1;
+  border-radius: 17px;
+  box-shadow: 0 7px 18px rgba(47,111,157,.055);
+}
+.subject-browser-tab .subject-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 58px;
+  padding: 12px 15px;
+  color: #2E6487;
+  border-bottom: 1px solid #D7E9F3;
+  background: linear-gradient(135deg, #E5F3FA, #F1F9FD);
+}
+.subject-detail-heading > span,
+.subject-detail-heading strong,
+.subject-detail-heading small { display: block; }
+.subject-detail-heading strong { font-size: 13px; line-height: 1.35; }
+.subject-detail-heading small { margin-top: 2px; color: #7393A7; font-size: 9.5px; font-weight: 600; }
+.subject-browser-tab .teacher-detail-header {
+  min-height: 96px;
+  padding: 16px 17px;
+  color: #2A5E7E;
+  border: 0;
+  background:
+    radial-gradient(circle at 90% 14%, rgba(255,255,255,.8), transparent 28%),
+    linear-gradient(130deg, #DCEFF8, #EAF6FC 68%, #D9EEF8);
+}
+.subject-browser-tab .teacher-avatar {
+  color: var(--subject-blue-deep);
+  border-color: rgba(75,149,197,.2);
+  background: rgba(255,255,255,.7);
+}
+.subject-browser-tab .teacher-card-meta { color: #60859A; }
+.subject-browser-tab .teacher-premium-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 5px;
+  table-layout: fixed;
+}
+.subject-browser-tab .teacher-premium-table th,
+.subject-browser-tab .teacher-premium-table td { border: 0; }
+.subject-browser-tab .teacher-premium-table thead th {
+  color: #fff;
+  border-radius: 9px;
+  background: var(--subject-blue);
+}
+.subject-browser-tab .premium-period-cell {
+  width: 86px;
+  min-width: 86px;
+  white-space: nowrap;
+  word-break: keep-all;
+}
+.subject-browser-tab .teacher-free-cell { border-color: #CDE2EE !important; color: #86A6B8; }
+.subject-class-teacher-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: 10px;
+  padding: 16px;
+}
+.subject-class-teacher-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 62px;
+  padding: 10px 13px;
+  border: 1px solid #D3E7F2;
+  border-radius: 14px;
+  color: #315D78;
+  background: #F3FAFD;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.subject-class-teacher-row:hover {
+  border-color: #8FC2DE;
+  box-shadow: 0 7px 15px rgba(47,111,157,.11);
+  transform: translateY(-1px);
+}
+.subject-class-badge {
+  min-width: 48px;
+  padding: 4px 9px;
+  border-radius: 9px;
+  color: #fff;
+  background: var(--subject-blue);
+  font-size: 10.5px;
+  font-weight: 800;
+  text-align: center;
+}
+.subject-class-teacher-copy,
+.subject-class-teacher-copy strong,
+.subject-class-teacher-copy small { display: block; min-width: 0; }
+.subject-class-teacher-copy strong { font-size: 12.5px; }
+.subject-class-teacher-copy small { margin-top: 3px; color: #7893A3; font-size: 9.5px; font-weight: 600; }
+.subject-class-teacher-row > i { color: #92AAB8; font-size: 9px; }
+
+@container subject-browser (max-width: 820px) {
+  .subject-browser-layout { grid-template-columns: minmax(0, 1fr); }
+  .subject-selector-panel { position: static; }
+  .subject-selector-panel .side-btn-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+    max-height: none;
+  }
+}
+@container subject-browser (max-width: 480px) {
+  .subject-view-toggle { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .subject-selector-panel .side-btn-list { grid-template-columns: minmax(0, 1fr); }
+  .subject-browser-tab .subject-teacher-schedule-grid { grid-template-columns: minmax(0, 1fr); }
+}
