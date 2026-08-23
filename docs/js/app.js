@@ -1823,10 +1823,10 @@ function renderLabDetail(labName) {
         const roomClass = parts[0] || '';
         const subj = parts[1] || '';
         const teacher = parts[2] || tName;
-        html += `<td style="background:${c.bg};border:1.5px solid ${c.bd};padding:6px 4px;text-align:center;vertical-align:middle;" title="${cell}">
+        html += `<td class="lab-lesson-cell" style="background:${c.bg};border:1.5px solid ${c.bd};padding:0;text-align:center;vertical-align:middle;" title="${cell}"><button class="lab-lesson-button" onclick="openLabLessonMatching('${labName}','${d}',${p},'${gradeGroup || ''}')">
           <div style="font-size:11.5px;font-weight:700;color:${c.tx};line-height:1.3;">${subj || roomClass}</div>
           <div style="font-size:9.5px;color:${c.tx};opacity:0.7;">${roomClass}${teacher && teacher !== subj ? ' · '+teacher : ''}</div>
-        </td>`;
+        </button></td>`;
       } else {
         html += `<td class="lab-cell-empty">-</td>`;
       }
@@ -1844,6 +1844,28 @@ function renderLabDetail(labName) {
   });
   html += `</tbody></table></div>`;
   wrap.innerHTML = html;
+}
+
+function openLabLessonMatching(labName, day, period, gradeGroup = '') {
+  const rawCell = (LAB_SCHEDULE[labName]?.[day] || {})[period] || '';
+  const cell = gradeGroup && rawCell && typeof rawCell === 'object' ? (rawCell[gradeGroup] || '') : rawCell;
+  if (!cell) return;
+  const teacherMatch = String(cell).match(/([가-힣]{2,8})$/);
+  const teacher = teacherMatch ? teacherMatch[1] : '';
+  if (!teacher || !TEACHER_SCHEDULE[teacher]) {
+    showAlert(`${labName} ${day}요일 ${period}교시의 담당 교사를 찾지 못했습니다.`);
+    return;
+  }
+  const parts = String(cell).split(/\s+/);
+  const classNum = parts[0] || '';
+  const subject = parts[1] || '';
+  const regular = (TEACHER_SCHEDULE[teacher] || {})[day + period] || '';
+  const regularParts = regular.split(/\s+/);
+  const regularSubject = (regularParts[1] || '').replace(/^[A-Z]_/, '');
+  const lessonValue = regularParts[0] === classNum && regularSubject === subject
+    ? regular
+    : `${classNum} ${subject} ${labName}`;
+  openLessonMatching(teacher, day, period, lessonValue, isExternalLesson(teacher, day, period, lessonValue));
 }
 
 // ═══════════════════════════════════════════════

@@ -49,22 +49,17 @@ assert(onlineSubjectTeachers.length === 0, '교과별 수업 탭에 온라인 �
 const songJunhanLessonCount = read(`Object.keys(TEACHER_SCHEDULE['송준한'] || {}).length`);
 assert(songJunhanLessonCount === 15, '영상 송준한 시간표 수업 수 오류');
 
-const externalChecks = read(`({
-  gangRegularMon1: TEACHER_SCHEDULE['강승표']['월1'] || null,
-  gangExternalMon1: EXTERNAL_LESSONS['강승표']['월1'],
-  gangRegularFri2: TEACHER_SCHEDULE['강승표']['금2'],
-  gangExternalFri2: EXTERNAL_LESSONS['강승표']['금2'],
-  ohRegularFri1: TEACHER_SCHEDULE['오재영']['금1'],
-  ohExternalWed1: EXTERNAL_LESSONS['오재영']['수1'],
+const refreshedTeacherChecks = read(`({
+  gangMonday3: TEACHER_SCHEDULE['강승표']['월3'],
+  gangFriday4: TEACHER_SCHEDULE['강승표']['금4'],
+  kimYoungjuMonday1: TEACHER_SCHEDULE['김영주']['월1'],
+  ohSoyeonThursday5: TEACHER_SCHEDULE['오소연']['목5'],
+  externalLessonCount: Object.values(EXTERNAL_LESSONS).flatMap(row => Object.values(row)).flat().length
 })`);
-assert(externalChecks.gangRegularMon1 === null && externalChecks.gangExternalMon1.includes('201 독서'), '강승표 월1 민트 수업 오류');
-assert(externalChecks.gangRegularFri2 === '201 독서' && externalChecks.gangExternalFri2.includes('204 독서'), '강승표 금2 혼합 셀 오류');
-assert(externalChecks.ohRegularFri1 === '303 확통' && externalChecks.ohExternalWed1.includes('301 E_확통'), '오재영 시간표 오류');
-const targetMintCounts = read(`({
-  kimYoungju: Object.values(EXTERNAL_LESSONS['김영주']).flat().length,
-  ohSoyeon: Object.values(EXTERNAL_LESSONS['오소연']).flat().length
-})`);
-assert(targetMintCounts.kimYoungju === 6 && targetMintCounts.ohSoyeon === 6, '김영주/오소연 민트 수업 수 오류');
+assert(refreshedTeacherChecks.gangMonday3 === '204 독서' && refreshedTeacherChecks.gangFriday4 === '201 독서', '강승표 갱신 시간표 오류');
+assert(refreshedTeacherChecks.kimYoungjuMonday1 === '206 데과 창구실', '김영주 갱신 시간표 오류');
+assert(refreshedTeacherChecks.ohSoyeonThursday5 === '202 데과 사행실', '오소연 갱신 시간표 오류');
+assert(refreshedTeacherChecks.externalLessonCount === 5, '특별실 PDF의 분할 외부수업 병합 오류');
 
 const periodRules = read(`({
   grade12: getPeriodTime(4, '1'), grade3: getPeriodTime(4, '3'),
@@ -187,6 +182,34 @@ const specialRoomPolicyAudit = read(`(() => {
 })()`);
 assert(specialRoomPolicyAudit.roomAlreadyUsed && specialRoomPolicyAudit.swapAllowed, '특별실 충돌 때문에 교체 후보가 차단됨');
 
+const specialRoomDataAudit = read(`(() => {
+  let fourthPeriodObjects = 0, gradeMisplacements = 0, unmatchedLessons = 0;
+  for (const [room, week] of Object.entries(LAB_SCHEDULE)) {
+    for (const [day, periods] of Object.entries(week)) {
+      for (const [periodText, raw] of Object.entries(periods)) {
+        const period = Number(periodText), entries = raw && typeof raw === 'object' ? Object.entries(raw) : raw ? [[null, raw]] : [];
+        if (period === 4 && raw && typeof raw === 'object') fourthPeriodObjects++;
+        for (const [group, value] of entries) {
+          if (!value) continue;
+          const parts = String(value).split(/\\s+/), classNum = parts[0], subject = parts[1], teacher = parts.at(-1), slot = day + period;
+          if (group && (classNum.startsWith('3') ? '3' : '12') !== group) gradeMisplacements++;
+          const candidates = [(TEACHER_SCHEDULE[teacher] || {})[slot] || '', ...((EXTERNAL_LESSONS[teacher] || {})[slot] || [])];
+          const matched = candidates.some(candidate => {
+            const candidateParts = String(candidate).split(/\\s+/);
+            return candidateParts[0] === classNum && String(candidateParts[1] || '').replace(/^[A-Z]_/, '') === subject;
+          });
+          if (!matched) unmatchedLessons++;
+        }
+      }
+    }
+  }
+  return { fourthPeriodObjects, gradeMisplacements, unmatchedLessons, popupHandler: typeof openLabLessonMatching === 'function' };
+})()`);
+assert(specialRoomDataAudit.fourthPeriodObjects === 35, '특별실 4교시가 1·2학년/3학년 구조로 분리되지 않음');
+assert(specialRoomDataAudit.gradeMisplacements === 0, '특별실 4교시 학년 그룹 배치 오류');
+assert(specialRoomDataAudit.unmatchedLessons === 0, '특별실 시간표가 교사 시간표와 일치하지 않음');
+assert(specialRoomDataAudit.popupHandler, '실습실 교체·대체 팝업 연결 누락');
+
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
   let badSubstitutes = 0, placeholderSubstitutes = 0, invalidSubstitutes = 0;
@@ -239,6 +262,7 @@ console.log(JSON.stringify({
   teacherScheduleConflicts: baseCollisionAudit.teacherConflicts,
   classScheduleConflicts: baseCollisionAudit.classConflicts,
   specialRoomPolicyAudit,
+  specialRoomDataAudit,
   onlineSubjectTeachers: onlineSubjectTeachers.length,
   songJunhanLessonCount,
   invalidSubstitutes: candidateAudit.invalidSubstitutes,

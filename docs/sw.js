@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v59-legacy-memo-delete';
+var CACHE_NAME = 'school-app-v60-august-timetable-refresh';
 var ASSETS = [
   './',
   './index.html',
