@@ -622,8 +622,13 @@ function openLessonMatching(teacher, day, period, val, forceExternal = false) {
       openModal();
       return;
     }
-    const subResults = findSubstituteCandidates(teacher, day, period, val);
-    renderResultModal(teacher, day, period, val, [], subResults, true);
+    renderResultModal_blocked(
+      teacher,
+      day,
+      period,
+      val,
+      '외부강사 수업으로 교체 및 대체가 불가합니다.'
+    );
     openModal();
     return;
   }
@@ -692,10 +697,8 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal, scheduleSnapshot 
 
 // 대체 후보 (공강 선생님 중 같은 교과)
 function findSubstituteCandidates(myTeacher, day, period, lessonValue = '') {
-  // 산학교사 공동수업은 담당 교사 임장이 필수이므로 민트색 칸의 대체 후보를 만들지 않는다.
-  if (typeof INDUSTRY_CO_TEACHING_TEACHERS !== 'undefined' &&
-      INDUSTRY_CO_TEACHING_TEACHERS.has(myTeacher) &&
-      isExternalLesson(myTeacher, day, period, lessonValue)) {
+  // PDF의 모든 민트색 수업은 외부강사 수업이므로 교체·대체 후보를 만들지 않는다.
+  if (isExternalLesson(myTeacher, day, period, lessonValue)) {
     return [];
   }
 

@@ -25,6 +25,17 @@ ROOM_ASSIGNMENT_CORRECTIONS = {
     ("105", "데과"): "사행실",
 }
 
+# 최신 교사·학급 시간표와 대조해 확인한 특별실 PDF의 잔존 항목.
+# 교사시간표를 우선 기준으로 삼아 회계실 정규 사용 현황을 보정한다.
+LAB_CELL_CORRECTIONS = {
+    ("회계실", "수", 4, "12"): "104 데과 김영주",
+    ("회계실", "수", 7, None): "",
+}
+
+ROOM_NAME_ALIASES = {
+    "사무행정": "사행실",
+}
+
 
 def compact_cell(cell: str | None) -> str:
     return " ".join((cell or "").split())
@@ -265,6 +276,31 @@ def extract_lab_schedule(path: Path) -> dict[str, dict[str, dict[int, object]]]:
     return result
 
 
+def normalize_external_room_names(external_lessons: dict[str, dict[str, list[str]]]) -> None:
+    """Use the app's canonical special-room names in extracted mint lessons."""
+    for row in external_lessons.values():
+        for slot, values in row.items():
+            normalized: list[str] = []
+            for value in values:
+                parts = value.split()
+                if parts and parts[-1] in ROOM_NAME_ALIASES:
+                    parts[-1] = ROOM_NAME_ALIASES[parts[-1]]
+                normalized.append(" ".join(parts))
+            row[slot] = normalized
+
+
+def apply_lab_cell_corrections(lab_schedule: dict[str, dict[str, dict[int, object]]]) -> None:
+    """Apply cross-validated corrections where the room PDF is stale."""
+    for (room, day, period, grade_group), value in LAB_CELL_CORRECTIONS.items():
+        slot = lab_schedule[room][day][period]
+        if grade_group is None:
+            lab_schedule[room][day][period] = value
+        else:
+            if not isinstance(slot, dict):
+                raise ValueError(f"Expected split fourth-period room cell: {room} {day}{period}")
+            slot[grade_group] = value
+
+
 def merge_lab_external_lessons(
     teacher_schedule: dict[str, dict[str, str]],
     lab_schedule: dict[str, dict[str, dict[int, object]]],
@@ -411,6 +447,8 @@ def main() -> None:
     teacher_schedule, external_lessons, mint_cells, select_cells = extract_teacher_schedule(args.teacher)
     class_schedule = extract_class_schedule(args.class_pdf)
     lab_schedule = extract_lab_schedule(args.lab)
+    normalize_external_room_names(external_lessons)
+    apply_lab_cell_corrections(lab_schedule)
     apply_room_assignment_corrections(teacher_schedule, class_schedule, lab_schedule)
     merge_lab_external_lessons(teacher_schedule, lab_schedule, external_lessons, mint_cells)
     source = args.data.read_text(encoding="utf-8")

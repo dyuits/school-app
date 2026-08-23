@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v61-accounting-room-correction';
+var CACHE_NAME = 'school-app-v62-mint-external-policy';
 var ASSETS = [
   './',
   './index.html',

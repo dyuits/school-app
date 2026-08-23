@@ -59,7 +59,27 @@ const refreshedTeacherChecks = read(`({
 assert(refreshedTeacherChecks.gangMonday3 === '204 독서' && refreshedTeacherChecks.gangFriday4 === '201 독서', '강승표 갱신 시간표 오류');
 assert(refreshedTeacherChecks.kimYoungjuMonday1 === '206 데과 창구실', '김영주 갱신 시간표 오류');
 assert(refreshedTeacherChecks.ohSoyeonThursday5 === '202 데과 사행실', '오소연 갱신 시간표 오류');
-assert(refreshedTeacherChecks.externalLessonCount === 5, '특별실 PDF의 분할 외부수업 병합 오류');
+assert(refreshedTeacherChecks.externalLessonCount === 45, '교사시간표 PDF 민트 수업 수 오류');
+
+const pdfColorCounts = read(`({
+  regular: Object.values(TEACHER_SCHEDULE).reduce((sum, row) => sum + Object.keys(row).length, 0),
+  mint: Object.values(EXTERNAL_LESSONS).reduce((sum, row) => sum + Object.values(row).flat().length, 0),
+  mintSlots: Object.values(MINT_CELLS).reduce((sum, slots) => sum + slots.size, 0),
+  yellow: Object.values(SELECT_CELLS).reduce((sum, slots) => sum + slots.size, 0),
+})`);
+assert(pdfColorCounts.regular === 884, '교사시간표 PDF 일반수업 수 불일치');
+assert(pdfColorCounts.mint === 45 && pdfColorCounts.mintSlots === 45, '교사시간표 PDF 민트 수업 수 불일치');
+assert(pdfColorCounts.yellow === 223, '교사시간표 PDF 노란색 이동수업 수 불일치');
+
+const kimYoungjuPdfAudit = read(`({
+  regular: TEACHER_SCHEDULE['김영주'],
+  mintSlots: [...MINT_CELLS['김영주']].sort(),
+  external: EXTERNAL_LESSONS['김영주'],
+})`);
+assert(Object.keys(kimYoungjuPdfAudit.regular).length === 12, '김영주 일반수업 수 오류');
+assert(kimYoungjuPdfAudit.regular['화2'] === '104 데과 회계실' && kimYoungjuPdfAudit.regular['금4'] === '105 데과 사행실', '김영주 일반수업 PDF 대조 오류');
+assert(JSON.stringify(kimYoungjuPdfAudit.mintSlots) === JSON.stringify(['금1','수1','수2','수3','수4','수5']), '김영주 민트 셀 위치 오류');
+assert(kimYoungjuPdfAudit.external['수2'].includes('105 데과 사행실'), '김영주 수2 외부강사 수업 오류');
 
 const periodRules = read(`({
   grade12: getPeriodTime(4, '1'), grade3: getPeriodTime(4, '3'),
@@ -76,11 +96,13 @@ const labRules = read(`({
   businessTue: LAB_SCHEDULE['사행실']['화'][4],
   businessFri: LAB_SCHEDULE['사행실']['금'][4],
   teacherTue: TEACHER_SCHEDULE['김영주']['화4'],
-  teacherWed: TEACHER_SCHEDULE['김영주']['수2'],
+  teacherWed: EXTERNAL_LESSONS['김영주']['수2'][0],
   teacherFri: TEACHER_SCHEDULE['김영주']['금4'],
   classTue: CLASS_SCHEDULE['1-5']['화4'],
   classWed: CLASS_SCHEDULE['1-5']['수2'],
-  classFri: CLASS_SCHEDULE['1-5']['금4']
+  classFri: CLASS_SCHEDULE['1-5']['금4'],
+  accountingWed4: LAB_SCHEDULE['회계실']['수'][4],
+  accountingWed7: LAB_SCHEDULE['회계실']['수'][7]
 })`);
 assert(labRules.computerMon['3'] === '309 출판 박정민' && labRules.computerMon['12'] === '', '컴그실 월요일 4교시 오류');
 assert(labRules.computerTue['12'] === '107 사무 이상분' && labRules.computerTue['3'] === '', '컴그실 화요일 4교시 오류');
@@ -88,7 +110,9 @@ assert(labRules.businessMon['3'] === '307 기자 임홍재', '사행실 3학년 
 assert(labRules.accountingTue['12'] === '' && labRules.accountingFri['12'] === '', '회계실에 105 데과가 남아 있음');
 assert(labRules.businessTue['12'] === '105 데과 김영주' && labRules.businessFri['12'] === '105 데과 김영주', '105 데과 사행실 배치 오류');
 assert([labRules.teacherTue, labRules.teacherWed, labRules.teacherFri].every(value => value === '105 데과 사행실'), '김영주 105 데과 장소 불일치');
-assert([labRules.classTue, labRules.classWed, labRules.classFri].every(value => value === '데과 김영주 사행실'), '1-5 데과 장소 불일치');
+assert([labRules.classTue, labRules.classWed, labRules.classFri].every(value => value === '데과 김영 사행실'), '1-5 데과 장소 불일치');
+assert(labRules.accountingWed4['12'] === '104 데과 김영주' && labRules.accountingWed4['3'] === '306 기자 강향아', '회계실 수요일 4교시 학년별 표시 오류');
+assert(labRules.accountingWed7 === '', '회계실 수요일 7교시 잔존 데이터 오류');
 
 const bottom = read(`ALL_TEACHERS.slice(-8)`);
 assert(JSON.stringify(bottom) === JSON.stringify(['김지윤','송혜리','중국어특성화','중어온라인','지과온라인','화학온라인','물리온라인','경제온라인']), '교사 맨 아래 순서 오류');
@@ -149,7 +173,7 @@ const reportedSwapRegression = read(`(() => {
   };
 })()`);
 assert(!reportedSwapRegression.shown, '김영주 금4 ↔ 김재현 화2 오류 후보가 다시 표시됨');
-assert(!reportedSwapRegression.valid && reportedSwapRegression.teacherConflicts.includes('김영주'), '김영주 화2 임장 충돌을 가상 맞교환 검증이 찾지 못함');
+assert(!reportedSwapRegression.valid && reportedSwapRegression.teacherConflicts.includes('김영주'), '김영주 화2 기존 수업 충돌을 가상 맞교환 검증이 찾지 못함');
 
 const ohSeungcheolRegression = read(`(() => {
   const sourceValue = TEACHER_SCHEDULE['김영주']['금4'];
@@ -227,7 +251,7 @@ assert(specialRoomDataAudit.popupHandler, '실습실 교체·대체 팝업 연�
 const candidateAudit = read(`(() => {
   const groups = getSubjectGroups();
   let badSubstitutes = 0, placeholderSubstitutes = 0, invalidSubstitutes = 0;
-  let selectionSwaps = 0, externalSwaps = 0, invalidVirtualSwaps = 0, swapCount = 0;
+  let selectionSwaps = 0, externalSwaps = 0, externalSubstitutes = 0, invalidVirtualSwaps = 0, swapCount = 0;
   const snapshot = createScheduleSnapshot();
   const auditLesson = (teacher, slot, value, external = false) => {
     const match = slot.match(/^(.+?)([1-7])$/); if (!match) return;
@@ -244,7 +268,9 @@ const candidateAudit = read(`(() => {
       if (!evaluateVirtualSwap(source, candidate, snapshot).valid) invalidVirtualSwaps++;
     }
     const sourceGroup = Object.entries(groups).find(([, names]) => names.includes(teacher));
-    for (const candidate of findSubstituteCandidates(teacher, day, period, value)) {
+    const substitutes = findSubstituteCandidates(teacher, day, period, value);
+    if (external) externalSubstitutes += substitutes.length;
+    for (const candidate of substitutes) {
       if (!sourceGroup || !sourceGroup[1].includes(candidate.teacher)) badSubstitutes++;
       if (candidate.teacher.includes('온라인') || candidate.teacher === '중국어특성화') placeholderSubstitutes++;
       if (!canSubstituteLesson(candidate.teacher, day, period, info)) invalidSubstitutes++;
@@ -252,13 +278,14 @@ const candidateAudit = read(`(() => {
   };
   for (const [teacher, row] of Object.entries(TEACHER_SCHEDULE)) for (const [slot, value] of Object.entries(row)) auditLesson(teacher, slot, value);
   for (const [teacher, row] of Object.entries(EXTERNAL_LESSONS)) for (const [slot, values] of Object.entries(row)) for (const value of values) auditLesson(teacher, slot, value, true);
-  return { badSubstitutes, placeholderSubstitutes, invalidSubstitutes, selectionSwaps, externalSwaps, invalidVirtualSwaps, swapCount };
+  return { badSubstitutes, placeholderSubstitutes, invalidSubstitutes, selectionSwaps, externalSwaps, externalSubstitutes, invalidVirtualSwaps, swapCount };
 })()`);
 assert(candidateAudit.badSubstitutes === 0, '다른 교과 대체 후보 발생');
 assert(candidateAudit.placeholderSubstitutes === 0, '온라인/특성화 표시 항목이 대체 교사로 나옴');
 assert(candidateAudit.invalidSubstitutes === 0, '교사/학급 충돌이 있는 대체 후보 발생');
 assert(candidateAudit.selectionSwaps === 0, '선택과목 교체 후보 발생');
 assert(candidateAudit.externalSwaps === 0, '외부강사 교체 후보 발생');
+assert(candidateAudit.externalSubstitutes === 0, '외부강사 대체 후보 발생');
 assert(candidateAudit.invalidVirtualSwaps === 0, '가상 맞교환 후 충돌하는 교체 후보 발생');
 
 console.log(JSON.stringify({
@@ -269,6 +296,7 @@ console.log(JSON.stringify({
   placeholderSubstitutes: candidateAudit.placeholderSubstitutes,
   selectionSwaps: candidateAudit.selectionSwaps,
   externalSwaps: candidateAudit.externalSwaps,
+  externalSubstitutes: candidateAudit.externalSubstitutes,
   industryCoTeachingSubstitutes: industryCoTeachingAudit.substituteCount,
   industryMeetingMisses: industryMeetingAudit.length,
   reportedSwapRegression,
@@ -279,6 +307,7 @@ console.log(JSON.stringify({
   specialRoomDataAudit,
   onlineSubjectTeachers: onlineSubjectTeachers.length,
   songJunhanLessonCount,
+  pdfColorCounts,
   invalidSubstitutes: candidateAudit.invalidSubstitutes,
   invalidVirtualSwaps: candidateAudit.invalidVirtualSwaps,
   swapCandidatesChecked: candidateAudit.swapCount,
