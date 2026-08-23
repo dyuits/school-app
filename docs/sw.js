@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v69-class-meeting-layout';
+var CACHE_NAME = 'school-app-v70-period-label-layout';
 var ASSETS = [
   './',
   './index.html',

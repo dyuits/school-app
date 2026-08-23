@@ -1086,7 +1086,7 @@ function buildTeacherDetailCard(teacher, compact = false) {
       <table class="teacher-detail-table teacher-premium-table" style="min-width:${compact ? '420px' : '600px'};">
         <thead>
           <tr>
-            <th style="width:80px;">교시</th>
+            <th class="teacher-period-heading">교시</th>
             ${DAYS.map(d=>`<th>${d}요일</th>`).join('')}
           </tr>
         </thead>
@@ -1100,9 +1100,9 @@ function buildTeacherDetailCard(teacher, compact = false) {
               </tr>`;
             }
             const row = `<tr>
-              <td class="period-label premium-period-cell">
-                <strong>${PERIOD_TIMES[p].label}</strong>
-                <span>${getPeriodTime(p, gradeGroup === '3' ? '3' : '1')}</span>
+              <td class="period-label premium-period-cell teacher-period-cell">
+                <strong class="teacher-period-number">${p}교시</strong>
+                <span class="teacher-period-time">${getPeriodTime(p, gradeGroup === '3' ? '3' : '1')}</span>
               </td>
               ${DAYS.map(d => {
                 const key = d + p;

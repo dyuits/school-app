@@ -318,7 +318,8 @@ assert(labStyles.includes('.lab-detail-header') && labStyles.includes('.lab-room
 assert(dashboardSource.includes('displayRoom(room)') && dashboardSource.includes('value="${esc(room)}"'), '예약 화면 정식 명칭 표시 또는 내부 키 보존 누락');
 assert(appSource.includes('href="tel:${phoneDigits}"') && appSource.includes('copyContactPhone'), '연락처 전화/복사 동작 누락');
 assert(labStyles.includes('.contact-phone-actions') && labStyles.includes('min-height: 44px'), '연락처 모바일 터치 영역 CSS 누락');
-assert(appSource.includes('<strong>${PERIOD_TIMES[p].label}</strong>') && appSource.includes("getPeriodTime(p, gradeGroup === '3' ? '3' : '1')"), '교사 시간표 교시/시간 두 줄 표시 누락');
+assert(appSource.includes('class="teacher-period-number">${p}교시</strong>') && appSource.includes('class="teacher-period-time">${getPeriodTime(p, gradeGroup === \'3\' ? \'3\' : \'1\')}</span>'), '교사 시간표 교시/시간 두 줄 표시 누락');
+assert(labStyles.includes('.teacher-period-number') && labStyles.includes('white-space: nowrap'), '교시명이 한 줄로 고정되지 않음');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
 assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');
