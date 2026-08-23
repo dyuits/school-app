@@ -1711,6 +1711,46 @@ function lockContact() {
   if (qs('#contactPassword')) qs('#contactPassword').value = '';
 }
 
+function copyContactPhone(phone, btn, event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const number = String(phone || '').trim();
+  if (!number || !btn) return;
+
+  const showCopied = () => {
+    const original = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '<i class="fas fa-check"></i><span>복사됨</span>';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = original;
+    }, 1600);
+  };
+  const fallbackCopy = () => {
+    const input = document.createElement('textarea');
+    input.value = number;
+    input.setAttribute('readonly', '');
+    input.style.position = 'fixed';
+    input.style.opacity = '0';
+    document.body.appendChild(input);
+    input.select();
+    const copied = document.execCommand('copy');
+    document.body.removeChild(input);
+    if (!copied) throw new Error('copy failed');
+    showCopied();
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(number).then(showCopied).catch(() => {
+      try { fallbackCopy(); } catch (error) { showAlert('전화번호 복사에 실패했습니다.'); }
+    });
+  } else {
+    try { fallbackCopy(); } catch (error) { showAlert('전화번호 복사에 실패했습니다.'); }
+  }
+}
+
 function renderContactList() {
   const searchVal = (qs('#contactSearch')?.value || '').toLowerCase();
   const dept = STATE.contactDept;
@@ -1768,6 +1808,7 @@ function renderContactList() {
     const homeroomRoles = homeroomRoleMap[c.name] || [];
     const badgeCls = deptBadgeMap[c.dept] || 'badge-gray';
     const avatarEmoji = deptAvatarMap[c.dept] || '👤';
+    const phoneDigits = String(c.phone || '').replace(/[^\d+]/g, '');
 
     // 역할 표시: role + 담임 역할 합산
     let roleDisplay = c.role;
@@ -1786,7 +1827,14 @@ function renderContactList() {
       <div class="contact-name">${c.name}</div>
       <div class="contact-role">${roleDisplay}</div>
       <div class="contact-ext"><i class="fas fa-phone"></i> 내선 ${c.ext}</div>
-      ${c.phone && c.phone !== '-' ? `<div class="contact-phone"><i class="fas fa-mobile-alt" style="margin-right:3px;"></i>${c.phone}</div>` : ''}
+      ${c.phone && c.phone !== '-' ? `<div class="contact-phone-actions">
+        <a class="contact-phone-link" href="tel:${phoneDigits}" aria-label="${c.name} 선생님 ${c.phone} 전화 걸기" title="${c.phone} 전화 걸기">
+          <i class="fas fa-phone-alt" aria-hidden="true"></i><span>${c.phone}</span>
+        </a>
+        <button type="button" class="contact-phone-copy" onclick="copyContactPhone('${c.phone}',this,event)" aria-label="${c.name} 선생님 전화번호 복사" title="전화번호 복사">
+          <i class="far fa-copy" aria-hidden="true"></i><span>복사</span>
+        </button>
+      </div>` : ''}
       <div class="contact-dept-badge"><span class="badge ${badgeCls}" style="margin-top:6px;">${c.dept}</span></div>
     </div>`;
   }).join('');

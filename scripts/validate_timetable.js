@@ -271,9 +271,12 @@ assert(labDisplayAudit['전상실'] === '전자상거래실', '전상실 정식 
 const labMarkup = fs.readFileSync(path.join(root, 'docs/index.html'), 'utf8');
 const labStyles = fs.readFileSync(path.join(root, 'docs/css/style.css'), 'utf8');
 const dashboardSource = fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8');
+const appSource = fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8');
 assert(labMarkup.includes('lab-browser-layout') && labMarkup.includes('lab-selector-header'), '실습실 고급형 레이아웃 마크업 누락');
 assert(labStyles.includes('.lab-detail-header') && labStyles.includes('.lab-room-button.active'), '실습실 고급형 디자인 CSS 누락');
 assert(dashboardSource.includes('displayRoom(room)') && dashboardSource.includes('value="${esc(room)}"'), '예약 화면 정식 명칭 표시 또는 내부 키 보존 누락');
+assert(appSource.includes('href="tel:${phoneDigits}"') && appSource.includes('copyContactPhone'), '연락처 전화/복사 동작 누락');
+assert(labStyles.includes('.contact-phone-actions') && labStyles.includes('min-height: 44px'), '연락처 모바일 터치 영역 CSS 누락');
 
 const movingRoomAudit = read(`(() => {
   const codes = new Set();

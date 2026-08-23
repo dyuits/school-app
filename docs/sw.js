@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v65-premium-schedules-moving-rooms';
+var CACHE_NAME = 'school-app-v66-contact-phone-actions';
 var ASSETS = [
   './',
   './index.html',
