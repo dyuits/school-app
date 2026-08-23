@@ -70,11 +70,25 @@ assert(periodRules.grade12 === '11:40~12:30' && periodRules.grade3 === '12:40~13
 const labRules = read(`({
   computerMon: LAB_SCHEDULE['컴그실']['월'][4],
   computerTue: LAB_SCHEDULE['컴그실']['화'][4],
-  businessMon: LAB_SCHEDULE['사행실']['월'][4]
+  businessMon: LAB_SCHEDULE['사행실']['월'][4],
+  accountingTue: LAB_SCHEDULE['회계실']['화'][4],
+  accountingFri: LAB_SCHEDULE['회계실']['금'][4],
+  businessTue: LAB_SCHEDULE['사행실']['화'][4],
+  businessFri: LAB_SCHEDULE['사행실']['금'][4],
+  teacherTue: TEACHER_SCHEDULE['김영주']['화4'],
+  teacherWed: TEACHER_SCHEDULE['김영주']['수2'],
+  teacherFri: TEACHER_SCHEDULE['김영주']['금4'],
+  classTue: CLASS_SCHEDULE['1-5']['화4'],
+  classWed: CLASS_SCHEDULE['1-5']['수2'],
+  classFri: CLASS_SCHEDULE['1-5']['금4']
 })`);
 assert(labRules.computerMon['3'] === '309 출판 박정민' && labRules.computerMon['12'] === '', '컴그실 월요일 4교시 오류');
 assert(labRules.computerTue['12'] === '107 사무 이상분' && labRules.computerTue['3'] === '', '컴그실 화요일 4교시 오류');
 assert(labRules.businessMon['3'] === '307 기자 임홍재', '사행실 3학년 4교시 오류');
+assert(labRules.accountingTue['12'] === '' && labRules.accountingFri['12'] === '', '회계실에 105 데과가 남아 있음');
+assert(labRules.businessTue['12'] === '105 데과 김영주' && labRules.businessFri['12'] === '105 데과 김영주', '105 데과 사행실 배치 오류');
+assert([labRules.teacherTue, labRules.teacherWed, labRules.teacherFri].every(value => value === '105 데과 사행실'), '김영주 105 데과 장소 불일치');
+assert([labRules.classTue, labRules.classWed, labRules.classFri].every(value => value === '데과 김영주 사행실'), '1-5 데과 장소 불일치');
 
 const bottom = read(`ALL_TEACHERS.slice(-8)`);
 assert(JSON.stringify(bottom) === JSON.stringify(['김지윤','송혜리','중국어특성화','중어온라인','지과온라인','화학온라인','물리온라인','경제온라인']), '교사 맨 아래 순서 오류');

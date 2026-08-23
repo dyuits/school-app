@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v60-august-timetable-refresh';
+var CACHE_NAME = 'school-app-v61-accounting-room-correction';
 var ASSETS = [
   './',
   './index.html',

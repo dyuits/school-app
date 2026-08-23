@@ -19,6 +19,12 @@ DAYS = ["월", "화", "수", "목", "금"]
 MINT = (0.8039216, 0.9490196, 0.8941176)
 YELLOW = (0.9960784, 0.9960784, 0.8823529)
 
+# 현장 확인 정정: 105 데과는 회계실이 아니라 사행실을 사용한다.
+# 원본 특별실 PDF에 두 실습실이 중복 기재되어 있어 재가져오기 때도 보정한다.
+ROOM_ASSIGNMENT_CORRECTIONS = {
+    ("105", "데과"): "사행실",
+}
+
 
 def compact_cell(cell: str | None) -> str:
     return " ".join((cell or "").split())
@@ -299,6 +305,55 @@ def merge_lab_external_lessons(
                     mint_cells.setdefault(teacher, set()).add(slot)
 
 
+def apply_room_assignment_corrections(
+    teacher_schedule: dict[str, dict[str, str]],
+    class_schedule: dict[str, dict[str, str]],
+    lab_schedule: dict[str, dict[str, dict[int, object]]],
+) -> None:
+    """Apply confirmed room corrections across all three timetable views."""
+    for (class_num, subject), target_room in ROOM_ASSIGNMENT_CORRECTIONS.items():
+        target_slots: set[str] = set()
+
+        for day, periods in lab_schedule[target_room].items():
+            for period, raw in periods.items():
+                entries = raw.values() if isinstance(raw, dict) else [raw]
+                if any(str(value).split()[:2] == [class_num, subject] for value in entries if value):
+                    target_slots.add(f"{day}{period}")
+
+        for room, week in lab_schedule.items():
+            if room == target_room:
+                continue
+            for day, periods in week.items():
+                for period, raw in periods.items():
+                    slot = f"{day}{period}"
+                    if slot not in target_slots:
+                        continue
+                    entries = raw.values() if isinstance(raw, dict) else [raw]
+                    if not any(str(value).split()[:2] == [class_num, subject] for value in entries if value):
+                        continue
+                    if isinstance(raw, dict):
+                        for group, value in raw.items():
+                            if value and str(value).split()[:2] == [class_num, subject]:
+                                raw[group] = ""
+                    else:
+                        periods[period] = ""
+
+        for row in teacher_schedule.values():
+            for slot in target_slots:
+                value = row.get(slot, "")
+                parts = value.split()
+                if parts[:2] == [class_num, subject]:
+                    row[slot] = " ".join([class_num, subject, target_room])
+
+        class_key = f"{int(class_num[0])}-{int(class_num[1:])}"
+        for slot in target_slots:
+            value = class_schedule.get(class_key, {}).get(slot, "")
+            parts = value.split()
+            if parts and parts[0] == subject:
+                teacher = parts[1] if len(parts) > 1 else ""
+                class_schedule[class_key][slot] = " ".join(part for part in [subject, teacher, target_room] if part)
+
+
 def js_literal(value: object) -> str:
     return json.dumps(value, ensure_ascii=False, indent=2)
 
@@ -354,11 +409,13 @@ def main() -> None:
     args = parser.parse_args()
 
     teacher_schedule, external_lessons, mint_cells, select_cells = extract_teacher_schedule(args.teacher)
+    class_schedule = extract_class_schedule(args.class_pdf)
     lab_schedule = extract_lab_schedule(args.lab)
+    apply_room_assignment_corrections(teacher_schedule, class_schedule, lab_schedule)
     merge_lab_external_lessons(teacher_schedule, lab_schedule, external_lessons, mint_cells)
     source = args.data.read_text(encoding="utf-8")
     source = replace_const(source, "TEACHER_SCHEDULE", teacher_schedule)
-    source = replace_const(source, "CLASS_SCHEDULE", extract_class_schedule(args.class_pdf))
+    source = replace_const(source, "CLASS_SCHEDULE", class_schedule)
     source = replace_const(source, "LAB_SCHEDULE", lab_schedule)
     source = replace_const_expression(source, "MINT_CELLS", js_set_map_literal(mint_cells))
     source = replace_const_expression(source, "SELECT_CELLS", js_set_map_literal(select_cells))
