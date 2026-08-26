@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v76-major-hwpx-upload';
+var CACHE_NAME = 'school-app-v77-anonymous-visitor-count';
 var ASSETS = [
   './',
   './index.html',
