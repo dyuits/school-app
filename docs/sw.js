@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v73-bus-duty-month-calendar';
+var CACHE_NAME = 'school-app-v74-bus-duty-teacher-search';
 var ASSETS = [
   './',
   './index.html',
