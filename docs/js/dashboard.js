@@ -2,7 +2,7 @@
 (function () {
   const D = {
     dates:{schedule:new Date(),notices:new Date(),memos:new Date(),reservations:new Date(),meal:new Date()}, initialized:false, listeners:false, reservationView:'special', reservationLayout:localStorage.getItem('dashboardReservationLayout')==='list'?'list':'table', reservationListRange:localStorage.getItem('dashboardReservationListRange')==='month'?'month':'day', admin:sessionStorage.getItem('dashboardAdmin')==='yes',
-    data:{ notices:{}, memos:{}, meetings:{}, suggestions:{}, links:{}, majorEvents:{}, busDuty:{} },
+    data:{ notices:{}, memos:{}, meetings:{}, suggestions:{}, links:{}, majorEvents:{}, busDuty:{} }, busDutyCalendarDate:null,
     refs:{}, modalSubmit:null
   };
   const SPECIAL_ROOMS = [
@@ -62,7 +62,7 @@
     renderAll();
   };
   function card(id,icon,title,tone,add=false,span=''){
-    return `<article class="dash-card ${tone} ${span}" id="dash-card-${id}"><div class="dash-head"><i class="fas fa-${icon}"></i><h3>${title}</h3><div class="dash-actions">${add?`<button class="dash-icon-btn" title="추가" onclick="dashboardAdd('${id}')"><i class="fas fa-plus"></i></button>`:''}${id==='memos'?`<button class="dash-icon-btn" title="승차지도 엑셀 관리" aria-label="승차지도 엑셀 관리" onclick="dashboardOpenBusDutyUpload()"><i class="fas fa-file-excel"></i></button>`:''}${id==='reservations'?`<button class="dash-icon-btn dashboard-res-layout-btn ${D.reservationLayout==='list'?'active':''}" id="dashboardReservationLayoutBtn" title="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" aria-label="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" onclick="dashboardToggleReservationLayout()"><i class="fas fa-${D.reservationLayout==='list'?'table':'list'}"></i></button>`:''}<button class="dash-icon-btn" title="새로고침" onclick="dashboardRefresh('${id}')"><i class="fas fa-sync-alt"></i></button><button class="dash-icon-btn" title="접기/펼치기" onclick="dashboardToggle('${id}')"><i class="fas fa-chevron-up"></i></button></div></div><div class="dash-body" id="dash-${id}"><div class="dash-loading">불러오는 중…</div></div></article>`;
+    return `<article class="dash-card ${tone} ${span}" id="dash-card-${id}"><div class="dash-head"><i class="fas fa-${icon}"></i><h3>${title}</h3><div class="dash-actions">${add?`<button class="dash-icon-btn" title="추가" onclick="dashboardAdd('${id}')"><i class="fas fa-plus"></i></button>`:''}${id==='memos'?`<button class="dash-icon-btn" title="월별 승차지도 달력" aria-label="월별 승차지도 달력" onclick="dashboardOpenBusDutyCalendar()"><i class="fas fa-calendar-days"></i></button><button class="dash-icon-btn" title="승차지도 엑셀 관리" aria-label="승차지도 엑셀 관리" onclick="dashboardOpenBusDutyUpload()"><i class="fas fa-file-excel"></i></button>`:''}${id==='reservations'?`<button class="dash-icon-btn dashboard-res-layout-btn ${D.reservationLayout==='list'?'active':''}" id="dashboardReservationLayoutBtn" title="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" aria-label="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" onclick="dashboardToggleReservationLayout()"><i class="fas fa-${D.reservationLayout==='list'?'table':'list'}"></i></button>`:''}<button class="dash-icon-btn" title="새로고침" onclick="dashboardRefresh('${id}')"><i class="fas fa-sync-alt"></i></button><button class="dash-icon-btn" title="접기/펼치기" onclick="dashboardToggle('${id}')"><i class="fas fa-chevron-up"></i></button></div></div><div class="dash-body" id="dash-${id}"><div class="dash-loading">불러오는 중…</div></div></article>`;
   }
   function startClock(){ const tick=()=>{const n=new Date(); if($('dashToday'))$('dashToday').textContent=n.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});if($('dashClock'))$('dashClock').textContent=n.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});};tick();setInterval(tick,30000); }
   function bindFirebase(){
@@ -90,6 +90,22 @@
     return `<section class="dashboard-bus-duty"><div class="dashboard-bus-duty-head"><span><i class="fas fa-bus"></i> 승차지도 교사</span><small>교환은 사전 협의 후 진행</small></div><div class="dashboard-bus-duty-list">${duties.map(duty=>`<div class="dashboard-bus-duty-row"><span class="dashboard-grade-badge grade-${esc(duty.grade)}">${esc(duty.grade)}학년</span><strong>${esc(duty.teacher)}</strong>${duty.route?`<span class="dashboard-bus-route">${esc(duty.route)}</span>`:''}<button type="button" onclick="dashboardOpenBusDutySwap('${esc(duty.id)}')"><i class="fas fa-right-left"></i> 날짜 교환</button></div>`).join('')}</div></section>`;
   }
   function renderMemos(){const el=$('dash-memos');if(!el)return;const key=dateKey(dateFor('memos')),list=values(memoForDate()).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)),duty=renderBusDuty(key),memos=list.length?`<div class="dash-list">${list.map(n=>item(n,esc(n.title||n.content),n.title?n.content:'','memos',`${esc(n.author)} · ${fmtTime(n.createdAt)}`)).join('')}</div>`:'<div class="dash-empty">등록된 알림장 내용이 없습니다.</div>';el.innerHTML=dateNav('memos')+duty+memos;}
+
+  function busDutyCalendarHtml(date){
+    const year=date.getFullYear(),month=date.getMonth(),first=new Date(year,month,1),lastDay=new Date(year,month+1,0).getDate(),offset=(first.getDay()+6)%7,cells=[];
+    for(let index=0;index<offset;index++)cells.push('<div class="dashboard-bus-cal-cell outside"></div>');
+    for(let day=1;day<=lastDay;day++){
+      const current=new Date(year,month,day),key=dateKey(current),duties=busDutyForDate(key),today=key===dateKey(new Date());
+      cells.push(`<div class="dashboard-bus-cal-cell ${today?'today':''}"><div class="dashboard-bus-cal-day"><span>${day}</span><small>${['일','월','화','수','목','금','토'][current.getDay()]}</small></div><div class="dashboard-bus-cal-duties">${duties.map(duty=>`<button type="button" class="grade-${esc(duty.grade)}" onclick="dashboardOpenBusDutySwap('${esc(duty.id)}')" title="${esc(duty.teacher)} 선생님 날짜 교환"><b>${esc(duty.grade)}학년</b><span>${esc(duty.teacher)}</span></button>`).join('')}</div></div>`);
+    }
+    while(cells.length%7)cells.push('<div class="dashboard-bus-cal-cell outside"></div>');
+    const monthValue=`${year}-${String(month+1).padStart(2,'0')}`;
+    return `<div class="dashboard-bus-calendar"><div class="dashboard-bus-cal-toolbar"><button type="button" onclick="dashboardMoveBusDutyCalendar(-1)" aria-label="이전 달"><i class="fas fa-chevron-left"></i></button><label><i class="far fa-calendar-alt"></i><strong>${year}년 ${month+1}월</strong><input type="month" value="${monthValue}" onchange="dashboardSetBusDutyCalendarMonth(this.value)"></label><button type="button" class="dashboard-bus-cal-today" onclick="dashboardSetBusDutyCalendarMonth('${dateKey(new Date()).slice(0,7)}')">이번 달</button><button type="button" onclick="dashboardMoveBusDutyCalendar(1)" aria-label="다음 달"><i class="fas fa-chevron-right"></i></button></div><div class="dashboard-bus-cal-weekdays">${['월','화','수','목','금','토','일'].map(day=>`<span>${day}</span>`).join('')}</div><div class="dashboard-bus-cal-grid">${cells.join('')}</div><div class="dashboard-bus-cal-guide"><span><i class="fas fa-circle grade-1"></i> 1학년</span><span><i class="fas fa-circle grade-2"></i> 2학년</span><span><i class="fas fa-circle grade-3"></i> 3학년</span><small>교사 이름을 누르면 사전 협의 후 날짜를 교환할 수 있습니다.</small></div></div>`;
+  }
+  function renderBusDutyCalendarModal(){const body=$('dashboardModalBody');if(body&&D.busDutyCalendarDate)body.innerHTML=busDutyCalendarHtml(D.busDutyCalendarDate);}
+  window.dashboardOpenBusDutyCalendar=()=>{const selected=dateFor('memos');D.busDutyCalendarDate=new Date(selected.getFullYear(),selected.getMonth(),1);openModal('월별 승차지도 달력',busDutyCalendarHtml(D.busDutyCalendarDate),true);};
+  window.dashboardMoveBusDutyCalendar=amount=>{if(!D.busDutyCalendarDate)return;D.busDutyCalendarDate.setMonth(D.busDutyCalendarDate.getMonth()+Number(amount));renderBusDutyCalendarModal();};
+  window.dashboardSetBusDutyCalendarMonth=value=>{if(!/^\d{4}-\d{2}$/.test(value))return;const selected=new Date(`${value}-01T00:00:00`);if(Number.isNaN(selected.getTime()))return;D.busDutyCalendarDate=selected;renderBusDutyCalendarModal();};
 
   let busDutyImportPreview=[];
   function normalizeExcelHeader(value){return String(value??'').replace(/[\s·_()-]/g,'').toLowerCase();}
@@ -251,6 +267,6 @@
   window.dashboardAdminLogout=()=>{D.admin=false;sessionStorage.removeItem('dashboardAdmin');renderDashboardAdmin();};
   window.dashboardAdminEdit=(type,id,date)=>{if(type==='memos'&&date)D.dates.memos=new Date(`${date}T00:00:00`);if(type==='reservations')return dashboardOpenReservation(id);return dashboardEdit(type,id);};
   window.dashboardAdminDelete=(type,id,date)=>{if(type==='memos'&&date)D.dates.memos=new Date(`${date}T00:00:00`);if(type==='reservations')return cancelReservation(id);return Promise.resolve(dashboardDelete(type,id)).then(()=>setTimeout(renderDashboardAdmin,250));};
-  function openModal(title,body){$('dashboardModalTitle').textContent=title;$('dashboardModalBody').innerHTML=body;window.resetDraggableModal?.($('dashboardModal'));$('dashboardModal').classList.add('open');}
+  function openModal(title,body,wide=false){$('dashboardModalTitle').textContent=title;$('dashboardModalBody').innerHTML=body;const panel=$('dashboardModal')?.querySelector('.dashboard-modal-panel');panel?.classList.toggle('dashboard-modal-wide',!!wide);window.resetDraggableModal?.($('dashboardModal'));$('dashboardModal').classList.add('open');}
   window.dashboardCloseModal=()=>$('dashboardModal')?.classList.remove('open');
 })();

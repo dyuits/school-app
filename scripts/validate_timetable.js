@@ -340,6 +340,9 @@ assert(septemberPlanAudit.mockExamDate === '2026-09-02' && !septemberPlanAudit.h
 assert(septemberPlanAudit.hasSeptember26Holiday, '9월 26일 추석 연휴 누락');
 assert(dashboardSource.includes('parseBusDutyWorkbook') && dashboardSource.includes("shared/dashboard/busDuty") && dashboardSource.includes('dashboardOpenBusDutySwap'), '승차지도 엑셀/날짜 교환 기능 누락');
 assert(dashboardSource.includes('wideGrades') && dashboardSource.includes('teacherColumn'), '승차지도 가로형/세로형 엑셀 인식 누락');
+assert(dashboardSource.includes('dashboardOpenBusDutyCalendar') && dashboardSource.includes('dashboardMoveBusDutyCalendar') && dashboardSource.includes('dashboard-bus-cal-grid'), '월별 승차지도 달력 팝업 누락');
+const dashboardStyles = fs.readFileSync(path.join(root, 'docs/css/dashboard.css'), 'utf8');
+assert(dashboardStyles.includes('.dashboard-bus-cal-weekdays') && dashboardStyles.includes('grid-template-columns:repeat(7'), '월별 승차지도 7열 달력 CSS 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
 assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');
