@@ -345,6 +345,9 @@ const dashboardStyles = fs.readFileSync(path.join(root, 'docs/css/dashboard.css'
 assert(dashboardStyles.includes('.dashboard-bus-cal-weekdays') && dashboardStyles.includes('grid-template-columns:repeat(7'), '월별 승차지도 7열 달력 CSS 누락');
 assert(dashboardSource.includes('dashboardFilterBusDutyCalendar') && dashboardSource.includes('data-teacher=') && dashboardSource.includes('dashboardBusDutySearchStatus'), '월별 승차지도 교사 검색 기능 누락');
 assert(dashboardStyles.includes('.is-search-match') && dashboardStyles.includes('@keyframes bus-duty-search-sparkle'), '승차지도 검색 결과 반짝임 CSS 누락');
+assert(dashboardSource.includes("id==='schedule'||id==='major'") && dashboardSource.includes("dashboardOpenAcademicCalendar('${id}')"), '학사일정/주요 일정 월별 달력 버튼 누락');
+assert(dashboardSource.includes('dashboardMoveAcademicCalendar') && dashboardSource.includes('dashboardSetAcademicCalendarMonth') && dashboardSource.includes('dashboard-academic-cal-grid'), '월별 학사일정 달력 팝업 누락');
+assert(dashboardStyles.includes('.dashboard-academic-cal-weekdays') && dashboardStyles.includes('.dashboard-academic-cal-event.type-important'), '월별 학사일정 달력 CSS 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
 assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');
