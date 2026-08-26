@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v75-academic-month-calendar';
+var CACHE_NAME = 'school-app-v76-major-hwpx-upload';
 var ASSETS = [
   './',
   './index.html',
