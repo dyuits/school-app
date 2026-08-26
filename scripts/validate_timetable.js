@@ -322,6 +322,24 @@ assert(labStyles.includes('.contact-phone-actions') && labStyles.includes('min-h
 assert(appSource.includes('class="teacher-period-number">${p}교시</strong>') && appSource.includes('class="teacher-period-time">${getPeriodTime(p, gradeGroup === \'3\' ? \'3\' : \'1\')}</span>'), '교사 시간표 교시/시간 두 줄 표시 누락');
 assert(labStyles.includes('.teacher-period-number') && labStyles.includes('white-space: nowrap'), '교시명이 한 줄로 고정되지 않음');
 assert(labStyles.includes('.teacher-schedule-popup-body .teacher-period-number') && labStyles.includes('width: 92px !important'), '교사 팝업의 교시/시간 두 줄 고정 CSS 누락');
+const septemberPlanAudit = read(`(() => {
+  const plan = ACADEMIC_CALENDAR.filter(event => event.source === '2026-09-education-plan');
+  const merged = mergeAcademicCalendarWithBaseline([
+    { date:'2026-09-05', day:'토', event:'수능모의평가 (3학년)', type:'exam' },
+    { date:'2026-08-13', day:'목', event:'2학기 개학', type:'important' }
+  ]);
+  return {
+    count: plan.length,
+    mockExamDate: plan.find(event => event.event === '수능모의평가 (3학년)')?.date,
+    hasLegacyMockExam: merged.some(event => event.date === '2026-09-05' && event.event === '수능모의평가 (3학년)'),
+    hasSeptember26Holiday: plan.some(event => event.date === '2026-09-26' && event.event === '추석 연휴')
+  };
+})()`);
+assert(septemberPlanAudit.count === 34, '9월 교육활동계획 일정 수 누락');
+assert(septemberPlanAudit.mockExamDate === '2026-09-02' && !septemberPlanAudit.hasLegacyMockExam, '3학년 수능모의평가 날짜 보정 오류');
+assert(septemberPlanAudit.hasSeptember26Holiday, '9월 26일 추석 연휴 누락');
+assert(dashboardSource.includes('parseBusDutyWorkbook') && dashboardSource.includes("shared/dashboard/busDuty") && dashboardSource.includes('dashboardOpenBusDutySwap'), '승차지도 엑셀/날짜 교환 기능 누락');
+assert(dashboardSource.includes('wideGrades') && dashboardSource.includes('teacherColumn'), '승차지도 가로형/세로형 엑셀 인식 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
 assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');

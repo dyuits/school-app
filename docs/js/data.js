@@ -1310,14 +1310,41 @@ const ACADEMIC_CALENDAR = [
   { date:"2026-08-17", day:"월", event:"대체공휴일", type:"holiday" },
   { date:"2026-08-24", day:"월", event:"방과후학교 시작 (~12/9)", type:"event" },
 
-  // ── 9월 ──
-  { date:"2026-09-02", day:"수", event:"학력평가 (1,2학년)", type:"exam" },
-  { date:"2026-09-04", day:"금", event:"교직원연수의날", type:"event" },
-  { date:"2026-09-05", day:"토", event:"수능모의평가 (3학년)", type:"exam" },
-  { date:"2026-09-07", day:"월", event:"대학 수시접수 시작 (~9/11)", type:"event" },
-  { date:"2026-09-14", day:"월", event:"채플 (1학년)", type:"event" },
-  { date:"2026-09-24", day:"목", event:"추석연휴", type:"holiday" },
-  { date:"2026-09-25", day:"금", event:"추석", type:"holiday" },
+  // ── 9월 (9월 교육활동계획 반영) ──
+  { date:"2026-09-01", day:"화", event:"행정정보 공유 연계 시스템 요청 기간 (~10/2)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-01", day:"화", event:"헌법교육 (1학년 보통과)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-02", day:"수", event:"학력평가 (1,2학년)", type:"exam", source:"2026-09-education-plan" },
+  { date:"2026-09-02", day:"수", event:"수능모의평가 (3학년)", type:"exam", source:"2026-09-education-plan" },
+  { date:"2026-09-03", day:"목", event:"헌혈 (1학년)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-04", day:"금", event:"교직원 연수의 날", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-04", day:"금", event:"헌혈 (2학년)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-04", day:"금", event:"진로", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-04", day:"금", event:"2026 제주 고등리그(후반기) vs 대기고 (외도 1구장 17:00)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-05", day:"토", event:"2026 청춘Girl Go 농구리그 본선", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-07", day:"월", event:"대학 수시접수 (~9/11)", type:"important", source:"2026-09-education-plan" },
+  { date:"2026-09-07", day:"월", event:"자율·자치 (1,2학년) / 봉사 (3학년)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-10", day:"목", event:"학부모기도회 (19시, 음악실)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-11", day:"금", event:"동아리", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-11", day:"금", event:"2026 제주 고등리그(후반기) vs 오현고 (외도 1구장 18:40)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-12", day:"토", event:"2026학년도 마을단위 학교스포츠클럽 배구 리그전 (09:00~)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-12", day:"토", event:"제29회 제주의 역사·환경·관광·문화 바로 알기 퀴즈대회", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-12", day:"토", event:"제주 선사문화 유적 탐방", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-13", day:"일", event:"제20회 제주특별자치도교육감배 전도학교스포츠클럽 축전 (농구 남)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-14", day:"월", event:"자율·자치", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-14", day:"월", event:"채플 (1학년)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-15", day:"화", event:"사이버보안 진단의 날", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-18", day:"금", event:"자율·자치", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-18", day:"금", event:"2026 제주 고등리그(후반기) vs 서귀포고 (공천포A구장 18:40)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-19", day:"토", event:"제20회 제주특별자치도교육감배 전도학교스포츠클럽 축전 (농구 여, 배구 남·여, 축구 남, 야구 남)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-19", day:"토", event:"2026 세계 평화의 날 기념행사", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-20", day:"일", event:"제20회 제주특별자치도교육감배 전도학교스포츠클럽 축전", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-21", day:"월", event:"자율·자치", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-21", day:"월", event:"제2차 학교폭력실태조사 (~10/20)", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-24", day:"목", event:"추석 연휴", type:"holiday", source:"2026-09-education-plan" },
+  { date:"2026-09-25", day:"금", event:"추석", type:"holiday", source:"2026-09-education-plan" },
+  { date:"2026-09-26", day:"토", event:"추석 연휴", type:"holiday", source:"2026-09-education-plan" },
+  { date:"2026-09-28", day:"월", event:"자율·자치", type:"event", source:"2026-09-education-plan" },
+  { date:"2026-09-28", day:"월", event:"언어문화 개선 교육 주간 캠페인 (~10/2)", type:"event", source:"2026-09-education-plan" },
 
   // ── 10월 ──
   { date:"2026-10-01", day:"목", event:"국군의날", type:"holiday" },
@@ -1354,6 +1381,23 @@ const ACADEMIC_CALENDAR = [
   { date:"2027-01-07", day:"목", event:"졸업식 · 수료식", type:"important" },
   { date:"2027-01-08", day:"금", event:"겨울방학 시작", type:"vacation" }
 ];
+
+const LEGACY_SEPTEMBER_2026_EVENTS = new Set([
+  "학력평가 (1,2학년)", "교직원연수의날", "수능모의평가 (3학년)",
+  "대학 수시접수 시작 (~9/11)", "채플 (1학년)", "추석연휴", "추석"
+]);
+
+function mergeAcademicCalendarWithBaseline(remoteCalendar) {
+  if (!Array.isArray(remoteCalendar) || !remoteCalendar.length) return ACADEMIC_CALENDAR.map(event => ({ ...event }));
+  const septemberPlan = ACADEMIC_CALENDAR.filter(event => event.source === "2026-09-education-plan");
+  const preserved = remoteCalendar.filter(event => !(
+    String(event?.date || "").startsWith("2026-09-") &&
+    (LEGACY_SEPTEMBER_2026_EVENTS.has(String(event?.event || "")) || event?.source === "2026-09-education-plan")
+  ));
+  const merged = [...preserved, ...septemberPlan];
+  return merged.filter((event, index, all) => all.findIndex(candidate => candidate.date === event.date && candidate.event === event.event) === index)
+    .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")) || String(a.event || "").localeCompare(String(b.event || ""), "ko"));
+}
 
 // ── 교시별 시간 정보 ──
 const PERIOD_TIMES = {

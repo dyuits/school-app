@@ -329,7 +329,7 @@ async function loadCalendar() {
   // Firebase 오버라이드 먼저, 없으면 기본 data.js
   try {
     const snap = await db.ref('adminData/calendar').once('value');
-    if (snap.val()) { calItems = snap.val(); } else { calItems = ACADEMIC_CALENDAR.map(e => ({...e})); }
+    if (snap.val()) { calItems = typeof mergeAcademicCalendarWithBaseline === 'function' ? mergeAcademicCalendarWithBaseline(snap.val()) : snap.val(); } else { calItems = ACADEMIC_CALENDAR.map(e => ({...e})); }
   } catch(e) { calItems = ACADEMIC_CALENDAR.map(e => ({...e})); }
   renderCalTable();
 }

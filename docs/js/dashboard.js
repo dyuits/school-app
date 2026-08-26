@@ -2,7 +2,7 @@
 (function () {
   const D = {
     dates:{schedule:new Date(),notices:new Date(),memos:new Date(),reservations:new Date(),meal:new Date()}, initialized:false, listeners:false, reservationView:'special', reservationLayout:localStorage.getItem('dashboardReservationLayout')==='list'?'list':'table', reservationListRange:localStorage.getItem('dashboardReservationListRange')==='month'?'month':'day', admin:sessionStorage.getItem('dashboardAdmin')==='yes',
-    data:{ notices:{}, memos:{}, meetings:{}, suggestions:{}, links:{}, majorEvents:{} },
+    data:{ notices:{}, memos:{}, meetings:{}, suggestions:{}, links:{}, majorEvents:{}, busDuty:{} },
     refs:{}, modalSubmit:null
   };
   const SPECIAL_ROOMS = [
@@ -62,16 +62,16 @@
     renderAll();
   };
   function card(id,icon,title,tone,add=false,span=''){
-    return `<article class="dash-card ${tone} ${span}" id="dash-card-${id}"><div class="dash-head"><i class="fas fa-${icon}"></i><h3>${title}</h3><div class="dash-actions">${add?`<button class="dash-icon-btn" title="추가" onclick="dashboardAdd('${id}')"><i class="fas fa-plus"></i></button>`:''}${id==='reservations'?`<button class="dash-icon-btn dashboard-res-layout-btn ${D.reservationLayout==='list'?'active':''}" id="dashboardReservationLayoutBtn" title="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" aria-label="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" onclick="dashboardToggleReservationLayout()"><i class="fas fa-${D.reservationLayout==='list'?'table':'list'}"></i></button>`:''}<button class="dash-icon-btn" title="새로고침" onclick="dashboardRefresh('${id}')"><i class="fas fa-sync-alt"></i></button><button class="dash-icon-btn" title="접기/펼치기" onclick="dashboardToggle('${id}')"><i class="fas fa-chevron-up"></i></button></div></div><div class="dash-body" id="dash-${id}"><div class="dash-loading">불러오는 중…</div></div></article>`;
+    return `<article class="dash-card ${tone} ${span}" id="dash-card-${id}"><div class="dash-head"><i class="fas fa-${icon}"></i><h3>${title}</h3><div class="dash-actions">${add?`<button class="dash-icon-btn" title="추가" onclick="dashboardAdd('${id}')"><i class="fas fa-plus"></i></button>`:''}${id==='memos'?`<button class="dash-icon-btn" title="승차지도 엑셀 관리" aria-label="승차지도 엑셀 관리" onclick="dashboardOpenBusDutyUpload()"><i class="fas fa-file-excel"></i></button>`:''}${id==='reservations'?`<button class="dash-icon-btn dashboard-res-layout-btn ${D.reservationLayout==='list'?'active':''}" id="dashboardReservationLayoutBtn" title="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" aria-label="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" onclick="dashboardToggleReservationLayout()"><i class="fas fa-${D.reservationLayout==='list'?'table':'list'}"></i></button>`:''}<button class="dash-icon-btn" title="새로고침" onclick="dashboardRefresh('${id}')"><i class="fas fa-sync-alt"></i></button><button class="dash-icon-btn" title="접기/펼치기" onclick="dashboardToggle('${id}')"><i class="fas fa-chevron-up"></i></button></div></div><div class="dash-body" id="dash-${id}"><div class="dash-loading">불러오는 중…</div></div></article>`;
   }
   function startClock(){ const tick=()=>{const n=new Date(); if($('dashToday'))$('dashToday').textContent=n.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});if($('dashClock'))$('dashClock').textContent=n.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});};tick();setInterval(tick,30000); }
   function bindFirebase(){
     if(D.listeners)return;
     if(!firebaseDB){ setTimeout(bindFirebase,500); return; }
     D.listeners=true;
-    const paths={notices:'shared/dashboard/notices',memos:'shared/dashboard/memos',meetings:'shared/dashboard/meetings',suggestions:'shared/dashboard/suggestions',majorEvents:'shared/dashboard/majorEvents'};
-    Object.entries(paths).forEach(([key,path])=>{ D.refs[key]=ref(path); D.refs[key].on('value',s=>{const value=s.val()||{};D.data[key]=key==='memos'?cleanObsoleteMemos(value,true):value;renderSection(key==='majorEvents'?'major':key);if(D.admin)renderDashboardAdmin();}); });
-    ref('adminData/calendar').on('value',snap=>{const calendar=snap.val();if(Array.isArray(calendar)&&calendar.length){ACADEMIC_CALENDAR.splice(0,ACADEMIC_CALENDAR.length,...calendar);renderSchedule();renderMajor();}});
+    const paths={notices:'shared/dashboard/notices',memos:'shared/dashboard/memos',meetings:'shared/dashboard/meetings',suggestions:'shared/dashboard/suggestions',majorEvents:'shared/dashboard/majorEvents',busDuty:'shared/dashboard/busDuty'};
+    Object.entries(paths).forEach(([key,path])=>{ D.refs[key]=ref(path); D.refs[key].on('value',s=>{const value=s.val()||{};D.data[key]=key==='memos'?cleanObsoleteMemos(value,true):value;renderSection(key==='majorEvents'?'major':key==='busDuty'?'memos':key);if(D.admin)renderDashboardAdmin();}); });
+    ref('adminData/calendar').on('value',snap=>{const calendar=snap.val();if(Array.isArray(calendar)&&calendar.length){const merged=typeof mergeAcademicCalendarWithBaseline==='function'?mergeAcademicCalendarWithBaseline(calendar):calendar;ACADEMIC_CALENDAR.splice(0,ACADEMIC_CALENDAR.length,...merged);renderSchedule();renderMajor();}});
   }
   window.addEventListener('schoolapp:firebase-ready',bindFirebase);
   window.addEventListener('schoolapp:calendar-updated',()=>{renderSchedule();renderMajor();});
@@ -83,7 +83,81 @@
   function renderSchedule(){const el=$('dash-schedule');if(!el)return;const key=dateKey(dateFor('schedule'));const list=(ACADEMIC_CALENDAR||[]).map((event,index)=>({event,index})).filter(item=>item.event.date===key);el.innerHTML=dateNav('schedule')+ (list.length?`<div class="dash-list">${list.map(({event,index})=>{const collapsed=itemCollapsed('schedule',index);return `<div class="dash-item ${collapsed?'is-item-collapsed':''}"><div class="dash-item-heading"><div class="dash-item-title"><span class="dash-status">${esc(event.type||'일정')}</span>${esc(event.event)}</div><button class="dash-item-toggle" onclick="dashboardToggleItem('schedule','${index}')" aria-label="${collapsed?'펼치기':'접기'}"><i class="fas fa-chevron-${collapsed?'down':'up'}"></i></button></div><div class="dash-item-details"><div class="dash-row-actions"><button onclick="dashboardEdit('schedule','${index}')">수정</button><button onclick="dashboardDelete('schedule','${index}')">삭제</button></div></div></div>`;}).join('')}</div>`:'<div class="dash-empty">오늘 등록된 학사일정이 없습니다.</div>');}
   function renderNotices(){const el=$('dash-notices');if(!el)return;const list=values(D.data.notices).sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||(b.updatedAt||0)-(a.updatedAt||0)).slice(0,5);el.innerHTML=list.length?`<div class="dash-list">${list.map(n=>item(n,`${n.pinned?'📌 ':''}${esc(n.title)}${n.link?` <a href="${esc(n.link)}" target="_blank" rel="noopener" title="첨부 링크"><i class="fas fa-paperclip"></i></a>`:''}`,n.content,'notices',`작성자 ${esc(n.author)} · ${fmtTime(n.createdAt)}${n.updatedAt!==n.createdAt?` · 수정 ${fmtTime(n.updatedAt)}`:''}`)).join('')}</div><button class="dash-more" onclick="dashboardShowAll('notices')">전체보기</button>`:'<div class="dash-empty">등록된 공지사항이 없습니다.</div>';}
   function memoForDate(){return D.data.memos[dateKey(dateFor('memos'))]||{};}
-  function renderMemos(){const el=$('dash-memos');if(!el)return;const list=values(memoForDate()).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));el.innerHTML=dateNav('memos')+ (list.length?`<div class="dash-list">${list.map(n=>item(n,esc(n.title||n.content),n.title?n.content:'','memos',`${esc(n.author)} · ${fmtTime(n.createdAt)}`)).join('')}</div>`:'<div class="dash-empty">등록된 내용이 없습니다.</div>');}
+  function busDutyForDate(date){return values(D.data.busDuty).filter(item=>item.date===date).sort((a,b)=>Number(a.grade||99)-Number(b.grade||99)||String(a.teacher||'').localeCompare(String(b.teacher||''),'ko'));}
+  function renderBusDuty(date){
+    const duties=busDutyForDate(date);
+    if(!duties.length)return '';
+    return `<section class="dashboard-bus-duty"><div class="dashboard-bus-duty-head"><span><i class="fas fa-bus"></i> 승차지도 교사</span><small>교환은 사전 협의 후 진행</small></div><div class="dashboard-bus-duty-list">${duties.map(duty=>`<div class="dashboard-bus-duty-row"><span class="dashboard-grade-badge grade-${esc(duty.grade)}">${esc(duty.grade)}학년</span><strong>${esc(duty.teacher)}</strong>${duty.route?`<span class="dashboard-bus-route">${esc(duty.route)}</span>`:''}<button type="button" onclick="dashboardOpenBusDutySwap('${esc(duty.id)}')"><i class="fas fa-right-left"></i> 날짜 교환</button></div>`).join('')}</div></section>`;
+  }
+  function renderMemos(){const el=$('dash-memos');if(!el)return;const key=dateKey(dateFor('memos')),list=values(memoForDate()).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)),duty=renderBusDuty(key),memos=list.length?`<div class="dash-list">${list.map(n=>item(n,esc(n.title||n.content),n.title?n.content:'','memos',`${esc(n.author)} · ${fmtTime(n.createdAt)}`)).join('')}</div>`:'<div class="dash-empty">등록된 알림장 내용이 없습니다.</div>';el.innerHTML=dateNav('memos')+duty+memos;}
+
+  let busDutyImportPreview=[];
+  function normalizeExcelHeader(value){return String(value??'').replace(/[\s·_()-]/g,'').toLowerCase();}
+  function excelDateKey(value,defaultYear=new Date().getFullYear()){
+    if(value instanceof Date&&!Number.isNaN(value.getTime()))return dateKey(value);
+    if(typeof value==='number'&&typeof XLSX!=='undefined'){
+      const parsed=XLSX.SSF.parse_date_code(value);
+      if(parsed)return `${parsed.y}-${String(parsed.m).padStart(2,'0')}-${String(parsed.d).padStart(2,'0')}`;
+    }
+    const text=String(value??'').trim();if(!text)return '';
+    let match=text.match(/(20\d{2})\D+(\d{1,2})\D+(\d{1,2})/);
+    if(match)return `${match[1]}-${String(match[2]).padStart(2,'0')}-${String(match[3]).padStart(2,'0')}`;
+    match=text.match(/(\d{1,2})\D+(\d{1,2})/);
+    if(match)return `${defaultYear}-${String(match[1]).padStart(2,'0')}-${String(match[2]).padStart(2,'0')}`;
+    return '';
+  }
+  function splitTeachers(value){return String(value??'').split(/[\n,\/]+/).map(name=>name.trim()).filter(Boolean);}
+  function parseBusDutyWorkbook(workbook){
+    const records=[];
+    workbook.SheetNames.forEach(sheetName=>{
+      const rows=XLSX.utils.sheet_to_json(workbook.Sheets[sheetName],{header:1,defval:'',raw:true});
+      const headerIndex=rows.findIndex((row,index)=>index<15&&row.some(cell=>/날짜|일자|일시/.test(normalizeExcelHeader(cell)))&&row.some(cell=>/교사|지도|학년/.test(normalizeExcelHeader(cell))));
+      if(headerIndex<0)return;
+      const headers=rows[headerIndex].map(normalizeExcelHeader),dateColumn=headers.findIndex(header=>/날짜|일자|일시/.test(header));
+      const wideGrades=[1,2,3].map(grade=>({grade,column:headers.findIndex(header=>header.includes(`${grade}학년`))})).filter(item=>item.column>=0);
+      const gradeColumn=headers.findIndex(header=>header==='학년'||header.includes('대상학년'));
+      const teacherColumn=headers.findIndex(header=>/승차지도교사|지도교사|담당교사|교사명|담당자|교사/.test(header));
+      const routeColumn=headers.findIndex(header=>/노선|장소|구분|위치/.test(header));
+      let inheritedDate='';
+      rows.slice(headerIndex+1).forEach((row,rowOffset)=>{
+        const parsedDate=excelDateKey(row[dateColumn]);if(parsedDate)inheritedDate=parsedDate;
+        if(!inheritedDate)return;
+        const push=(grade,teacher,route='')=>records.push({date:inheritedDate,grade:String(grade).replace(/[^1-3]/g,'')||'',teacher,route:String(route||'').trim(),sheet:sheetName,row:headerIndex+rowOffset+2});
+        if(wideGrades.length){wideGrades.forEach(({grade,column})=>splitTeachers(row[column]).forEach(teacher=>push(grade,teacher,row[routeColumn])));return;}
+        const inferredGrade=String(row[gradeColumn]||sheetName).match(/[1-3]/)?.[0]||'';
+        if(teacherColumn>=0)splitTeachers(row[teacherColumn]).forEach(teacher=>push(inferredGrade,teacher,row[routeColumn]));
+      });
+    });
+    return records.filter(record=>record.date&&record.grade&&record.teacher).map((record,index)=>({...record,id:`duty-${record.date}-${record.grade}-${index+1}`}));
+  }
+  async function ensureBusDutyAdmin(){
+    if(D.admin)return true;
+    const password=await requestSecret('승차지도 관리자 확인','엑셀 업로드는 운영관리자만 가능합니다. 관리자 비밀번호를 입력하세요.');
+    if(password===null)return false;
+    if(await digest(password)!==ADMIN_PASSWORD_HASH){alert('관리자 비밀번호가 올바르지 않습니다.');return false;}
+    D.admin=true;sessionStorage.setItem('dashboardAdmin','yes');return true;
+  }
+  window.dashboardOpenBusDutyUpload=async()=>{
+    if(!await ensureBusDutyAdmin())return;
+    busDutyImportPreview=[];
+    openModal('승차지도 엑셀 관리',`<div class="dashboard-bus-upload"><p class="dashboard-form-guide">날짜·학년·교사 형식 또는 날짜·1학년·2학년·3학년 형식의 XLSX/XLS/CSV 파일을 올릴 수 있습니다. 저장하면 기존 승차지도 명단을 새 파일로 교체합니다.</p><label class="dashboard-bus-file"><i class="fas fa-file-excel"></i><span>승차지도 엑셀 선택</span><input id="dashboardBusDutyFile" type="file" accept=".xlsx,.xls,.csv" onchange="dashboardPreviewBusDutyFile(this)"></label><div id="dashboardBusDutyPreview" class="dashboard-bus-preview">파일을 선택하면 날짜와 학년별 교사를 미리 확인합니다.</div><div class="dashboard-form-actions"><button type="button" class="dashboard-btn-cancel" onclick="dashboardCloseModal()">취소</button><button type="button" class="dashboard-btn-save" id="dashboardBusDutySave" onclick="dashboardSaveBusDutyImport()" disabled><i class="fas fa-cloud-arrow-up"></i> 명단 저장</button></div></div>`);
+  };
+  window.dashboardPreviewBusDutyFile=async input=>{
+    const file=input.files?.[0],preview=$('dashboardBusDutyPreview'),save=$('dashboardBusDutySave');if(!file||!preview||!save)return;
+    try{const workbook=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});busDutyImportPreview=parseBusDutyWorkbook(workbook);if(!busDutyImportPreview.length)throw new Error('인식 가능한 날짜·학년·교사 행이 없습니다.');const dates=[...new Set(busDutyImportPreview.map(item=>item.date))];preview.innerHTML=`<strong>${esc(file.name)}</strong><span>${dates[0]} ~ ${dates.at(-1)} · ${dates.length}일 · 총 ${busDutyImportPreview.length}건</span><div>${busDutyImportPreview.slice(0,12).map(item=>`<small>${esc(item.date)} · ${esc(item.grade)}학년 · ${esc(item.teacher)}</small>`).join('')}</div>`;save.disabled=false;}catch(error){console.error(error);busDutyImportPreview=[];preview.textContent=`파일을 읽지 못했습니다: ${error.message}`;save.disabled=true;}
+  };
+  window.dashboardSaveBusDutyImport=async()=>{
+    if(!await ensureBusDutyAdmin()||!busDutyImportPreview.length||!firebaseDB)return;
+    if(!confirm(`승차지도 ${busDutyImportPreview.length}건을 저장하고 기존 명단을 교체하시겠습니까?`))return;
+    const uploadedAt=Date.now(),uploadedBy=author(),payload={};busDutyImportPreview.forEach(item=>{payload[item.id]={...item,initialDate:item.date,uploadedAt,uploadedBy};delete payload[item.id].id;});
+    ref('shared/dashboard/busDuty').set(payload).then(()=>{dashboardCloseModal();alert('승차지도 명단을 저장했습니다.');}).catch(error=>{console.error(error);alert('승차지도 명단을 저장하지 못했습니다.');});
+  };
+  window.dashboardOpenBusDutySwap=id=>{
+    const current=D.data.busDuty?.[id];if(!current)return;
+    const candidates=values(D.data.busDuty).filter(item=>item.id!==id&&item.grade===current.grade&&item.date!==current.date).sort((a,b)=>a.date.localeCompare(b.date));
+    openModal('승차지도 날짜 교환',`<form class="dashboard-form dashboard-bus-swap" id="dashboardBusSwapForm"><div class="dashboard-bus-current"><span>${esc(current.grade)}학년</span><strong>${esc(current.teacher)}</strong><small>${esc(current.date)}</small></div><label><span class="dashboard-field-label">교환할 교사·날짜</span><select name="targetId" required><option value="">선택하세요</option>${candidates.map(item=>`<option value="${esc(item.id)}">${esc(item.date)} · ${esc(item.teacher)}${item.route?` · ${esc(item.route)}`:''}</option>`).join('')}</select></label>${field('requester','변경 요청 교사','text',author())}<label class="dashboard-check-field"><input type="checkbox" name="agreed" required><span>상대 교사와 사전 협의를 완료했습니다.</span></label><div class="dashboard-form-actions"><button type="button" class="dashboard-btn-cancel" onclick="dashboardCloseModal()">취소</button><button class="dashboard-btn-save" type="submit"><i class="fas fa-right-left"></i> 날짜 교환</button></div></form>`);
+    $('dashboardBusSwapForm').onsubmit=event=>{event.preventDefault();const form=event.target,fd=new FormData(form),targetId=String(fd.get('targetId')||''),requester=String(fd.get('requester')||'').trim(),target=D.data.busDuty?.[targetId];if(!target||!requester||!form.elements.agreed.checked)return;localStorage.setItem('dashboardAuthor',requester);if(!confirm(`${current.teacher} (${current.date}) ↔ ${target.teacher} (${target.date})로 교환하시겠습니까?`))return;const changedAt=Date.now(),updates={};updates[`${id}/date`]=target.date;updates[`${id}/changedAt`]=changedAt;updates[`${id}/changedBy`]=requester;updates[`${id}/swappedWith`]=target.teacher;updates[`${targetId}/date`]=current.date;updates[`${targetId}/changedAt`]=changedAt;updates[`${targetId}/changedBy`]=requester;updates[`${targetId}/swappedWith`]=current.teacher;ref('shared/dashboard/busDuty').update(updates).then(dashboardCloseModal).catch(error=>{console.error(error);alert('날짜를 교환하지 못했습니다.');});};
+  };
   function renderMeetings(){const el=$('dash-meetings');if(!el)return;const list=values(D.data.meetings).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,3);el.innerHTML=list.length?`<div class="dash-list">${list.map(n=>item(n,`${esc(n.title)} <span class="dash-status">${esc(n.department)}</span>`,n.content,'meetings',`${esc(n.date)} · ${esc(n.author)}`)).join('')}</div><button class="dash-more" onclick="dashboardShowAll('meetings')">전체보기</button>`:'<div class="dash-empty">등록된 회의가 없습니다.</div>';}
   function renderSuggestions(){const el=$('dash-suggestions');if(!el)return;const list=values(D.data.suggestions).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).slice(0,4);el.innerHTML=list.length?`<div class="dash-list">${list.map(n=>item(n,`${esc(n.title)} <span class="dash-status ${n.status==='답변완료'?'done':n.status==='검토중'?'review':''}">${esc(n.status||'접수')}</span>`,n.content,'suggestions',`${esc(n.author)} · ${fmtTime(n.createdAt)}`)).join('')}</div><button class="dash-more" onclick="dashboardShowAll('suggestions')">전체보기</button>`:'<div class="dash-empty">등록된 제안이 없습니다.</div>';}
   function renderMajor(){const el=$('dash-major');if(!el)return;const base=dateKey(new Date());const auto=(ACADEMIC_CALENDAR||[]).filter(e=>e.date>=base).slice(0,6).map((e,i)=>({id:`calendar-${i}`,title:e.event,date:e.date,readonly:true}));const custom=values(D.data.majorEvents).filter(e=>e.date>=base);const list=[...custom,...auto].sort((a,b)=>a.date.localeCompare(b.date)).filter((e,i,a)=>a.findIndex(x=>x.date===e.date&&x.title===e.title)===i).slice(0,8);el.innerHTML=list.length?`<div class="dash-list">${list.map(e=>{const eventDate=new Date(e.date+'T00:00:00'),diff=Math.ceil((eventDate-new Date(base+'T00:00:00'))/86400000),smallDate=`${eventDate.getMonth()+1}.${eventDate.getDate()}(${dayName(eventDate)})`;return `<div class="dash-item dash-dday"><span class="dash-dday-title">${esc(e.title)} <small>${esc(smallDate)}</small></span><strong>${diff===0?'D-Day':`D-${diff}`}</strong></div>`;}).join('')}</div><button class="dash-more" onclick="dashboardAdd('major')">주요 일정 추가</button>`:'<div class="dash-empty">예정된 주요 일정이 없습니다.</div>';}
@@ -130,7 +204,7 @@
   window.dashboardMoveReservationMonth=n=>{const date=dateFor('reservations');date.setDate(1);date.setMonth(date.getMonth()+Number(n));renderReservations();};
   window.dashboardSetReservationMonth=value=>{if(!/^\d{4}-\d{2}$/.test(value))return;const selected=new Date(`${value}-01T00:00:00`);if(Number.isNaN(selected.getTime()))return;D.dates.reservations=selected;renderReservations();};
   window.dashboardToggleReservationLayout=()=>{D.reservationLayout=D.reservationLayout==='list'?'table':'list';localStorage.setItem('dashboardReservationLayout',D.reservationLayout);const button=$('dashboardReservationLayoutBtn');if(button){const list=D.reservationLayout==='list';button.classList.toggle('active',list);button.title=list?'시간표로 보기':'목록으로 보기';button.setAttribute('aria-label',button.title);button.innerHTML=`<i class="fas fa-${list?'table':'list'}"></i>`;}renderReservations();};
-  window.dashboardRefresh=id=>{if(id==='links')return renderLinks();if(id==='meal')return renderMeal(true);if(['schedule','major'].includes(id)){renderSection(id);return;}const map={notices:'notices',memos:'memos',meetings:'meetings',suggestions:'suggestions'};const key=map[id];if(key&&D.refs[key])D.refs[key].once('value').then(s=>{D.data[key]=s.val()||{};renderSection(id);});else renderSection(id);};
+  window.dashboardRefresh=id=>{if(id==='links')return renderLinks();if(id==='meal')return renderMeal(true);if(['schedule','major'].includes(id)){renderSection(id);return;}if(id==='memos'){return Promise.all(['memos','busDuty'].map(key=>D.refs[key]?.once('value').then(s=>{D.data[key]=key==='memos'?cleanObsoleteMemos(s.val()||{}):(s.val()||{});}))).then(renderMemos);}const map={notices:'notices',meetings:'meetings',suggestions:'suggestions'};const key=map[id];if(key&&D.refs[key])D.refs[key].once('value').then(s=>{D.data[key]=s.val()||{};renderSection(id);});else renderSection(id);};
   window.dashboardToggle=id=>{const c=$(`dash-card-${id}`);c?.classList.toggle('is-collapsed');const state=JSON.parse(localStorage.getItem('dashboardCollapsed')||'{}');state[id]=c?.classList.contains('is-collapsed');localStorage.setItem('dashboardCollapsed',JSON.stringify(state));const icon=c?.querySelector('.dash-actions button:last-child i');if(icon)icon.className=`fas fa-chevron-${state[id]?'down':'up'}`;};
   function restoreCollapsed(){let s={};try{s=JSON.parse(localStorage.getItem('dashboardCollapsed')||'{}');}catch(e){}Object.entries(s).forEach(([id,v])=>{if(v)setTimeout(()=>dashboardToggle(id),0);});}
   window.dashboardAdd=type=>openEditor(type,null);

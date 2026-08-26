@@ -27,7 +27,8 @@ async function loadAdminOverrides() {
     const snap = await firebaseDB.ref('adminData/calendar').once('value');
     const calendar = snap.val();
     if (Array.isArray(calendar) && calendar.length) {
-      ACADEMIC_CALENDAR.splice(0, ACADEMIC_CALENDAR.length, ...calendar);
+      const merged = typeof mergeAcademicCalendarWithBaseline === 'function' ? mergeAcademicCalendarWithBaseline(calendar) : calendar;
+      ACADEMIC_CALENDAR.splice(0, ACADEMIC_CALENDAR.length, ...merged);
       window.dispatchEvent(new CustomEvent('schoolapp:calendar-updated'));
     }
   } catch (error) {

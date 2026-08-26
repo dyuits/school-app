@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v71-teacher-popup-period-layout';
+var CACHE_NAME = 'school-app-v72-september-calendar-bus-duty';
 var ASSETS = [
   './',
   './index.html',
