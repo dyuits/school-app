@@ -33,7 +33,7 @@ const subjectRules = read(`(() => {
   const groups = getSubjectGroups();
   return {
     korean: groups['국어'] || [], design: groups['디자인'] || [], commerce: groups['상업'] || [], pe: groups['체육'] || [],
-    video: groups['영상'] || [], art: groups['미술'] || [], religion: groups['종교'] || [],
+    video: groups['영상'] || [], art: groups['미술'] || [], religion: groups['종교'] || [], career: groups['진로'] || [],
     hasKorean2: !!groups['국어2'], hasPe2: !!groups['체육2']
   };
 })()`);
@@ -45,7 +45,7 @@ assert(JSON.stringify(subjectRules.video) === JSON.stringify(['송준한']), '�
 assert(subjectRules.art.includes('백경민'), '미술 교과에 백경민이 없음');
 assert(subjectRules.religion.includes('이순규'), '종교 교과에 이순규가 없음');
 const leeSoonkyuSubjects = read(`Object.entries(getSubjectGroups()).filter(([,teachers]) => teachers.includes('이순규')).map(([subject]) => subject)`);
-assert(JSON.stringify(leeSoonkyuSubjects) === JSON.stringify(['종교']), '이순규가 종교 외 다른 교과에 중복 배치됨');
+assert(subjectRules.career.includes('이순규') && leeSoonkyuSubjects.includes('종교') && leeSoonkyuSubjects.includes('진로'), '이순규 종교/진로 교과 배치 오류');
 assert(!subjectRules.hasKorean2 && !subjectRules.hasPe2, '국어2/체육2 버튼이 남아 있음');
 const onlineSubjectTeachers = read(`Object.values(getSubjectGroups()).flat().filter(name => name.includes('온라인'))`);
 assert(onlineSubjectTeachers.length === 0, '교과별 수업 탭에 온라인 교사가 남아 있음');

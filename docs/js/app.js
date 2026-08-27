@@ -2089,6 +2089,7 @@ function getSubjectGroups() {
   groups['영상'] = ['송준한'];
   groups['미술'] = [...new Set([...(groups['미술'] || []), '백경민'])];
   groups['종교'] = [...new Set([...(groups['종교'] || []), '이순규'])];
+  groups['진로'] = [...new Set([...(groups['진로'] || []), '이순규'])];
   return groups;
 }
 
@@ -2116,7 +2117,7 @@ function renderSubjectClassTab_subject() {
   const groups = getSubjectGroups();
   const listEl = qs('#subjectClassList');
   listEl.innerHTML = '';
-  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','영상','정보','디자인','상업','종교'];
+  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','영상','정보','디자인','상업','종교','진로'];
   const subjects = Object.keys(groups).sort((a, b) => {
     const ai = subjectOrder.indexOf(a), bi = subjectOrder.indexOf(b);
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
@@ -2191,7 +2192,7 @@ function renderSubjectClassTab_class() {
 
 function renderClassTeacherDetail(classKey, entries) {
   const panel = qs('#subjectClassDetail');
-  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','정보','디자인','상업','종교'];
+  const subjectOrder = ['국어','수학','영어','외국어','사회','과학','체육','음악','미술','정보','디자인','상업','종교','진로'];
   entries.sort((a, b) => {
     const ai = subjectOrder.indexOf(a.bigSubj), bi = subjectOrder.indexOf(b.bigSubj);
     return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);

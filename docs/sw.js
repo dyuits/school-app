@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v78-religion-teacher';
+var CACHE_NAME = 'school-app-v79-career-subject';
 var ASSETS = [
   './',
   './index.html',
