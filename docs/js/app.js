@@ -2070,7 +2070,7 @@ function getSubjectGroups() {
   }
   // 교과별 수업 탭의 확정 수정사항
   for (const teachers of Object.values(groups)) {
-    ['홍민영','김제령','김지윤','송준한','백경민'].forEach(name => {
+    ['홍민영','김제령','김지윤','송준한','백경민','이순규'].forEach(name => {
       const index = teachers.indexOf(name);
       if (index >= 0) teachers.splice(index, 1);
     });
@@ -2088,6 +2088,7 @@ function getSubjectGroups() {
   groups['체육'] = [...new Set([...(groups['체육'] || []), '김지윤'])];
   groups['영상'] = ['송준한'];
   groups['미술'] = [...new Set([...(groups['미술'] || []), '백경민'])];
+  groups['종교'] = [...new Set([...(groups['종교'] || []), '이순규'])];
   return groups;
 }
 

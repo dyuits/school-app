@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v77-anonymous-visitor-count';
+var CACHE_NAME = 'school-app-v78-religion-teacher';
 var ASSETS = [
   './',
   './index.html',
