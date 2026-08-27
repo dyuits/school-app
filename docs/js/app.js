@@ -1102,7 +1102,7 @@ function buildTeacherDetailCard(teacher, compact = false, popup = false) {
             const row = `<tr>
               <td class="period-label premium-period-cell teacher-period-cell">
                 <strong class="teacher-period-number">${p}교시</strong>
-                <span class="teacher-period-time">${getPeriodTime(p, gradeGroup === '3' ? '3' : '1')}</span>
+                <span class="teacher-period-time">${getPeriodTime(p, gradeGroup === '3' ? '3' : '1').replace('~','<wbr>~')}</span>
               </td>
               ${DAYS.map(d => {
                 const key = d + p;

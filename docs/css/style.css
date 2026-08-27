@@ -3436,7 +3436,8 @@ a { text-decoration:none; color:inherit; }
 .subject-selector-header strong { font-size: 14px; line-height: 1.35; letter-spacing: -.02em; }
 .subject-selector-header small { margin-top: 2px; color: rgba(255,255,255,.72); font-size: 10px; font-weight: 500; }
 .subject-selector-panel .side-btn-list {
-  max-height: 74vh;
+  max-height: none;
+  overflow: visible;
   padding: 10px;
   gap: 7px;
   background: linear-gradient(180deg, #FBFDFF, #F3F9FC);
@@ -3613,4 +3614,21 @@ a { text-decoration:none; color:inherit; }
   .subject-view-toggle { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
   .subject-selector-panel .side-btn-list { grid-template-columns: minmax(0, 1fr); }
   .subject-browser-tab .subject-teacher-schedule-grid { grid-template-columns: minmax(0, 1fr); }
+  .subject-browser-tab .subject-overview-grid,
+  .subject-browser-tab .subject-teacher-schedule-grid { padding: 6px; gap: 8px; }
+  .subject-browser-tab .premium-schedule-scroll { overflow-x: visible; padding: 4px; }
+  .subject-browser-tab .teacher-premium-table { min-width: 0 !important; width: 100%; border-spacing: 2px; table-layout: fixed; }
+  .subject-browser-tab .teacher-premium-table th,
+  .subject-browser-tab .teacher-premium-table td { min-width: 0 !important; padding: 2px 1px !important; font-size: 8px; }
+  .subject-browser-tab .teacher-detail-table .teacher-period-heading,
+  .subject-browser-tab .teacher-detail-table .teacher-period-cell { width: 43px !important; min-width: 43px !important; }
+  .subject-browser-tab .premium-period-cell strong { font-size: 8.5px; }
+  .subject-browser-tab .premium-period-cell span { font-size: 6.5px; line-height: 1.2; white-space: normal; }
+  .subject-browser-tab .teacher-premium-table tbody td:not(.premium-period-cell):not(.premium-lunch-cell):not(.premium-lunch-label) { height: 43px; }
+  .subject-browser-tab .teacher-premium-table tbody td > div > div { min-height: 36px; padding: 2px 1px !important; }
+  .subject-browser-tab .cell-subject { font-size: 8px; line-height: 1.15; overflow-wrap: anywhere; word-break: break-all; }
+  .subject-browser-tab .cell-class { font-size: 6.5px !important; line-height: 1.15; overflow-wrap: anywhere; word-break: break-all; }
+  .subject-browser-tab .teacher-free-cell span { font-size: 7px; }
+  .subject-browser-tab .premium-lunch-cell,
+  .subject-browser-tab .premium-lunch-label { padding: 3px 1px !important; font-size: 6.5px !important; }
 }
