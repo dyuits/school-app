@@ -1309,6 +1309,7 @@ const ACADEMIC_CALENDAR = [
   { date:"2026-08-13", day:"목", event:"2학기 개학", type:"important" },
   { date:"2026-08-17", day:"월", event:"대체공휴일", type:"holiday" },
   { date:"2026-08-24", day:"월", event:"방과후학교 시작 (~12/9)", type:"event" },
+  { date:"2026-08-28", day:"금", event:"동아리", type:"event", source:"2026-club-schedule" },
 
   // ── 9월 (9월 교육활동계획 반영) ──
   { date:"2026-09-01", day:"화", event:"행정정보 공유 연계 시스템 요청 기간 (~10/2)", type:"event", source:"2026-09-education-plan" },
