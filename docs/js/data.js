@@ -1356,17 +1356,21 @@ const ACADEMIC_CALENDAR = [
   { date:"2026-10-15", day:"목", event:"1차고사 (2학기)", type:"exam" },
   { date:"2026-10-19", day:"월", event:"채플 (2학년)", type:"event" },
   { date:"2026-10-20", day:"화", event:"학력평가 (1,2,3학년)", type:"exam" },
+  { date:"2026-10-23", day:"금", event:"동아리", type:"event", source:"2026-club-schedule" },
 
   // ── 11월 ──
   { date:"2026-11-06", day:"금", event:"교직원연수의날", type:"event" },
+  { date:"2026-11-13", day:"금", event:"동아리", type:"event", source:"2026-club-schedule" },
   { date:"2026-11-16", day:"월", event:"채플 (3학년)", type:"event" },
   { date:"2026-11-18", day:"수", event:"수능예비소집일", type:"event" },
   { date:"2026-11-19", day:"목", event:"대학수학능력시험 (재량휴업일)", type:"exam" },
+  { date:"2026-11-27", day:"금", event:"동아리", type:"event", source:"2026-club-schedule" },
 
   // ── 12월 ──
   { date:"2026-12-04", day:"금", event:"교직원연수의날", type:"event" },
   { date:"2026-12-10", day:"목", event:"개교기념일", type:"holiday" },
   { date:"2026-12-11", day:"금", event:"수능성적발표", type:"event" },
+  { date:"2026-12-11", day:"금", event:"동아리", type:"event", source:"2026-club-schedule" },
   { date:"2026-12-16", day:"수", event:"2차고사 (2학기)", type:"exam" },
   { date:"2026-12-17", day:"목", event:"2차고사 (2학기)", type:"exam" },
   { date:"2026-12-18", day:"금", event:"2차고사 (2학기)", type:"exam" },
@@ -1390,11 +1394,12 @@ const LEGACY_SEPTEMBER_2026_EVENTS = new Set([
 function mergeAcademicCalendarWithBaseline(remoteCalendar) {
   if (!Array.isArray(remoteCalendar) || !remoteCalendar.length) return ACADEMIC_CALENDAR.map(event => ({ ...event }));
   const septemberPlan = ACADEMIC_CALENDAR.filter(event => event.source === "2026-09-education-plan");
+  const requiredClubEvents = ACADEMIC_CALENDAR.filter(event => event.source === "2026-club-schedule");
   const preserved = remoteCalendar.filter(event => !(
     String(event?.date || "").startsWith("2026-09-") &&
     (LEGACY_SEPTEMBER_2026_EVENTS.has(String(event?.event || "")) || event?.source === "2026-09-education-plan")
   ));
-  const merged = [...preserved, ...septemberPlan];
+  const merged = [...preserved, ...septemberPlan, ...requiredClubEvents];
   return merged.filter((event, index, all) => all.findIndex(candidate => candidate.date === event.date && candidate.event === event.event) === index)
     .sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")) || String(a.event || "").localeCompare(String(b.event || ""), "ko"));
 }

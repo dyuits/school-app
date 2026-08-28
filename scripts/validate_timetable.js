@@ -341,6 +341,8 @@ const septemberPlanAudit = read(`(() => {
 assert(septemberPlanAudit.count === 34, '9월 교육활동계획 일정 수 누락');
 assert(septemberPlanAudit.mockExamDate === '2026-09-02' && !septemberPlanAudit.hasLegacyMockExam, '3학년 수능모의평가 날짜 보정 오류');
 assert(septemberPlanAudit.hasSeptember26Holiday, '9월 26일 추석 연휴 누락');
+const requiredClubDates = ['2026-09-11','2026-10-23','2026-11-13','2026-11-27','2026-12-11'];
+assert(requiredClubDates.every(date => read(`ACADEMIC_CALENDAR`).some(event => event.date === date && event.event === '동아리')), '지정일 동아리 학사일정 누락');
 assert(dashboardSource.includes('parseBusDutyWorkbook') && dashboardSource.includes("shared/dashboard/busDuty") && dashboardSource.includes('dashboardOpenBusDutySwap'), '승차지도 엑셀/날짜 교환 기능 누락');
 assert(dashboardSource.includes('wideGrades') && dashboardSource.includes('teacherColumn'), '승차지도 가로형/세로형 엑셀 인식 누락');
 assert(dashboardSource.includes('dashboardOpenBusDutyCalendar') && dashboardSource.includes('dashboardMoveBusDutyCalendar') && dashboardSource.includes('dashboard-bus-cal-grid'), '월별 승차지도 달력 팝업 누락');
@@ -353,6 +355,7 @@ assert(dashboardSource.includes('dashboardMoveAcademicCalendar') && dashboardSou
 assert(dashboardStyles.includes('.dashboard-academic-cal-weekdays') && dashboardStyles.includes('.dashboard-academic-cal-event.type-important'), '월별 학사일정 달력 CSS 누락');
 assert(dashboardSource.includes('dashboardOpenMajorHwpxUpload') && dashboardSource.includes('parseMajorHwpx') && dashboardSource.includes('dashboardSaveMajorHwpx'), '주요 일정 HWPX 업로드 기능 누락');
 assert(dashboardSource.includes("source:'hwpx'") && dashboardSource.includes('shared/dashboard/majorEvents'), 'HWPX 주요 일정 저장 연동 누락');
+assert(dashboardSource.includes('renderCalendarMemo') && dashboardSource.includes('오늘은 동아리 활동이 예정되어 있습니다.'), '오늘의 알림장 동아리 일정 연동 누락');
 assert(dashboardSource.includes('schoolAppAnonymousVisitorId') && dashboardSource.includes('shared/dashboard/anonymousVisitors') && dashboardSource.includes('.transaction('), 'IP 없는 익명 방문자 중복 방지 집계 누락');
 assert(dashboardSource.includes('dashboardVisitorCount') && dashboardStyles.includes('.dashboard-visitor-counter'), '누적 방문자 표시 UI 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');

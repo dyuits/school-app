@@ -71,7 +71,7 @@
     D.listeners=true;
     const paths={notices:'shared/dashboard/notices',memos:'shared/dashboard/memos',meetings:'shared/dashboard/meetings',suggestions:'shared/dashboard/suggestions',majorEvents:'shared/dashboard/majorEvents',busDuty:'shared/dashboard/busDuty'};
     Object.entries(paths).forEach(([key,path])=>{ D.refs[key]=ref(path); D.refs[key].on('value',s=>{const value=s.val()||{};D.data[key]=key==='memos'?cleanObsoleteMemos(value,true):value;renderSection(key==='majorEvents'?'major':key==='busDuty'?'memos':key);if(D.admin)renderDashboardAdmin();}); });
-    ref('adminData/calendar').on('value',snap=>{const calendar=snap.val();if(Array.isArray(calendar)&&calendar.length){const merged=typeof mergeAcademicCalendarWithBaseline==='function'?mergeAcademicCalendarWithBaseline(calendar):calendar;ACADEMIC_CALENDAR.splice(0,ACADEMIC_CALENDAR.length,...merged);renderSchedule();renderMajor();}});
+    ref('adminData/calendar').on('value',snap=>{const calendar=snap.val();if(Array.isArray(calendar)&&calendar.length){const merged=typeof mergeAcademicCalendarWithBaseline==='function'?mergeAcademicCalendarWithBaseline(calendar):calendar;ACADEMIC_CALENDAR.splice(0,ACADEMIC_CALENDAR.length,...merged);renderSchedule();renderMajor();renderMemos();}});
   }
   function anonymousVisitorId(){let id=localStorage.getItem('schoolAppAnonymousVisitorId');if(id)return id;id=typeof crypto!=='undefined'&&typeof crypto.randomUUID==='function'?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;localStorage.setItem('schoolAppAnonymousVisitorId',id);return id;}
   function trackAnonymousVisitor(){
@@ -83,7 +83,7 @@
     visitors.on('value',snapshot=>{const count=snapshot.numChildren(),counter=$('dashboardVisitorCount');if(counter)counter.textContent=count.toLocaleString('ko-KR');},error=>{console.warn('방문자 수 로드 실패',error);const counter=$('dashboardVisitorCount');if(counter)counter.textContent='—';});
   }
   window.addEventListener('schoolapp:firebase-ready',bindFirebase);
-  window.addEventListener('schoolapp:calendar-updated',()=>{renderSchedule();renderMajor();});
+  window.addEventListener('schoolapp:calendar-updated',()=>{renderSchedule();renderMajor();renderMemos();});
   window.addEventListener('schoolapp:reservations-updated',renderReservations);
   function renderAll(){ ['schedule','notices','memos','meetings','suggestions','major','links','reservations','meal'].forEach(renderSection); }
   function renderSection(id){ ({schedule:renderSchedule,notices:renderNotices,memos:renderMemos,meetings:renderMeetings,suggestions:renderSuggestions,major:renderMajor,links:renderLinks,reservations:renderReservations,meal:renderMeal}[id]||(()=>{}))(); }
@@ -143,7 +143,8 @@
     if(!duties.length)return '';
     return `<section class="dashboard-bus-duty"><div class="dashboard-bus-duty-head"><span><i class="fas fa-bus"></i> 승차지도 교사</span><small>교환은 사전 협의 후 진행</small></div><div class="dashboard-bus-duty-list">${duties.map(duty=>`<div class="dashboard-bus-duty-row"><span class="dashboard-grade-badge grade-${esc(duty.grade)}">${esc(duty.grade)}학년</span><strong>${esc(duty.teacher)}</strong>${duty.route?`<span class="dashboard-bus-route">${esc(duty.route)}</span>`:''}<button type="button" onclick="dashboardOpenBusDutySwap('${esc(duty.id)}')"><i class="fas fa-right-left"></i> 날짜 교환</button></div>`).join('')}</div></section>`;
   }
-  function renderMemos(){const el=$('dash-memos');if(!el)return;const key=dateKey(dateFor('memos')),list=values(memoForDate()).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)),duty=renderBusDuty(key),memos=list.length?`<div class="dash-list">${list.map(n=>item(n,esc(n.title||n.content),n.title?n.content:'','memos',`${esc(n.author)} · ${fmtTime(n.createdAt)}`)).join('')}</div>`:'<div class="dash-empty">등록된 알림장 내용이 없습니다.</div>';el.innerHTML=dateNav('memos')+duty+memos;}
+  function renderCalendarMemo(date){const events=(ACADEMIC_CALENDAR||[]).filter(item=>item.date===date&&String(item.event||'').includes('동아리'));return events.length?`<section class="dashboard-calendar-memo"><div><i class="fas fa-people-group"></i><strong>동아리</strong></div><span>오늘은 동아리 활동이 예정되어 있습니다.</span></section>`:'';}
+  function renderMemos(){const el=$('dash-memos');if(!el)return;const key=dateKey(dateFor('memos')),list=values(memoForDate()).sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)),duty=renderBusDuty(key),calendarMemo=renderCalendarMemo(key),memos=list.length?`<div class="dash-list">${list.map(n=>item(n,esc(n.title||n.content),n.title?n.content:'','memos',`${esc(n.author)} · ${fmtTime(n.createdAt)}`)).join('')}</div>`:calendarMemo?'':'<div class="dash-empty">등록된 알림장 내용이 없습니다.</div>';el.innerHTML=dateNav('memos')+duty+calendarMemo+memos;}
 
   function busDutyCalendarHtml(date){
     const year=date.getFullYear(),month=date.getMonth(),first=new Date(year,month,1),lastDay=new Date(year,month+1,0).getDate(),offset=(first.getDay()+6)%7,cells=[],query=String(D.busDutyCalendarQuery||'').trim().toLowerCase();
