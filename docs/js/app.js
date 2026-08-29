@@ -244,6 +244,7 @@ function switchTab(name) {
   if (name === 'subjectClass')  renderSubjectClassTab();
   if (name === 'classSchedule') renderClassScheduleTab();
   if (name === 'lab')           renderLabTab();
+  if (name === 'afterSchool' && typeof renderAfterSchoolAttendance === 'function') renderAfterSchoolAttendance();
   if (name === 'free')          renderFreeTab();
   if (name === 'meeting')       renderMeetingTab();
   if (name === 'calendar')      renderCalendarTab();

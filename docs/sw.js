@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v84-daily-visitor-count';
+var CACHE_NAME = 'school-app-v85-afterschool-attendance';
 var ASSETS = [
   './',
   './index.html',
@@ -6,8 +6,10 @@ var ASSETS = [
   './call.html',
   './css/style.css',
   './css/dashboard.css',
+  './css/afterschool.css',
   './js/app.js',
   './js/dashboard.js',
+  './js/afterschool.js',
   './js/data.js',
   './js/firebase-config.js',
   './icons/icon-192.png',

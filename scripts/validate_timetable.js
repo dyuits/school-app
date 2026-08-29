@@ -438,6 +438,15 @@ assert(candidateAudit.externalSwaps === 0, '외부강사 교체 후보 발생');
 assert(candidateAudit.externalSubstitutes === 0, '외부강사 대체 후보 발생');
 assert(candidateAudit.invalidVirtualSwaps === 0, '가상 맞교환 후 충돌하는 교체 후보 발생');
 
+const afterSchoolSource = fs.readFileSync(path.join(root, 'docs/js/afterschool.js'), 'utf8');
+const afterSchoolStyles = fs.readFileSync(path.join(root, 'docs/css/afterschool.css'), 'utf8');
+assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMarkup.includes('id="afterSchoolAttendanceRoot"'), '방과후학교 출석부 탭 마크업 누락');
+assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
+assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
+assert(afterSchoolSource.includes("O:'○'") && afterSchoolSource.includes("A:'/'") && afterSchoolSource.includes("X:'X'") && afterSchoolSource.includes("E:'△'"), '출결 기호 정책 누락');
+assert(afterSchoolSource.includes('shared/afterSchoolAttendance') && afterSchoolSource.includes('function totals('), '출석부 공유 저장 또는 자동 합계 누락');
+assert(afterSchoolSource.includes('window.afterSchoolPrint') && afterSchoolStyles.includes('@media print') && afterSchoolStyles.includes('size:A4 portrait'), 'A4 출석부 출력 기능 누락');
+
 console.log(JSON.stringify({
   teacherCount: read(`Object.keys(TEACHER_SCHEDULE).length`),
   classCount: read(`Object.keys(CLASS_SCHEDULE).length`),

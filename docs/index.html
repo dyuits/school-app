@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=20260827-1">
   <link rel="stylesheet" href="css/dashboard.css?v=20260829-1">
+  <link rel="stylesheet" href="css/afterschool.css?v=20260829-1">
   <!-- PDF.js: 세특 탭 PDF 업로드 텍스트 추출 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if(typeof pdfjsLib!=='undefined'){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';}</script>
@@ -40,6 +41,9 @@
     </button>
     <button class="tab-btn" onclick="location.href='club.html'" style="background:var(--orange-pale);border-color:var(--orange-soft);">
       <i class="fas fa-clipboard-check tab-icon" style="color:var(--orange);"></i><span class="tab-label"> 동아리 출석부</span>
+    </button>
+    <button class="tab-btn" data-tab="afterSchool" onclick="switchTab('afterSchool')">
+      <i class="fas fa-user-check tab-icon"></i><span class="tab-label"> 방과후학교 출석부</span>
     </button>
 
     <button class="tab-btn" data-tab="meeting" onclick="switchTab('meeting')">
@@ -89,6 +93,10 @@
 
     <section id="homeTab" class="tab-panel active">
       <div id="schoolDashboard" aria-live="polite"></div>
+    </section>
+
+    <section id="afterSchoolTab" class="tab-panel afterschool-tab">
+      <div id="afterSchoolAttendanceRoot"></div>
     </section>
 
     <!-- ── 1. 교체/대체 시간표 ── -->
@@ -4068,5 +4076,6 @@ document.addEventListener('DOMContentLoaded', function() {
   <script src="js/data.js?v=20260828-2"></script>
 <script src="js/app.js?v=20260827-3"></script>
 <script src="js/dashboard.js?v=20260829-1"></script>
+<script src="js/afterschool.js?v=20260829-1"></script>
 </body>
 </html>
