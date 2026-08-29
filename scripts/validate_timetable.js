@@ -443,6 +443,7 @@ const afterSchoolStyles = fs.readFileSync(path.join(root, 'docs/css/afterschool.
 assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMarkup.includes('id="afterSchoolAttendanceRoot"'), '방과후학교 출석부 탭 마크업 누락');
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
+assert(teacherPopupMarkup.includes('pako.min.js') && afterSchoolSource.includes('parseHwpBinary') && afterSchoolSource.includes('XLSX.CFB.read'), 'HWP 5.x 바이너리 출석부 파서 누락');
 assert(afterSchoolSource.includes("O:'○'") && afterSchoolSource.includes("A:'/'") && afterSchoolSource.includes("X:'X'") && afterSchoolSource.includes("E:'△'"), '출결 기호 정책 누락');
 assert(afterSchoolSource.includes('shared/afterSchoolAttendance') && afterSchoolSource.includes('function totals('), '출석부 공유 저장 또는 자동 합계 누락');
 assert(afterSchoolSource.includes('window.afterSchoolPrint') && afterSchoolStyles.includes('@media print') && afterSchoolStyles.includes('size:A4 portrait'), 'A4 출석부 출력 기능 누락');
