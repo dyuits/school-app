@@ -1,7 +1,7 @@
 // 학교 업무 통합 대시보드 - 기존 ACADEMIC_CALENDAR/LAB_SCHEDULE/Firebase 재사용
 (function () {
   const D = {
-    dates:{schedule:new Date(),notices:new Date(),memos:new Date(),reservations:new Date(),meal:new Date()}, initialized:false, listeners:false, visitorTracking:false, reservationView:'special', reservationLayout:localStorage.getItem('dashboardReservationLayout')==='list'?'list':'table', reservationListRange:localStorage.getItem('dashboardReservationListRange')==='month'?'month':'day', admin:sessionStorage.getItem('dashboardAdmin')==='yes',
+    dates:{schedule:new Date(),notices:new Date(),memos:new Date(),reservations:new Date(),meal:new Date()}, initialized:false, listeners:false, visitorTracking:false, visitorDate:null, dailyVisitorRef:null, reservationView:'special', reservationLayout:localStorage.getItem('dashboardReservationLayout')==='list'?'list':'table', reservationListRange:localStorage.getItem('dashboardReservationListRange')==='month'?'month':'day', admin:sessionStorage.getItem('dashboardAdmin')==='yes',
     data:{ notices:{}, memos:{}, meetings:{}, suggestions:{}, links:{}, majorEvents:{}, busDuty:{} }, busDutyCalendarDate:null, busDutyCalendarQuery:'', academicCalendarDate:null, majorHwpxPreview:[],
     refs:{}, modalSubmit:null
   };
@@ -44,7 +44,7 @@
   window.renderDashboard = function(){
     const root=$('schoolDashboard'); if(!root)return;
     if(!D.initialized){
-      root.innerHTML=`<div class="dashboard-shell"><div class="dashboard-visitor-counter" title="IP를 수집하지 않으며 같은 브라우저는 한 번만 계산합니다."><i class="fas fa-users"></i><span>누적 방문자</span><strong id="dashboardVisitorCount">—</strong></div>
+      root.innerHTML=`<div class="dashboard-shell"><div class="dashboard-visitor-counter" title="IP를 수집하지 않으며 같은 브라우저는 하루에 한 번만 계산합니다."><i class="fas fa-users"></i><span>오늘 방문자</span><strong id="dashboardDailyVisitorCount">—</strong><em>·</em><span>누적 방문자</span><strong id="dashboardVisitorCount">—</strong></div>
         <div class="dashboard-shortcut-bar">${card('links','external-link-alt','업무 바로가기','ivory',true,'span-links')}</div>
         <div class="dashboard-grid">
           ${card('schedule','calendar-day','오늘의 학사일정','mint',true)}
@@ -65,7 +65,7 @@
   function card(id,icon,title,tone,add=false,span=''){
     return `<article class="dash-card ${tone} ${span}" id="dash-card-${id}"><div class="dash-head"><i class="fas fa-${icon}"></i><h3>${title}</h3><div class="dash-actions">${add?`<button class="dash-icon-btn" title="추가" onclick="dashboardAdd('${id}')"><i class="fas fa-plus"></i></button>`:''}${id==='major'?`<button class="dash-icon-btn" title="HWPX 주요 일정 업로드" aria-label="HWPX 주요 일정 업로드" onclick="dashboardOpenMajorHwpxUpload()"><i class="fas fa-file-arrow-up"></i></button>`:''}${id==='schedule'||id==='major'?`<button class="dash-icon-btn" title="월별 학사일정 달력" aria-label="월별 학사일정 달력" onclick="dashboardOpenAcademicCalendar('${id}')"><i class="fas fa-calendar-days"></i></button>`:''}${id==='memos'?`<button class="dash-icon-btn" title="월별 승차지도 달력" aria-label="월별 승차지도 달력" onclick="dashboardOpenBusDutyCalendar()"><i class="fas fa-calendar-days"></i></button><button class="dash-icon-btn" title="승차지도 엑셀 관리" aria-label="승차지도 엑셀 관리" onclick="dashboardOpenBusDutyUpload()"><i class="fas fa-file-excel"></i></button>`:''}${id==='reservations'?`<button class="dash-icon-btn dashboard-res-layout-btn ${D.reservationLayout==='list'?'active':''}" id="dashboardReservationLayoutBtn" title="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" aria-label="${D.reservationLayout==='list'?'시간표로 보기':'목록으로 보기'}" onclick="dashboardToggleReservationLayout()"><i class="fas fa-${D.reservationLayout==='list'?'table':'list'}"></i></button>`:''}<button class="dash-icon-btn" title="새로고침" onclick="dashboardRefresh('${id}')"><i class="fas fa-sync-alt"></i></button><button class="dash-icon-btn" title="접기/펼치기" onclick="dashboardToggle('${id}')"><i class="fas fa-chevron-up"></i></button></div></div><div class="dash-body" id="dash-${id}"><div class="dash-loading">불러오는 중…</div></div></article>`;
   }
-  function startClock(){ const tick=()=>{const n=new Date(); if($('dashToday'))$('dashToday').textContent=n.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});if($('dashClock'))$('dashClock').textContent=n.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});};tick();setInterval(tick,30000); }
+  function startClock(){ const tick=()=>{const n=new Date(); if($('dashToday'))$('dashToday').textContent=n.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});if($('dashClock'))$('dashClock').textContent=n.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});if(D.visitorTracking&&D.visitorDate!==dateKey(n))connectDailyVisitor(anonymousVisitorId());};tick();setInterval(tick,30000); }
   function bindFirebase(){
     if(D.listeners)return;
     if(!firebaseDB){ setTimeout(bindFirebase,500); return; }
@@ -75,13 +75,21 @@
     ref('adminData/calendar').on('value',snap=>{const calendar=snap.val();if(Array.isArray(calendar)&&calendar.length){const merged=typeof mergeAcademicCalendarWithBaseline==='function'?mergeAcademicCalendarWithBaseline(calendar):calendar;ACADEMIC_CALENDAR.splice(0,ACADEMIC_CALENDAR.length,...merged);renderSchedule();renderMajor();renderMemos();}});
   }
   function anonymousVisitorId(){let id=localStorage.getItem('schoolAppAnonymousVisitorId');if(id)return id;id=typeof crypto!=='undefined'&&typeof crypto.randomUUID==='function'?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;localStorage.setItem('schoolAppAnonymousVisitorId',id);return id;}
+  function connectDailyVisitor(visitorId){
+    const today=dateKey(new Date());
+    if(D.dailyVisitorRef)D.dailyVisitorRef.off('value');
+    D.visitorDate=today;D.dailyVisitorRef=ref(`shared/dashboard/dailyAnonymousVisitors/${today}`);
+    D.dailyVisitorRef.child(visitorId).transaction(current=>current||{firstVisitedAt:firebase.database.ServerValue.TIMESTAMP}).catch(error=>console.warn('오늘 방문자 등록 실패',error));
+    D.dailyVisitorRef.on('value',snapshot=>{const counter=$('dashboardDailyVisitorCount');if(counter)counter.textContent=snapshot.numChildren().toLocaleString('ko-KR');},error=>{console.warn('오늘 방문자 수 로드 실패',error);const counter=$('dashboardDailyVisitorCount');if(counter)counter.textContent='—';});
+  }
   function trackAnonymousVisitor(){
     if(D.visitorTracking)return;
     if(!firebaseDB){setTimeout(trackAnonymousVisitor,500);return;}
     D.visitorTracking=true;
-    const visitors=ref('shared/dashboard/anonymousVisitors'),visitor=visitors.child(anonymousVisitorId());
+    const visitorId=anonymousVisitorId(),visitors=ref('shared/dashboard/anonymousVisitors'),visitor=visitors.child(visitorId);
     visitor.transaction(current=>current||{firstVisitedAt:firebase.database.ServerValue.TIMESTAMP}).catch(error=>console.warn('방문자 등록 실패',error));
     visitors.on('value',snapshot=>{const count=snapshot.numChildren(),counter=$('dashboardVisitorCount');if(counter)counter.textContent=count.toLocaleString('ko-KR');},error=>{console.warn('방문자 수 로드 실패',error);const counter=$('dashboardVisitorCount');if(counter)counter.textContent='—';});
+    connectDailyVisitor(visitorId);
   }
   window.addEventListener('schoolapp:firebase-ready',bindFirebase);
   window.addEventListener('schoolapp:calendar-updated',()=>{renderSchedule();renderMajor();renderMemos();});

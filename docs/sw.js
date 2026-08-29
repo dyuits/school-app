@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v83-constitution-notice';
+var CACHE_NAME = 'school-app-v84-daily-visitor-count';
 var ASSETS = [
   './',
   './index.html',

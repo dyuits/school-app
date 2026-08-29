@@ -359,6 +359,7 @@ assert(dashboardSource.includes('renderCalendarMemo') && dashboardSource.include
 assert(dashboardSource.includes('CONSTITUTION_NOTICE') && dashboardSource.includes('기본권과 법') && dashboardSource.includes('2층 소회의실'), '헌법교육 홈 공지사항 누락');
 assert(dashboardSource.includes('schoolAppAnonymousVisitorId') && dashboardSource.includes('shared/dashboard/anonymousVisitors') && dashboardSource.includes('.transaction('), 'IP 없는 익명 방문자 중복 방지 집계 누락');
 assert(dashboardSource.includes('dashboardVisitorCount') && dashboardStyles.includes('.dashboard-visitor-counter'), '누적 방문자 표시 UI 누락');
+assert(dashboardSource.includes('dashboardDailyVisitorCount') && dashboardSource.includes('dailyAnonymousVisitors') && dashboardSource.includes('connectDailyVisitor'), '날짜별 익명 방문자 집계 누락');
 assert(labStyles.includes('.teacher-schedule-tab .teacher-schedule-button') && labStyles.includes('display: table-cell !important'), '교사 목록 또는 교시 셀 레이아웃 CSS 누락');
 assert(labStyles.includes('.class-schedule-tab .class-schedule-button') && labStyles.includes('overflow-wrap: anywhere'), '학급 목록 버튼 내부 맞춤 레이아웃 누락');
 assert(labMarkup.includes('subject-browser-tab') && labMarkup.includes('subject-selector-header'), '교과별 수업 브라우저형 마크업 누락');
