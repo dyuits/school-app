@@ -446,7 +446,7 @@ assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMark
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
 assert(teacherPopupMarkup.includes('pako.min.js') && afterSchoolSource.includes('parseHwpBinary') && afterSchoolSource.includes('XLSX.CFB.read'), 'HWP 5.x 바이너리 출석부 파서 누락');
-assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260829-10'), '방과후학교 출석부 런타임 재로딩 보호 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260829-11'), '방과후학교 출석부 런타임 재로딩 보호 누락');
 assert(afterSchoolSource.includes('function normalizeProgram(') && afterSchoolSource.includes('function normalizePrograms('), '빈 Firebase 출석부 데이터 자동 복구 누락');
 assert(afterSchoolSource.includes('function dateInputTabs(') && afterSchoolSource.includes('function attendanceOverview('), '출결 입력 날짜 또는 일자별 현황표 누락');
 assert(afterSchoolSource.includes('window.afterSchoolDownloadHwp') && afterSchoolSource.includes("type:'application/x-hwp;charset=utf-8'"), '한글 HWP 다운로드 기능 누락');
@@ -455,8 +455,9 @@ assert(afterSchoolStyles.includes('margin:18mm 25mm') && afterSchoolStyles.inclu
 assert(afterSchoolStyles.includes('"Hancom Gothic","한컴고딕"') && afterSchoolStyles.includes('font-size:10pt!important'), '출석부 한컴고딕 10pt 출력 설정 누락');
 assert(afterSchoolSource.includes('margin:18mm 25mm') && afterSchoolSource.includes("font-family:'Hancom Gothic','한컴고딕'"), '한글 다운로드 여백 또는 글꼴 설정 누락');
 assert(afterSchoolSource.includes('function hwpSheet(') && afterSchoolSource.includes('<body>${hwpSheet(p)}</body>'), '한글 다운로드 전용 표 기반 서식 누락');
-assert(afterSchoolStyles.includes('width:22%!important') && afterSchoolStyles.includes('width:3%!important'), '웹 출력 이름/출결현황 균형 열 너비 조정 누락');
-assert(afterSchoolSource.includes(".attendance-table .name-col{width:22%;min-width:22%") && afterSchoolSource.includes('width:3%;min-width:0'), '한글 다운로드 이름/출결현황 균형 열 너비 조정 누락');
+assert(afterSchoolSource.includes('width:11.3%') && afterSchoolSource.includes('49.5/dates.length') && afterSchoolSource.includes('<col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:6%">'), '원본 템플릿 학생·날짜·출결 열 실측 비율 누락');
+assert(afterSchoolSource.includes('width:62%') && afterSchoolSource.includes('width:16%'), '원본 템플릿 제목·결재란 실측 비율 누락');
+assert(afterSchoolStyles.includes('table-layout:fixed!important') && afterSchoolStyles.includes('width:auto!important;min-width:0!important'), '웹 인쇄 원본 템플릿 colgroup 고정 적용 누락');
 assert(afterSchoolSource.includes('printSheet=hwpSheet') && afterSchoolSource.includes('el.innerHTML=hwpSheet(p)'), '웹 인쇄와 한글 다운로드 서식 통합 누락');
 assert(afterSchoolSource.includes("O:'○'") && afterSchoolSource.includes("A:'/'") && afterSchoolSource.includes("X:'X'") && afterSchoolSource.includes("E:'△'"), '출결 기호 정책 누락');
 assert(afterSchoolSource.includes('shared/afterSchoolAttendance') && afterSchoolSource.includes('function totals('), '출석부 공유 저장 또는 자동 합계 누락');
