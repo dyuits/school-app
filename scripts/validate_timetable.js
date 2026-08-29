@@ -440,6 +440,8 @@ assert(candidateAudit.invalidVirtualSwaps === 0, '가상 맞교환 후 충돌하
 
 const afterSchoolSource = fs.readFileSync(path.join(root, 'docs/js/afterschool.js'), 'utf8');
 const afterSchoolStyles = fs.readFileSync(path.join(root, 'docs/css/afterschool.css'), 'utf8');
+assert(teacherPopupMarkup.includes('onclick="openClubAttendancePopup()"') && !teacherPopupMarkup.includes("onclick=\"location.href='club.html'\""), '동아리 출석부 현재창 이동이 남아 있음');
+assert(appSource.includes('function openClubAttendancePopup()') && appSource.includes("window.open('club.html', 'clubAttendancePopup'"), '동아리 출석부 팝업 열기 기능 누락');
 assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMarkup.includes('id="afterSchoolAttendanceRoot"'), '방과후학교 출석부 탭 마크업 누락');
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');

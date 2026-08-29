@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v90-afterschool-print-layout';
+var CACHE_NAME = 'school-app-v91-club-popup';
 var ASSETS = [
   './',
   './index.html',

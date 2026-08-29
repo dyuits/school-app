@@ -255,6 +255,16 @@ function switchTab(name) {
   if (name === 'dashboardAdmin' && typeof renderDashboardAdmin === 'function') renderDashboardAdmin();
 }
 
+function openClubAttendancePopup() {
+  const width = Math.min(1180, Math.max(760, Math.round(screen.availWidth * 0.9)));
+  const height = Math.min(900, Math.max(650, Math.round(screen.availHeight * 0.9)));
+  const left = Math.max(0, Math.round((screen.availWidth - width) / 2));
+  const top = Math.max(0, Math.round((screen.availHeight - height) / 2));
+  const popup = window.open('club.html', 'clubAttendancePopup', `popup=yes,width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+  if (!popup) alert('팝업차단을 해제한 뒤 다시 시도해주세요.');
+  else popup.focus();
+}
+
 function ensureAfterSchoolAttendance() {
   const root = document.getElementById('afterSchoolAttendanceRoot');
   const show = () => {
