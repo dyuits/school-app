@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v94-attendance-compact-totals';
+var CACHE_NAME = 'school-app-v95-unified-attendance-output';
 var ASSETS = [
   './',
   './index.html',
