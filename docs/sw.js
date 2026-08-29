@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v86-hwp-attendance-import';
+var CACHE_NAME = 'school-app-v87-afterschool-loader-fix';
 var ASSETS = [
   './',
   './index.html',

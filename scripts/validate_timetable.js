@@ -444,6 +444,7 @@ assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMark
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
 assert(teacherPopupMarkup.includes('pako.min.js') && afterSchoolSource.includes('parseHwpBinary') && afterSchoolSource.includes('XLSX.CFB.read'), 'HWP 5.x 바이너리 출석부 파서 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260829-3'), '방과후학교 출석부 런타임 재로딩 보호 누락');
 assert(afterSchoolSource.includes("O:'○'") && afterSchoolSource.includes("A:'/'") && afterSchoolSource.includes("X:'X'") && afterSchoolSource.includes("E:'△'"), '출결 기호 정책 누락');
 assert(afterSchoolSource.includes('shared/afterSchoolAttendance') && afterSchoolSource.includes('function totals('), '출석부 공유 저장 또는 자동 합계 누락');
 assert(afterSchoolSource.includes('window.afterSchoolPrint') && afterSchoolStyles.includes('@media print') && afterSchoolStyles.includes('size:A4 portrait'), 'A4 출석부 출력 기능 누락');

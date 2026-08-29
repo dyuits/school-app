@@ -244,7 +244,7 @@ function switchTab(name) {
   if (name === 'subjectClass')  renderSubjectClassTab();
   if (name === 'classSchedule') renderClassScheduleTab();
   if (name === 'lab')           renderLabTab();
-  if (name === 'afterSchool' && typeof renderAfterSchoolAttendance === 'function') renderAfterSchoolAttendance();
+  if (name === 'afterSchool') ensureAfterSchoolAttendance();
   if (name === 'free')          renderFreeTab();
   if (name === 'meeting')       renderMeetingTab();
   if (name === 'calendar')      renderCalendarTab();
@@ -253,6 +253,31 @@ function switchTab(name) {
   if (name === 'block')         renderBlockTab();
   if (name === 'util')          renderUtilTab();
   if (name === 'dashboardAdmin' && typeof renderDashboardAdmin === 'function') renderDashboardAdmin();
+}
+
+function ensureAfterSchoolAttendance() {
+  const root = document.getElementById('afterSchoolAttendanceRoot');
+  const show = () => {
+    try {
+      if (typeof window.renderAfterSchoolAttendance !== 'function') return false;
+      window.renderAfterSchoolAttendance();
+      return true;
+    } catch (error) {
+      console.error('방과후학교 출석부 표시 오류', error);
+      if (root) root.innerHTML = '<div class="card" style="padding:24px;color:#b04f58;">출석부를 표시하지 못했습니다. 새로고침 후 다시 시도해주세요.</div>';
+      return true;
+    }
+  };
+  if (show()) return;
+  if (root) root.innerHTML = '<div class="card" style="padding:24px;"><i class="fas fa-spinner fa-spin"></i> 방과후학교 출석부를 불러오는 중입니다.</div>';
+  const previous = document.getElementById('afterSchoolRuntimeScript');
+  if (previous) previous.remove();
+  const script = document.createElement('script');
+  script.id = 'afterSchoolRuntimeScript';
+  script.src = 'js/afterschool.js?v=20260829-3';
+  script.onload = () => { if (!show() && root) root.innerHTML = '<div class="card" style="padding:24px;color:#b04f58;">출석부 기능을 초기화하지 못했습니다.</div>'; };
+  script.onerror = () => { if (root) root.innerHTML = '<div class="card" style="padding:24px;color:#b04f58;">출석부 파일을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.</div>'; };
+  document.body.appendChild(script);
 }
 
 // ═══════════════════════════════════════════════
