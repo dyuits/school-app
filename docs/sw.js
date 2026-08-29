@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v92-hwp-table-layout';
+var CACHE_NAME = 'school-app-v93-attendance-column-widths';
 var ASSETS = [
   './',
   './index.html',
