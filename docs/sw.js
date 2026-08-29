@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v91-club-popup';
+var CACHE_NAME = 'school-app-v92-hwp-table-layout';
 var ASSETS = [
   './',
   './index.html',

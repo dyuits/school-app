@@ -446,7 +446,7 @@ assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMark
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
 assert(teacherPopupMarkup.includes('pako.min.js') && afterSchoolSource.includes('parseHwpBinary') && afterSchoolSource.includes('XLSX.CFB.read'), 'HWP 5.x 바이너리 출석부 파서 누락');
-assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260829-6'), '방과후학교 출석부 런타임 재로딩 보호 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260829-7'), '방과후학교 출석부 런타임 재로딩 보호 누락');
 assert(afterSchoolSource.includes('function normalizeProgram(') && afterSchoolSource.includes('function normalizePrograms('), '빈 Firebase 출석부 데이터 자동 복구 누락');
 assert(afterSchoolSource.includes('function dateInputTabs(') && afterSchoolSource.includes('function attendanceOverview('), '출결 입력 날짜 또는 일자별 현황표 누락');
 assert(afterSchoolSource.includes('window.afterSchoolDownloadHwp') && afterSchoolSource.includes("type:'application/x-hwp;charset=utf-8'"), '한글 HWP 다운로드 기능 누락');
@@ -454,6 +454,7 @@ assert(afterSchoolStyles.includes('.after-input-dates') && afterSchoolStyles.inc
 assert(afterSchoolStyles.includes('margin:18mm 25mm') && afterSchoolStyles.includes('mso-header-margin:15mm') && afterSchoolStyles.includes('mso-footer-margin:15mm') && afterSchoolStyles.includes('mso-gutter-margin:0mm'), '출석부 용지·머리말·꼬리말·제본 여백 설정 누락');
 assert(afterSchoolStyles.includes('"Hancom Gothic","한컴고딕"') && afterSchoolStyles.includes('font-size:10pt!important'), '출석부 한컴고딕 10pt 출력 설정 누락');
 assert(afterSchoolSource.includes('margin:18mm 25mm') && afterSchoolSource.includes("font-family:'Hancom Gothic','한컴고딕'"), '한글 다운로드 여백 또는 글꼴 설정 누락');
+assert(afterSchoolSource.includes('function hwpSheet(') && afterSchoolSource.includes('<body>${hwpSheet(p)}</body>'), '한글 다운로드 전용 표 기반 서식 누락');
 assert(afterSchoolSource.includes("O:'○'") && afterSchoolSource.includes("A:'/'") && afterSchoolSource.includes("X:'X'") && afterSchoolSource.includes("E:'△'"), '출결 기호 정책 누락');
 assert(afterSchoolSource.includes('shared/afterSchoolAttendance') && afterSchoolSource.includes('function totals('), '출석부 공유 저장 또는 자동 합계 누락');
 assert(afterSchoolSource.includes('window.afterSchoolPrint') && afterSchoolStyles.includes('@media print') && afterSchoolStyles.includes('size:A4 portrait'), 'A4 출석부 출력 기능 누락');
