@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v89-afterschool-date-overview';
+var CACHE_NAME = 'school-app-v90-afterschool-print-layout';
 var ASSETS = [
   './',
   './index.html',
