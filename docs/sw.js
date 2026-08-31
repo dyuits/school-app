@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v101-attendance-admin-reset';
+var CACHE_NAME = 'school-app-v102-attendance-admin-delete';
 var ASSETS = [
   './',
   './index.html',
