@@ -446,7 +446,7 @@ assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMark
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
 assert(teacherPopupMarkup.includes('pako.min.js') && afterSchoolSource.includes('parseHwpBinary') && afterSchoolSource.includes('XLSX.CFB.read'), 'HWP 5.x 바이너리 출석부 파서 누락');
-assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260831-4'), '방과후학교 출석부 런타임 재로딩 보호 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260831-5'), '방과후학교 출석부 런타임 재로딩 보호 누락');
 assert(afterSchoolSource.includes('function normalizeProgram(') && afterSchoolSource.includes('function normalizePrograms('), '빈 Firebase 출석부 데이터 자동 복구 누락');
 assert(afterSchoolSource.includes('function dateInputTabs(') && afterSchoolSource.includes('function attendanceOverview('), '출결 입력 날짜 또는 일자별 현황표 누락');
 assert(afterSchoolSource.includes('window.afterSchoolDownloadHwp') && afterSchoolSource.includes("type:'application/x-hwp;charset=utf-8'"), '한글 HWP 다운로드 기능 누락');
@@ -460,6 +460,8 @@ assert(afterSchoolSource.includes('width:62%') && afterSchoolSource.includes('wi
 assert(afterSchoolStyles.includes('table-layout:fixed!important') && afterSchoolStyles.includes('width:auto!important;min-width:0!important'), '웹 인쇄 원본 템플릿 colgroup 고정 적용 누락');
 assert(afterSchoolSource.includes('printSheet=hwpSheet') && afterSchoolSource.includes('el.innerHTML=hwpSheet(p)'), '웹 인쇄와 한글 다운로드 서식 통합 누락');
 assert(afterSchoolSource.includes('function requestAccessPin(') && afterSchoolSource.includes('function verifyAccess(') && afterSchoolSource.includes('p.accessPin=pin') && afterSchoolSource.includes('window.afterSchoolChangePin'), '등록 교사 지정 4자리 출석부 비밀번호 누락');
+assert(afterSchoolSource.includes('function cleanPlaceholderPrograms(') && afterSchoolSource.includes('빈 출석부 정리 실패'), '중복된 등록 미지정 빈 출석부 자동 정리 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('dashboardAdminResetAfterSchoolPin') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes("afterSchool:'shared/afterSchoolAttendance'"), '운영관리자 출석부 비밀번호 초기화 누락');
 assert(afterSchoolSource.includes("personSelect('uploader','올린 사람'") && afterSchoolSource.includes("personSelect('teacher','지도교사'"), '올린 사람/지도교사 연락처 선택 누락');
 assert(afterSchoolSource.includes('dailyChecks') && afterSchoolSource.includes('afterSchoolUpdateDailyCheck') && afterSchoolSource.includes("daily('teacherConfirm')"), '수업일별 점검사항/담당강사 확인 누락');
 assert(afterSchoolSource.includes('${d.getMonth()+1}/${d.getDate()}') && afterSchoolSource.includes('weekdays=dates.map'), '날짜 M/D 및 요일 아래행 출력 누락');
