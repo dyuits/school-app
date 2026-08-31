@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v105-afterschool-personal-entry';
+var CACHE_NAME = 'school-app-v106-afterschool-back-navigation';
 var ASSETS = [
   './',
   './index.html',
