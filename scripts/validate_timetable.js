@@ -446,7 +446,8 @@ assert(teacherPopupMarkup.includes('data-tab="afterSchool"') && teacherPopupMark
 assert(teacherPopupMarkup.includes('js/afterschool.js') && teacherPopupMarkup.includes('css/afterschool.css'), '방과후학교 출석부 자원 연결 누락');
 assert(afterSchoolSource.includes('JSZip.loadAsync') && afterSchoolSource.includes('Contents\\/section'), 'HWPX 학생 명단 파서 누락');
 assert(teacherPopupMarkup.includes('pako.min.js') && afterSchoolSource.includes('parseHwpBinary') && afterSchoolSource.includes('XLSX.CFB.read'), 'HWP 5.x 바이너리 출석부 파서 누락');
-assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260831-5'), '방과후학교 출석부 런타임 재로딩 보호 누락');
+assert(fs.readFileSync(path.join(root, 'docs/js/app.js'), 'utf8').includes('function ensureAfterSchoolAttendance()') && teacherPopupMarkup.includes('js/afterschool.js?v=20260831-6'), '방과후학교 출석부 런타임 재로딩 보호 누락');
+assert(afterSchoolSource.includes('afterSchoolCreateProgram') && afterSchoolSource.includes('afterRegisterUploader') && afterSchoolSource.includes('afterRegisterTeacher'), '방과후학교 출석부 교사 직접 등록 기능 누락');
 assert(afterSchoolSource.includes('function normalizeProgram(') && afterSchoolSource.includes('function normalizePrograms('), '빈 Firebase 출석부 데이터 자동 복구 누락');
 assert(afterSchoolSource.includes('function dateInputTabs(') && afterSchoolSource.includes('function attendanceOverview('), '출결 입력 날짜 또는 일자별 현황표 누락');
 assert(afterSchoolSource.includes('window.afterSchoolDownloadHwp') && afterSchoolSource.includes("type:'application/x-hwp;charset=utf-8'"), '한글 HWP 다운로드 기능 누락');
