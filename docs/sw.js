@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v97-attendance-teacher-access';
+var CACHE_NAME = 'school-app-v98-attendance-info-left';
 var ASSETS = [
   './',
   './index.html',
