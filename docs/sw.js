@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v96-template-exact-columns';
+var CACHE_NAME = 'school-app-v97-attendance-teacher-access';
 var ASSETS = [
   './',
   './index.html',
