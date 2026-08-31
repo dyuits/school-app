@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v103-afterschool-self-register';
+var CACHE_NAME = 'school-app-v104-afterschool-remote-delete';
 var ASSETS = [
   './',
   './index.html',
