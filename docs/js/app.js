@@ -284,7 +284,7 @@ function ensureAfterSchoolAttendance() {
   if (previous) previous.remove();
   const script = document.createElement('script');
   script.id = 'afterSchoolRuntimeScript';
-  script.src = 'js/afterschool.js?v=20260831-3';
+  script.src = 'js/afterschool.js?v=20260831-4';
   script.onload = () => { if (!show() && root) root.innerHTML = '<div class="card" style="padding:24px;color:#b04f58;">출석부 기능을 초기화하지 못했습니다.</div>'; };
   script.onerror = () => { if (root) root.innerHTML = '<div class="card" style="padding:24px;color:#b04f58;">출석부 파일을 불러오지 못했습니다. 인터넷 연결을 확인해주세요.</div>'; };
   document.body.appendChild(script);
