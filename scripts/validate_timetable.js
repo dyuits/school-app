@@ -469,6 +469,13 @@ assert(afterSchoolSource.includes('function cleanPlaceholderPrograms(') && after
 assert(fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('dashboardAdminResetAfterSchoolPin') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes("afterSchool:'shared/afterSchoolAttendance'"), '운영관리자 출석부 비밀번호 초기화 누락');
 assert(fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('dashboardAdminDeleteAfterSchool') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('모든 출결 기록을 삭제'), '운영관리자 출석부 목록 삭제 누락');
 assert(!fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('CONSTITUTION_NOTICE') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('isRemovedConstitutionNotice'), '헌법교육 고정 공지 제거 또는 기존 자료 정리 누락');
+const examSupervisionSource=fs.readFileSync(path.join(root,'docs/js/exam-supervision.js'),'utf8');
+const examSupervisionStyles=fs.readFileSync(path.join(root,'docs/css/exam-supervision.css'),'utf8');
+assert(teacherPopupMarkup.includes('data-tab="examSupervision"') && teacherPopupMarkup.includes('id="examSupervisionTab"'), '감독시간표 탭 또는 패널 누락');
+assert(examSupervisionSource.includes("date:'2026-09-02'") && examSupervisionSource.includes("title:'9월 학력평가'"), '9월 2일 학력평가 감독일 누락');
+assert(examSupervisionSource.includes("subject:'국어'") && examSupervisionSource.includes("subject:'수학'") && examSupervisionSource.includes("subject:'영어'") && examSupervisionSource.includes("subject:'한국사·탐구'"), '학력평가 교시별 과목 누락');
+assert(examSupervisionSource.includes('searchExamSupervision') && examSupervisionSource.includes('assignmentTime'), '감독교사 검색 또는 시간 확인 기능 누락');
+assert(examSupervisionStyles.includes('.exam-room.is-match') && examSupervisionStyles.includes('@keyframes exam-match-pulse'), '감독 검색 결과 강조 CSS 누락');
 assert(afterSchoolSource.includes("personSelect('uploader','올린 사람'") && afterSchoolSource.includes("personSelect('teacher','지도교사'"), '올린 사람/지도교사 연락처 선택 누락');
 assert(afterSchoolSource.includes('dailyChecks') && afterSchoolSource.includes('afterSchoolUpdateDailyCheck') && afterSchoolSource.includes("daily('teacherConfirm')"), '수업일별 점검사항/담당강사 확인 누락');
 assert(afterSchoolSource.includes('${d.getMonth()+1}/${d.getDate()}') && afterSchoolSource.includes('weekdays=dates.map'), '날짜 M/D 및 요일 아래행 출력 누락');

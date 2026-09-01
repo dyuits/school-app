@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v108-remove-constitution-notice';
+var CACHE_NAME = 'school-app-v109-exam-supervision';
 var ASSETS = [
   './',
   './index.html',
@@ -7,9 +7,11 @@ var ASSETS = [
   './css/style.css',
   './css/dashboard.css',
   './css/afterschool.css',
+  './css/exam-supervision.css',
   './js/app.js',
   './js/dashboard.js',
   './js/afterschool.js',
+  './js/exam-supervision.js',
   './js/data.js',
   './js/firebase-config.js',
   './icons/icon-192.png',
