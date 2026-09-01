@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v109-exam-supervision';
+var CACHE_NAME = 'school-app-v111-exam-supervision-responsive';
 var ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ var ASSETS = [
   './css/dashboard.css',
   './css/afterschool.css',
   './css/exam-supervision.css',
+  './css/exam-supervision-responsive.css',
   './js/app.js',
   './js/dashboard.js',
   './js/afterschool.js',
