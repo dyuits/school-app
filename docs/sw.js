@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v107-afterschool-explicit-selection';
+var CACHE_NAME = 'school-app-v108-remove-constitution-notice';
 var ASSETS = [
   './',
   './index.html',

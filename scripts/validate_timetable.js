@@ -356,7 +356,6 @@ assert(dashboardStyles.includes('.dashboard-academic-cal-weekdays') && dashboard
 assert(dashboardSource.includes('dashboardOpenMajorHwpxUpload') && dashboardSource.includes('parseMajorHwpx') && dashboardSource.includes('dashboardSaveMajorHwpx'), '주요 일정 HWPX 업로드 기능 누락');
 assert(dashboardSource.includes("source:'hwpx'") && dashboardSource.includes('shared/dashboard/majorEvents'), 'HWPX 주요 일정 저장 연동 누락');
 assert(dashboardSource.includes('renderCalendarMemo') && dashboardSource.includes('오늘은 동아리 활동이 예정되어 있습니다.'), '오늘의 알림장 동아리 일정 연동 누락');
-assert(dashboardSource.includes('CONSTITUTION_NOTICE') && dashboardSource.includes('기본권과 법') && dashboardSource.includes('2층 소회의실'), '헌법교육 홈 공지사항 누락');
 assert(dashboardSource.includes('schoolAppAnonymousVisitorId') && dashboardSource.includes('shared/dashboard/anonymousVisitors') && dashboardSource.includes('.transaction('), 'IP 없는 익명 방문자 중복 방지 집계 누락');
 assert(dashboardSource.includes('dashboardVisitorCount') && dashboardStyles.includes('.dashboard-visitor-counter'), '누적 방문자 표시 UI 누락');
 assert(dashboardSource.includes('dashboardDailyVisitorCount') && dashboardSource.includes('dailyAnonymousVisitors') && dashboardSource.includes('connectDailyVisitor'), '날짜별 익명 방문자 집계 누락');
@@ -469,6 +468,7 @@ assert(afterSchoolSource.includes('function requestAccessPin(') && afterSchoolSo
 assert(afterSchoolSource.includes('function cleanPlaceholderPrograms(') && afterSchoolSource.includes('빈 출석부 정리 실패'), '중복된 등록 미지정 빈 출석부 자동 정리 누락');
 assert(fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('dashboardAdminResetAfterSchoolPin') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes("afterSchool:'shared/afterSchoolAttendance'"), '운영관리자 출석부 비밀번호 초기화 누락');
 assert(fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('dashboardAdminDeleteAfterSchool') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('모든 출결 기록을 삭제'), '운영관리자 출석부 목록 삭제 누락');
+assert(!fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('CONSTITUTION_NOTICE') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('isRemovedConstitutionNotice'), '헌법교육 고정 공지 제거 또는 기존 자료 정리 누락');
 assert(afterSchoolSource.includes("personSelect('uploader','올린 사람'") && afterSchoolSource.includes("personSelect('teacher','지도교사'"), '올린 사람/지도교사 연락처 선택 누락');
 assert(afterSchoolSource.includes('dailyChecks') && afterSchoolSource.includes('afterSchoolUpdateDailyCheck') && afterSchoolSource.includes("daily('teacherConfirm')"), '수업일별 점검사항/담당강사 확인 누락');
 assert(afterSchoolSource.includes('${d.getMonth()+1}/${d.getDate()}') && afterSchoolSource.includes('weekdays=dates.map'), '날짜 M/D 및 요일 아래행 출력 누락');
