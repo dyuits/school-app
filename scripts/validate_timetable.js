@@ -482,6 +482,7 @@ assert(examSupervisionSource.includes('function unassignedTeachers(') && examSup
 assert(examSupervisionSource.includes('12:55~13:20') && examSupervisionSource.includes('12:25~12:55') && examSupervisionSource.includes('12:00~12:25'), '학년별 점심시간 표시 누락');
 assert(examSupervisionStyles.includes('.exam-matrix') && examSupervisionStyles.includes('zoom:calc((100vw - 42px)/1280)'), '감독표 전체 축소 또는 모바일 한 화면 표시 CSS 누락');
 assert(examSupervisionResponsiveStyles.includes('transform:scale(.27)') && examSupervisionResponsiveStyles.includes('height:105px'), '모바일 30개 학급 전체 감독표 고정 축소 누락');
+assert(examSupervisionSource.includes('oncompositionstart=') && examSupervisionSource.includes('event?.isComposing') && examSupervisionSource.includes('examSupervisionComposition'), '감독 교사 검색 한글 IME 조합 보호 누락');
 assert(afterSchoolSource.includes("personSelect('uploader','올린 사람'") && afterSchoolSource.includes("personSelect('teacher','지도교사'"), '올린 사람/지도교사 연락처 선택 누락');
 assert(afterSchoolSource.includes('dailyChecks') && afterSchoolSource.includes('afterSchoolUpdateDailyCheck') && afterSchoolSource.includes("daily('teacherConfirm')"), '수업일별 점검사항/담당강사 확인 누락');
 assert(afterSchoolSource.includes('${d.getMonth()+1}/${d.getDate()}') && afterSchoolSource.includes('weekdays=dates.map'), '날짜 M/D 및 요일 아래행 출력 누락');

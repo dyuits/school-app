@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v111-exam-supervision-responsive';
+var CACHE_NAME = 'school-app-v112-exam-supervision-korean-search';
 var ASSETS = [
   './',
   './index.html',
