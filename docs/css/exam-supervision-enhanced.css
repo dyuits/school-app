@@ -1,6 +1,7 @@
 .exam-hero-actions{display:flex;align-items:center;gap:10px}
 .exam-upload-button{height:42px;padding:0 15px;border:1px solid #4b8b72;border-radius:12px;background:#fff;color:#34735c;font-family:inherit;font-size:10px;font-weight:800;cursor:pointer}
 .exam-upload-button:hover{background:#edf9f4}
+.exam-upload-button small{margin-left:5px;padding-left:7px;border-left:1px solid #b8d5ca;color:#68867b;font-size:8px}.exam-upload-guide{border-color:#e5dccd!important;background:#fbf7ef!important;color:#6f604d!important}
 .exam-date-section{display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px 12px;border:1px solid #d7e1ea;border-radius:13px;background:#fff}
 .exam-date-section>b,.exam-grade-filter>b{color:#536d82;font-size:10px;white-space:nowrap}
 .exam-controls{padding:9px 11px;border:1px solid #d8e2ea;border-radius:13px;background:#f8fbfd}

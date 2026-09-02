@@ -480,6 +480,7 @@ assert(examSupervisionSource.includes('searchExamSupervision') && examSupervisio
 assert(examSupervisionSource.includes("'김두산','김유리','양정원'") && examSupervisionSource.includes('const PERIOD3=[...PERIOD2]'), '2-10반 2·3교시 김유리 감독 배정 누락');
 assert(examSupervisionSource.includes("time:'1·2학년 14:50~16:50 / 3학년 14:50~16:37'") && !examSupervisionSource.includes('학년별 세부시간 확인'), '4교시 학년별 전체 시간 표시 오류');
 assert(examSupervisionSource.includes('workbookFromHangul') && examSupervisionSource.includes('.xlsx,.xls,.hwp,.hwpx') && examSupervisionSource.includes('examSupervisionImportFile'), '감독시간표 HWP/HWPX 자동 인식 기능 누락');
+assert(examSupervisionSource.includes('파일에 날짜가 없으면 업로드 과정에서 시험 날짜를 직접 지정합니다') && examSupervisionSource.includes('sheet_add_aoa') && examSupervisionSource.includes('감독표 문서 올리기'), '감독표 범용 문서 아이콘·안내 또는 날짜 없는 파일의 직접 날짜 지정 누락');
 assert(dashboardSource.includes("examSupervision:'shared/examSupervision'") && dashboardSource.includes('dashboardAdminEditExamSupervision') && dashboardSource.includes('dashboardAdminDeleteExamSupervision'), '운영관리자 감독시간표 날짜 수정·삭제 기능 누락');
 assert(examSupervisionStyles.includes('.exam-teacher-cell.is-match') && examSupervisionStyles.includes('@keyframes exam-cell-pulse'), '감독 검색 결과 강조 CSS 누락');
 assert(examSupervisionSource.includes('function matrix(') && examSupervisionSource.includes('colspan="10"') && examSupervisionSource.includes('1~3학년 전체 학급'), '1~3학년 전체 감독표 한 화면 표시 누락');

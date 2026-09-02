@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v119-exam-supervision-hangul-admin';
+var CACHE_NAME = 'school-app-v120-exam-supervision-manual-date';
 var ASSETS = [
   './',
   './index.html',
