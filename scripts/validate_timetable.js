@@ -479,6 +479,8 @@ assert(examSupervisionSource.includes("subject:'국어'") && examSupervisionSour
 assert(examSupervisionSource.includes('searchExamSupervision') && examSupervisionSource.includes('assignmentTime'), '감독교사 검색 또는 시간 확인 기능 누락');
 assert(examSupervisionSource.includes("'김두산','김유리','양정원'") && examSupervisionSource.includes('const PERIOD3=[...PERIOD2]'), '2-10반 2·3교시 김유리 감독 배정 누락');
 assert(examSupervisionSource.includes("time:'1·2학년 14:50~16:50 / 3학년 14:50~16:37'") && !examSupervisionSource.includes('학년별 세부시간 확인'), '4교시 학년별 전체 시간 표시 오류');
+assert(examSupervisionSource.includes('workbookFromHangul') && examSupervisionSource.includes('.xlsx,.xls,.hwp,.hwpx') && examSupervisionSource.includes('examSupervisionImportFile'), '감독시간표 HWP/HWPX 자동 인식 기능 누락');
+assert(dashboardSource.includes("examSupervision:'shared/examSupervision'") && dashboardSource.includes('dashboardAdminEditExamSupervision') && dashboardSource.includes('dashboardAdminDeleteExamSupervision'), '운영관리자 감독시간표 날짜 수정·삭제 기능 누락');
 assert(examSupervisionStyles.includes('.exam-teacher-cell.is-match') && examSupervisionStyles.includes('@keyframes exam-cell-pulse'), '감독 검색 결과 강조 CSS 누락');
 assert(examSupervisionSource.includes('function matrix(') && examSupervisionSource.includes('colspan="10"') && examSupervisionSource.includes('1~3학년 전체 학급'), '1~3학년 전체 감독표 한 화면 표시 누락');
 assert(!examSupervisionSource.includes('하루 종일 감독이 없는 교사'), '삭제된 하루 종일 무감독 교사 영역이 다시 표시됨');

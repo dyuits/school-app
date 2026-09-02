@@ -50,3 +50,4 @@
   .exam-matrix.is-single .exam-info-col{width:112px}.exam-matrix.is-single .exam-period-row td{height:58px}
   .exam-matrix.is-single .exam-teacher-cell span{font-size:9px}.exam-time-grid.is-single{grid-template-columns:76px minmax(0,1fr)!important}
 }
+.exam-upload-guide{display:flex;align-items:center;gap:6px;margin:-2px 0 10px;padding:7px 11px;border:1px solid #d7e5ee;border-radius:10px;background:#f7fbfe;color:#627b90;font-size:9px}.exam-upload-guide i{color:#4f82aa}
