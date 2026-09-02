@@ -28,6 +28,9 @@
 .exam-teacher-cell.is-match{background:#f3e1bd!important;box-shadow:inset 0 0 0 2px #bd9660;animation:exam-beige-pulse 1.35s ease-in-out infinite}
 .exam-teacher-cell.is-match span{color:#5e421e}
 @keyframes exam-beige-pulse{50%{background:#ead2a3;box-shadow:inset 0 0 0 2px #a77c43,0 0 10px rgba(167,124,67,.25)}}
+.exam-period-row.is-period-match>th{border-color:#bd9660!important;background:#f3e1bd!important;box-shadow:inset 0 0 0 2px #bd9660;animation:exam-beige-period-pulse 1.35s ease-in-out infinite}
+.exam-period-row.is-period-match>th b,.exam-period-row.is-period-match>th strong,.exam-period-row.is-period-match>th time{color:#5e421e!important}
+@keyframes exam-beige-period-pulse{50%{background:#ead2a3;box-shadow:inset 0 0 0 2px #a77c43,0 0 10px rgba(167,124,67,.25)}}
 .exam-matrix.is-single .exam-info-col{width:190px}
 .exam-matrix.is-single thead tr:first-child th{height:34px;font-size:12px}
 .exam-matrix.is-single thead tr:nth-child(2) th{height:30px;font-size:11px;font-weight:900}

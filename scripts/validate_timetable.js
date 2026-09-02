@@ -491,6 +491,8 @@ assert(examSupervisionEnhancedStyles.includes('.exam-matrix.is-single') && examS
 assert(examSupervisionEnhancedStyles.includes('.exam-time-guide{display:none!important}') && examSupervisionEnhancedStyles.includes('border-collapse:separate') && examSupervisionEnhancedStyles.includes('#eadfce'), '감독 시험시간 영역 제거 또는 연한 베이지 프리미엄 표 디자인 누락');
 assert(examSupervisionSource.includes("document.addEventListener('compositionend'") && examSupervisionSource.includes("document.addEventListener('input'") && examSupervisionEnhancedStyles.includes('font-weight:900'), '감독 교사 검색 이벤트 보강 또는 학급·교사 글자 강조 누락');
 assert(examSupervisionSource.includes("insertAdjacentHTML('afterend',searchResults(day))") && examSupervisionSource.includes("classList.toggle('is-match'"), '감독 검색 시 입력창을 유지하는 부분 갱신 방식 누락');
+assert(examSupervisionSource.includes("CHOSEONG='ㄱㄲㄴㄷ") && examSupervisionSource.includes("classList.toggle('is-period-match'"), '감독 교사 초성 검색 또는 일치 교시 강조 누락');
+assert(examSupervisionEnhancedStyles.includes('.exam-period-row.is-period-match>th') && examSupervisionEnhancedStyles.includes('@keyframes exam-beige-period-pulse'), '검색 교사의 해당 교시 반짝임 디자인 누락');
 assert(afterSchoolSource.includes("personSelect('uploader','올린 사람'") && afterSchoolSource.includes("personSelect('teacher','지도교사'"), '올린 사람/지도교사 연락처 선택 누락');
 assert(afterSchoolSource.includes('dailyChecks') && afterSchoolSource.includes('afterSchoolUpdateDailyCheck') && afterSchoolSource.includes("daily('teacherConfirm')"), '수업일별 점검사항/담당강사 확인 누락');
 assert(afterSchoolSource.includes('${d.getMonth()+1}/${d.getDate()}') && afterSchoolSource.includes('weekdays=dates.map'), '날짜 M/D 및 요일 아래행 출력 누락');
