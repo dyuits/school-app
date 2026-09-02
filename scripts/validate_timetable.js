@@ -479,7 +479,7 @@ assert(examSupervisionSource.includes("subject:'국어'") && examSupervisionSour
 assert(examSupervisionSource.includes('searchExamSupervision') && examSupervisionSource.includes('assignmentTime'), '감독교사 검색 또는 시간 확인 기능 누락');
 assert(examSupervisionStyles.includes('.exam-teacher-cell.is-match') && examSupervisionStyles.includes('@keyframes exam-cell-pulse'), '감독 검색 결과 강조 CSS 누락');
 assert(examSupervisionSource.includes('function matrix(') && examSupervisionSource.includes('colspan="10"') && examSupervisionSource.includes('1~3학년 전체 학급'), '1~3학년 전체 감독표 한 화면 표시 누락');
-assert(examSupervisionSource.includes('function unassignedTeachers(') && examSupervisionSource.includes('하루 종일 감독이 없는 교사'), '하루 종일 무감독 교사 계산 또는 표시 누락');
+assert(!examSupervisionSource.includes('하루 종일 감독이 없는 교사'), '삭제된 하루 종일 무감독 교사 영역이 다시 표시됨');
 assert(examSupervisionSource.includes('12:55~13:20') && examSupervisionSource.includes('12:25~12:55') && examSupervisionSource.includes('12:00~12:25'), '학년별 점심시간 표시 누락');
 assert(examSupervisionStyles.includes('.exam-matrix') && examSupervisionStyles.includes('zoom:calc((100vw - 42px)/1280)'), '감독표 전체 축소 또는 모바일 한 화면 표시 CSS 누락');
 assert(examSupervisionResponsiveStyles.includes('transform:scale(.27)') && examSupervisionResponsiveStyles.includes('height:105px'), '모바일 30개 학급 전체 감독표 고정 축소 누락');
