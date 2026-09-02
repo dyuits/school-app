@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v113-exam-supervision-excel-grade-view';
+var CACHE_NAME = 'school-app-v114-exam-supervision-pink-table';
 var ASSETS = [
   './',
   './index.html',

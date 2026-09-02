@@ -8,6 +8,25 @@
 .exam-grade-filter button{min-width:58px;height:34px;border:1px solid #bfd0dd;border-radius:10px;background:#fff;color:#536f84;font-family:inherit;font-size:10px;font-weight:800;cursor:pointer}
 .exam-grade-filter button.active{border-color:#396f9b;background:#396f9b;color:#fff;box-shadow:0 3px 9px rgba(57,111,155,.22)}
 .exam-time-grid.is-single .exam-time-cell{min-height:38px;font-size:11px}
+.exam-time-guide{display:none!important}
+.exam-matrix-card{border:1px solid #f0d7df;border-radius:18px;background:#fff;box-shadow:0 9px 24px rgba(122,72,91,.08)}
+.exam-matrix-toolbar{min-height:78px;padding:15px 20px;background:radial-gradient(circle at 90% 16%,rgba(255,255,255,.82),transparent 28%),linear-gradient(130deg,#fbe5ec,#fff1f5 68%,#f8dfe8)}
+.exam-matrix-toolbar h2{color:#6f4052;font-size:16px}.exam-matrix-toolbar p,.exam-matrix-toolbar>span{color:#9b7080}
+.exam-matrix-viewport{padding:10px;box-sizing:border-box;background:#fff7fa}
+.exam-matrix{border-collapse:separate;border-spacing:5px}
+.exam-matrix th,.exam-matrix td{border:0;border-radius:10px}
+.exam-matrix thead tr:first-child th,.exam-matrix .grade-1,.exam-matrix .grade-2,.exam-matrix .grade-3{color:#fff;background:#cf819e;box-shadow:0 3px 7px rgba(143,74,100,.12)}
+.exam-matrix thead tr:nth-child(2) th{color:#86566a;background:#f7dce5}
+.exam-homeroom-row th,.exam-homeroom-row td{color:#70485a;background:#fcecf1}
+.exam-period-row>th{border:1px solid #efd6df;background:#fff}
+.exam-period-row>th b,.exam-period-row>th strong{color:#70485a}
+.exam-period-row>th time{color:#a17d8b}
+.exam-period-row td{border:1px solid #efd8e0;background:rgba(255,255,255,.88);box-shadow:0 2px 7px rgba(112,68,85,.045)}
+.exam-teacher-cell span{color:#684556}
+.exam-break-row th,.exam-break-row td{border:1px solid #efd8e0!important;color:#95697a!important;background:#fff0f5!important}
+.exam-teacher-cell.is-match{background:#ffd7e6!important;box-shadow:inset 0 0 0 2px #d36f96;animation:exam-pink-pulse 1.35s ease-in-out infinite}
+.exam-teacher-cell.is-match span{color:#8f3055}
+@keyframes exam-pink-pulse{50%{background:#ffc5da;box-shadow:inset 0 0 0 2px #c55480,0 0 10px rgba(197,84,128,.3)}}
 .exam-matrix.is-single .exam-info-col{width:190px}
 .exam-matrix.is-single thead tr:first-child th{height:34px;font-size:12px}
 .exam-matrix.is-single thead tr:nth-child(2) th{height:30px;font-size:10px}
@@ -21,7 +40,7 @@
 @media(max-width:900px){
   .exam-hero-actions,.exam-date-section,.exam-controls{align-items:stretch;flex-direction:column}
   .exam-upload-button{width:100%}.exam-grade-filter{flex-wrap:wrap}.exam-grade-filter>b{width:100%}
-  .exam-matrix-viewport:has(.exam-matrix.is-single){height:auto;overflow:visible}
+  .exam-matrix-viewport:has(.exam-matrix.is-single){height:auto;overflow:visible;padding:5px}
   .exam-matrix.is-single{width:100%;zoom:1!important;transform:none!important}
   .exam-matrix.is-single .exam-info-col{width:112px}.exam-matrix.is-single .exam-period-row td{height:58px}
   .exam-matrix.is-single .exam-teacher-cell span{font-size:9px}.exam-time-grid.is-single{grid-template-columns:76px minmax(0,1fr)!important}
