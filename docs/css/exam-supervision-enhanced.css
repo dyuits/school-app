@@ -9,25 +9,25 @@
 .exam-grade-filter button.active{border-color:#396f9b;background:#396f9b;color:#fff;box-shadow:0 3px 9px rgba(57,111,155,.22)}
 .exam-time-grid.is-single .exam-time-cell{min-height:38px;font-size:11px}
 .exam-time-guide{display:none!important}
-.exam-matrix-card{border:1px solid #f3e2e8;border-radius:18px;background:#fff;box-shadow:0 9px 24px rgba(122,72,91,.055)}
-.exam-matrix-toolbar{min-height:78px;padding:15px 20px;background:radial-gradient(circle at 90% 16%,rgba(255,255,255,.92),transparent 28%),linear-gradient(130deg,#fff1f5,#fff9fb 68%,#fcecf2)}
-.exam-matrix-toolbar h2{color:#573342;font-size:16px;font-weight:900}.exam-matrix-toolbar p,.exam-matrix-toolbar>span{color:#7e5d69;font-weight:700}
-.exam-matrix-viewport{padding:10px;box-sizing:border-box;background:#fffbfc}
+.exam-matrix-card{border:1px solid #e9e0d1;border-radius:18px;background:#fff;box-shadow:0 9px 24px rgba(92,72,43,.055)}
+.exam-matrix-toolbar{min-height:78px;padding:15px 20px;background:radial-gradient(circle at 90% 16%,rgba(255,255,255,.94),transparent 28%),linear-gradient(130deg,#f8f1e6,#fffaf2 68%,#f3eadc)}
+.exam-matrix-toolbar h2{color:#4f4130;font-size:16px;font-weight:900}.exam-matrix-toolbar p,.exam-matrix-toolbar>span{color:#746552;font-weight:700}
+.exam-matrix-viewport{padding:10px;box-sizing:border-box;background:#fdfaf5}
 .exam-matrix{border-collapse:separate;border-spacing:5px}
 .exam-matrix th,.exam-matrix td{border:0;border-radius:10px}
-.exam-matrix thead tr:first-child th,.exam-matrix .grade-1,.exam-matrix .grade-2,.exam-matrix .grade-3{color:#573342;background:#f2ceda;box-shadow:0 3px 7px rgba(143,74,100,.07);font-weight:900}
-.exam-matrix thead tr:nth-child(2) th{color:#4f2f3c;background:#fae9ef;font-weight:900}
-.exam-homeroom-row th,.exam-homeroom-row td{color:#51313e;background:#fdf2f6;font-weight:800}
-.exam-period-row>th{border:1px solid #f2e1e7;background:#fff}
-.exam-period-row>th b,.exam-period-row>th strong{color:#50303d;font-weight:900}
-.exam-period-row>th time{color:#a17d8b}
-.exam-period-row td{border:1px solid #f2e1e7;background:#fff;box-shadow:0 2px 7px rgba(112,68,85,.035)}
-.exam-teacher-cell span{color:#482c38;font-weight:900}
-.exam-break-row th,.exam-break-row td{border:1px solid #f1e0e6!important;color:#684653!important;background:#fdf3f6!important;font-weight:800}
-.exam-search-results{border-color:#f0dce4;background:#fff8fa}.exam-search-results h3{color:#704052}.exam-search-results h3 span{background:#f5dce5}.exam-search-results article{border-color:#f1e2e7}.exam-search-results article strong{color:#6b354a}.exam-search-results article b{color:#4b303a;font-weight:900}
-.exam-teacher-cell.is-match{background:#ffd7e6!important;box-shadow:inset 0 0 0 2px #d36f96;animation:exam-pink-pulse 1.35s ease-in-out infinite}
-.exam-teacher-cell.is-match span{color:#8f3055}
-@keyframes exam-pink-pulse{50%{background:#ffc5da;box-shadow:inset 0 0 0 2px #c55480,0 0 10px rgba(197,84,128,.3)}}
+.exam-matrix thead tr:first-child th,.exam-matrix .grade-1,.exam-matrix .grade-2,.exam-matrix .grade-3{color:#4c3e2e;background:#eadfce;box-shadow:0 3px 7px rgba(105,82,48,.07);font-weight:900}
+.exam-matrix thead tr:nth-child(2) th{color:#493b2b;background:#f5eddf;font-weight:900}
+.exam-homeroom-row th,.exam-homeroom-row td{color:#493c2d;background:#faf5eb;font-weight:800}
+.exam-period-row>th{border:1px solid #ebe2d5;background:#fff}
+.exam-period-row>th b,.exam-period-row>th strong{color:#493b2c;font-weight:900}
+.exam-period-row>th time{color:#8b7a64}
+.exam-period-row td{border:1px solid #ebe3d7;background:#fff;box-shadow:0 2px 7px rgba(92,72,43,.035)}
+.exam-teacher-cell span{color:#403529;font-weight:900}
+.exam-break-row th,.exam-break-row td{border:1px solid #e9dfd0!important;color:#685945!important;background:#f9f3e9!important;font-weight:800}
+.exam-search-results{border-color:#e9dfcf;background:#fcf8f0}.exam-search-results h3{color:#5d4b35}.exam-search-results h3 span{background:#eee3d1}.exam-search-results article{border-color:#eae1d3}.exam-search-results article strong{color:#57432d}.exam-search-results article b{color:#40352a;font-weight:900}
+.exam-teacher-cell.is-match{background:#f3e1bd!important;box-shadow:inset 0 0 0 2px #bd9660;animation:exam-beige-pulse 1.35s ease-in-out infinite}
+.exam-teacher-cell.is-match span{color:#5e421e}
+@keyframes exam-beige-pulse{50%{background:#ead2a3;box-shadow:inset 0 0 0 2px #a77c43,0 0 10px rgba(167,124,67,.25)}}
 .exam-matrix.is-single .exam-info-col{width:190px}
 .exam-matrix.is-single thead tr:first-child th{height:34px;font-size:12px}
 .exam-matrix.is-single thead tr:nth-child(2) th{height:30px;font-size:11px;font-weight:900}
