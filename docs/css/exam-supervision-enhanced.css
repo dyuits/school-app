@@ -25,12 +25,13 @@
 .exam-teacher-cell span{color:#403529;font-weight:900}
 .exam-break-row th,.exam-break-row td{border:1px solid #e9dfd0!important;color:#685945!important;background:#f9f3e9!important;font-weight:800}
 .exam-search-results{border-color:#e9dfcf;background:#fcf8f0}.exam-search-results h3{color:#5d4b35}.exam-search-results h3 span{background:#eee3d1}.exam-search-results article{border-color:#eae1d3}.exam-search-results article strong{color:#57432d}.exam-search-results article b{color:#40352a;font-weight:900}
-.exam-teacher-cell.is-match{background:#f3e1bd!important;box-shadow:inset 0 0 0 2px #bd9660;animation:exam-beige-pulse 1.35s ease-in-out infinite}
-.exam-teacher-cell.is-match span{color:#5e421e}
-@keyframes exam-beige-pulse{50%{background:#ead2a3;box-shadow:inset 0 0 0 2px #a77c43,0 0 10px rgba(167,124,67,.25)}}
-.exam-period-row.is-period-match>th{border-color:#bd9660!important;background:#f3e1bd!important;box-shadow:inset 0 0 0 2px #bd9660;animation:exam-beige-period-pulse 1.35s ease-in-out infinite}
-.exam-period-row.is-period-match>th b,.exam-period-row.is-period-match>th strong,.exam-period-row.is-period-match>th time{color:#5e421e!important}
-@keyframes exam-beige-period-pulse{50%{background:#ead2a3;box-shadow:inset 0 0 0 2px #a77c43,0 0 10px rgba(167,124,67,.25)}}
+.exam-search-status{margin:0 0 10px;padding:9px 12px;border:1px solid #ead8ad;border-radius:11px;color:#765823;background:#fffaf0;font-size:10px;font-weight:800}.exam-search-status i{margin-right:5px;color:#d28b0e}
+.exam-teacher-cell.is-match{position:relative;z-index:2;background:#fff2c8!important;box-shadow:0 0 0 2px #fff,0 0 0 4px #ffbd3d,0 0 14px rgba(255,174,31,.9);animation:exam-duty-search-sparkle .9s ease-in-out infinite alternate}
+.exam-teacher-cell.is-match span{color:#55380f}
+.exam-period-row.is-period-match>th{position:relative;z-index:2;border-color:#ffbd3d!important;background:#fff2c8!important;box-shadow:0 0 0 2px #fff,0 0 0 4px #ffbd3d,0 0 14px rgba(255,174,31,.75);animation:exam-duty-search-sparkle .9s ease-in-out infinite alternate}
+.exam-period-row.is-period-match>th b,.exam-period-row.is-period-match>th strong,.exam-period-row.is-period-match>th time{color:#55380f!important}
+@keyframes exam-duty-search-sparkle{0%{transform:scale(1);filter:brightness(1)}100%{transform:scale(1.06);filter:brightness(1.16)}}
+@media(prefers-reduced-motion:reduce){.exam-teacher-cell.is-match,.exam-period-row.is-period-match>th{animation:none}}
 .exam-matrix.is-single .exam-info-col{width:190px}
 .exam-matrix.is-single thead tr:first-child th{height:34px;font-size:12px}
 .exam-matrix.is-single thead tr:nth-child(2) th{height:30px;font-size:11px;font-weight:900}

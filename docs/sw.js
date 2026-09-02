@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v117-exam-supervision-initial-search';
+var CACHE_NAME = 'school-app-v118-exam-supervision-live-sparkle';
 var ASSETS = [
   './',
   './index.html',
