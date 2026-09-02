@@ -472,6 +472,7 @@ assert(!fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').include
 const examSupervisionSource=fs.readFileSync(path.join(root,'docs/js/exam-supervision.js'),'utf8');
 const examSupervisionStyles=fs.readFileSync(path.join(root,'docs/css/exam-supervision.css'),'utf8');
 const examSupervisionResponsiveStyles=fs.readFileSync(path.join(root,'docs/css/exam-supervision-responsive.css'),'utf8');
+const examSupervisionEnhancedStyles=fs.readFileSync(path.join(root,'docs/css/exam-supervision-enhanced.css'),'utf8');
 assert(teacherPopupMarkup.includes('data-tab="examSupervision"') && teacherPopupMarkup.includes('id="examSupervisionTab"'), '감독시간표 탭 또는 패널 누락');
 assert(examSupervisionSource.includes("date:'2026-09-02'") && examSupervisionSource.includes("title:'9월 학력평가'"), '9월 2일 학력평가 감독일 누락');
 assert(examSupervisionSource.includes("subject:'국어'") && examSupervisionSource.includes("subject:'수학'") && examSupervisionSource.includes("subject:'영어'") && examSupervisionSource.includes("subject:'한국사·탐구'"), '학력평가 교시별 과목 누락');
@@ -483,6 +484,10 @@ assert(examSupervisionSource.includes('12:55~13:20') && examSupervisionSource.in
 assert(examSupervisionStyles.includes('.exam-matrix') && examSupervisionStyles.includes('zoom:calc((100vw - 42px)/1280)'), '감독표 전체 축소 또는 모바일 한 화면 표시 CSS 누락');
 assert(examSupervisionResponsiveStyles.includes('transform:scale(.27)') && examSupervisionResponsiveStyles.includes('height:105px'), '모바일 30개 학급 전체 감독표 고정 축소 누락');
 assert(examSupervisionSource.includes('oncompositionstart=') && examSupervisionSource.includes('event?.isComposing') && examSupervisionSource.includes('examSupervisionComposition'), '감독 교사 검색 한글 IME 조합 보호 누락');
+assert(examSupervisionSource.includes('examSupervisionImportExcel') && examSupervisionSource.includes("shared/examSupervision/${day.date}") && examSupervisionSource.includes('parseExamSupervisionWorkbook'), '감독표 엑셀 업로드 또는 날짜별 공유 저장 누락');
+assert(examSupervisionSource.includes('selectExamSupervisionDate') && examSupervisionSource.includes('시험일 선택'), '시험일별 감독표 탭 누락');
+assert(examSupervisionSource.includes('selectExamSupervisionGrade') && examSupervisionSource.includes('학년 선택') && examSupervisionSource.includes("S.grade?'is-single':''"), '감독표 학년별 확대 보기 누락');
+assert(examSupervisionEnhancedStyles.includes('.exam-matrix.is-single') && examSupervisionEnhancedStyles.includes('.exam-grade-filter'), '감독표 학년별 확대 디자인 누락');
 assert(afterSchoolSource.includes("personSelect('uploader','올린 사람'") && afterSchoolSource.includes("personSelect('teacher','지도교사'"), '올린 사람/지도교사 연락처 선택 누락');
 assert(afterSchoolSource.includes('dailyChecks') && afterSchoolSource.includes('afterSchoolUpdateDailyCheck') && afterSchoolSource.includes("daily('teacherConfirm')"), '수업일별 점검사항/담당강사 확인 누락');
 assert(afterSchoolSource.includes('${d.getMonth()+1}/${d.getDate()}') && afterSchoolSource.includes('weekdays=dates.map'), '날짜 M/D 및 요일 아래행 출력 누락');

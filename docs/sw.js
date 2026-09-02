@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v112-exam-supervision-korean-search';
+var CACHE_NAME = 'school-app-v113-exam-supervision-excel-grade-view';
 var ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ var ASSETS = [
   './css/afterschool.css',
   './css/exam-supervision.css',
   './css/exam-supervision-responsive.css',
+  './css/exam-supervision-enhanced.css',
   './js/app.js',
   './js/dashboard.js',
   './js/afterschool.js',
