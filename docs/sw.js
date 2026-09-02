@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v114-exam-supervision-pink-table';
+var CACHE_NAME = 'school-app-v115-exam-supervision-search-pale-pink';
 var ASSETS = [
   './',
   './index.html',
