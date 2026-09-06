@@ -57,11 +57,17 @@ const refreshedTeacherChecks = read(`({
   gangFriday4: TEACHER_SCHEDULE['강승표']['금4'],
   kimYoungjuMonday1: TEACHER_SCHEDULE['김영주']['월1'],
   ohSoyeonThursday5: TEACHER_SCHEDULE['오소연']['목5'],
+  kangChanggyuMonday2: TEACHER_SCHEDULE['강창규']['월2'],
+  kangChanggyuThursday4: TEACHER_SCHEDULE['강창규']['목4'],
+  class18Monday2: CLASS_SCHEDULE['1-8']['월2'],
+  class18Thursday4: CLASS_SCHEDULE['1-8']['목4'],
   externalLessonCount: Object.values(EXTERNAL_LESSONS).flatMap(row => Object.values(row)).flat().length
 })`);
 assert(refreshedTeacherChecks.gangMonday3 === '204 독서' && refreshedTeacherChecks.gangFriday4 === '201 독서', '강승표 갱신 시간표 오류');
 assert(refreshedTeacherChecks.kimYoungjuMonday1 === '206 데과 창구실', '김영주 갱신 시간표 오류');
 assert(refreshedTeacherChecks.ohSoyeonThursday5 === '202 데과 사행실', '오소연 갱신 시간표 오류');
+assert(refreshedTeacherChecks.kangChanggyuMonday2 === '108 국사' && refreshedTeacherChecks.kangChanggyuThursday4 === undefined, '강창규 1-8 한국사 시간표 이동 오류');
+assert(refreshedTeacherChecks.class18Monday2 === '국사 강창' && refreshedTeacherChecks.class18Thursday4 === '체육2 김재', '1-8 학급 시간표와 강창규 교사 시간표 불일치');
 assert(refreshedTeacherChecks.externalLessonCount === 45, '교사시간표 PDF 민트 수업 수 오류');
 
 const pdfColorCounts = read(`({
