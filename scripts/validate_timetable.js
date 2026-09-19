@@ -469,6 +469,8 @@ assert(afterSchoolSource.includes('function hwpSheet(') && afterSchoolSource.inc
 assert(afterSchoolSource.includes('width:11.3%') && afterSchoolSource.includes('49.5/dates.length') && afterSchoolSource.includes('<col style="width:6%"><col style="width:6%"><col style="width:6%"><col style="width:6%">'), '원본 템플릿 학생·날짜·출결 열 실측 비율 누락');
 assert(afterSchoolSource.includes('width:62%') && afterSchoolSource.includes('width:16%'), '원본 템플릿 제목·결재란 실측 비율 누락');
 assert(afterSchoolStyles.includes('table-layout:fixed!important') && afterSchoolStyles.includes('width:auto!important;min-width:0!important'), '웹 인쇄 원본 템플릿 colgroup 고정 적용 누락');
+assert(afterSchoolStyles.includes('.sign-cell{height:65px}') && afterSchoolStyles.includes('.info-table{border:1px solid #000;border-top:0}'), '출석부 결재란 높이 또는 운영정보 테두리 굵기 오류');
+assert(afterSchoolSource.includes('.sign-cell{height:65px}') && afterSchoolSource.includes('.info-table{border:1px solid #000;border-top:0}'), '한글 다운로드 결재란 높이 또는 운영정보 테두리 굵기 오류');
 assert(afterSchoolSource.includes('printSheet=hwpSheet') && afterSchoolSource.includes('el.innerHTML=hwpSheet(p)'), '웹 인쇄와 한글 다운로드 서식 통합 누락');
 assert(afterSchoolSource.includes('managerBlankHwpSheet') && afterSchoolSource.includes('replaceAll(`<td class="sign-cell">${esc(p.teacher)}</td>`,`<td class="sign-cell"></td>`)'), '출석부 출력 담당자 이름 공란 처리 누락');
 assert(afterSchoolSource.includes('function requestAccessPin(') && afterSchoolSource.includes('function verifyAccess(') && afterSchoolSource.includes('p.accessPin=pin') && afterSchoolSource.includes('window.afterSchoolChangePin'), '등록 교사 지정 4자리 출석부 비밀번호 누락');
