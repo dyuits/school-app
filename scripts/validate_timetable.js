@@ -142,7 +142,7 @@ const contactDirectoryAudit = read(`(() => {
     invalidPhones: STAFF_CONTACTS.filter(c => !/^(010-\\d{4}-\\d{4}|\\d{3}-\\d{4})$/.test(c.phone || '')).length,
     kimYuri: find('본교무실', '김유리'),
     jeongGicheol: find('행정실', '정기철'),
-    kangJinseokInfo: find('교육정보부', '강진석'),
+    kangJinseokArts: find('예술건강부', '강진석'),
     hongMinyoung: find('학생생활안전부', '홍민영'),
     hongWonjeong: find('학생생활안전부', '홍원정'),
     kimJeryeongBroadcast: find('방송실', '김제령'),
@@ -157,22 +157,22 @@ const contactDirectoryAudit = read(`(() => {
     corporateOffice: find('법인사무국', '김하석')
   };
 })()`);
-assert(contactDirectoryAudit.count === 95, '최신 교직원 연락망 항목 수 오류');
+assert(contactDirectoryAudit.count === 93, '최신 교직원 연락망 항목 수 오류');
 assert(JSON.stringify(contactDirectoryAudit.byDept) === JSON.stringify({
-  '교장실':1, '본교무실':14, '행정실':10, '교육정보부':4, '취업부':1, '학생생활안전부':4,
-  '예술건강부':2, '보건실':1, '방송실':1, '교목실':1, '상담실':1, '급식소':13,
-  '1학년부':11, '2학년부':11, '3학년부':11, '음악실(체육관)':1, '도서관':1,
+  '교장실':1, '본교무실':14, '행정실':10, '교육정보부':3, '취업부':1, '학생생활안전부':3,
+  '예술건강부':3, '보건실':1, '방송실':1, '교목실':1, '상담실':1, '급식소':13,
+  '1학년부':11, '2학년부':11, '3학년부':11, '도서관':1,
   '법인사무국':1, '환경미화실':1, '배움터지킴이':1, '축구부':3, '휴직':1
 }), '최신 교직원 연락망 부서별 인원 수 오류');
 assert(contactDirectoryAudit.exactDuplicates === 0 && contactDirectoryAudit.invalidPhones === 0, '연락처 중복 또는 전화번호 형식 오류');
-assert(contactDirectoryAudit.kimYuri?.role === '특성화교육' && contactDirectoryAudit.kimYuri.ext === '815' && !contactDirectoryAudit.kimYuriLeave, '김유리 연락처 배치 오류');
+assert(contactDirectoryAudit.kimYuri?.role === '특성화교육A' && contactDirectoryAudit.kimYuri.ext === '' && !contactDirectoryAudit.kimYuriLeave, '김유리 연락처 배치 오류');
 assert(contactDirectoryAudit.jeongGicheol?.phone === '010-8182-8306' && !contactDirectoryAudit.staleJeongPhone, '정기철 변경 전화번호 오류');
-assert(contactDirectoryAudit.kangJinseokInfo?.ext === '819', '교육정보부 강진석 내선 오류');
-assert(contactDirectoryAudit.hongMinyoung?.ext === '821' && contactDirectoryAudit.hongWonjeong?.role === '상담지원' && contactDirectoryAudit.hongWonjeong.ext === '821', '학생생활안전부 상담지원 연락처 오류');
-assert(contactDirectoryAudit.kimJeryeongBroadcast?.ext === '833' && contactDirectoryAudit.kimJeryeongHomeroom?.ext === '856', '김제령 위치별 내선 오류');
+assert(contactDirectoryAudit.kangJinseokArts?.role === '문화.예술' && contactDirectoryAudit.kangJinseokArts.ext === '', '예술건강부 강진석 연락처 오류');
+assert(!contactDirectoryAudit.hongMinyoung && contactDirectoryAudit.hongWonjeong?.role === '상담지원' && contactDirectoryAudit.hongWonjeong.ext === '821', '학생생활안전부 상담지원 연락처 오류');
+assert(contactDirectoryAudit.kimJeryeongBroadcast?.ext === '833' && contactDirectoryAudit.kimJeryeongHomeroom?.ext === '', '김제령 위치별 내선 오류');
 assert(contactDirectoryAudit.officeMain?.phone === '721-1152' && contactDirectoryAudit.officeFax?.phone === '750-3888' && contactDirectoryAudit.cafeteriaFax?.phone === '750-3889', '대표전화 또는 팩스 연락처 오류');
 assert(contactDirectoryAudit.addedPeople.every(Boolean), '급식소·배움터지킴이·축구부 신규 연락처 누락');
-assert(contactDirectoryAudit.musicRoom?.ext === '846' && contactDirectoryAudit.corporateOffice?.role === '사무국장', '음악실 또는 법인사무국 연락처 오류');
+assert(!contactDirectoryAudit.musicRoom && contactDirectoryAudit.corporateOffice?.role === '사무국장', '구 연락처 잔존 또는 법인사무국 연락처 오류');
 
 const externalBlock = read(`buildSwapLessonBlock('201 독서', '강승표', '월', 1, true, 0)`);
 assert(externalBlock.includes('var(--cell-mint-bg)') && !externalBlock.includes('[강사]'), '교체·대체 민트 수업에 [강사] 표시가 남아 있음');
@@ -470,6 +470,7 @@ assert(afterSchoolSource.includes('width:11.3%') && afterSchoolSource.includes('
 assert(afterSchoolSource.includes('width:62%') && afterSchoolSource.includes('width:16%'), '원본 템플릿 제목·결재란 실측 비율 누락');
 assert(afterSchoolStyles.includes('table-layout:fixed!important') && afterSchoolStyles.includes('width:auto!important;min-width:0!important'), '웹 인쇄 원본 템플릿 colgroup 고정 적용 누락');
 assert(afterSchoolSource.includes('printSheet=hwpSheet') && afterSchoolSource.includes('el.innerHTML=hwpSheet(p)'), '웹 인쇄와 한글 다운로드 서식 통합 누락');
+assert(afterSchoolSource.includes('managerBlankHwpSheet') && afterSchoolSource.includes('replaceAll(`<td class="sign-cell">${esc(p.teacher)}</td>`,`<td class="sign-cell"></td>`)'), '출석부 출력 담당자 이름 공란 처리 누락');
 assert(afterSchoolSource.includes('function requestAccessPin(') && afterSchoolSource.includes('function verifyAccess(') && afterSchoolSource.includes('p.accessPin=pin') && afterSchoolSource.includes('window.afterSchoolChangePin'), '등록 교사 지정 4자리 출석부 비밀번호 누락');
 assert(afterSchoolSource.includes('function cleanPlaceholderPrograms(') && afterSchoolSource.includes('빈 출석부 정리 실패'), '중복된 등록 미지정 빈 출석부 자동 정리 누락');
 assert(fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes('dashboardAdminResetAfterSchoolPin') && fs.readFileSync(path.join(root, 'docs/js/dashboard.js'), 'utf8').includes("afterSchool:'shared/afterSchoolAttendance'"), '운영관리자 출석부 비밀번호 초기화 누락');

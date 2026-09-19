@@ -1853,7 +1853,7 @@ function renderContactList() {
     if (homeroomRoles.length > 0) {
       // 담임 정보가 role에 이미 없으면 추가
       const homeroomStr = homeroomRoles.join(', ');
-      if (!c.role.includes('담임')) {
+      if (!c.role.includes('담임') && !homeroomRoles.some(role => role.replace('담임', '') === c.role)) {
         roleDisplay = `${c.role}<br><span style="color:var(--orange);font-weight:700;">${homeroomStr}</span>`;
       } else {
         roleDisplay = c.role;

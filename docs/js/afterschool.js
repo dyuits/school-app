@@ -58,6 +58,8 @@
   hwpSheet=p=>alignedHwpSheet(p).replace('<table class="info-table"><tr><td>','<table class="info-table"><tr><td align="left" style="text-align:left!important">').replace('class="note-cell"','class="note-cell" align="left" style="text-align:left!important"');
   const singlePageHwpSheet=hwpSheet;
   hwpSheet=p=>{const dates=selectedDates(p),chunks=[];for(let i=0;i<dates.length;i+=10)chunks.push(dates.slice(i,i+10));if(!chunks.length)chunks.push([]);return chunks.map((pageDates,index)=>{const pageProgram={...p,dates:pageDates,printDates:Object.fromEntries(pageDates.map(date=>[date,true]))},breakStyle=index<chunks.length-1?'page-break-after:always;break-after:page;':'';return `<div class="attendance-output-page" data-page="${index+1}" style="${breakStyle}">${singlePageHwpSheet(pageProgram)}</div>`;}).join('');};
+  const managerBlankHwpSheet=hwpSheet;
+  hwpSheet=p=>managerBlankHwpSheet(p).replaceAll(`<td class="sign-cell">${esc(p.teacher)}</td>`,`<td class="sign-cell"></td>`);
   printSheet=hwpSheet;
   function renderPrint(){const el=$('afterSchoolPrintSheet'),p=current();if(el&&p)el.innerHTML=hwpSheet(p);}
   function teacherNearLabels(joined,labels){const people=contactPeople(),plain=joined.replace(/\s+/g,' '),labelPattern=labels.map(label=>label.replace(/\s+/g,'\\s*')).join('|');let found='',best=Infinity;people.forEach(person=>{const name=person.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),matches=[...plain.matchAll(new RegExp(`(?:${labelPattern})\\s*[:：]?\\s*.{0,60}?(${name})`,'g'))];matches.forEach(match=>{const distance=match[0].length;if(distance<best){best=distance;found=person.name;}});});return found;}
