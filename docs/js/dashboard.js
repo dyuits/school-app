@@ -43,7 +43,7 @@
   window.renderDashboard = function(){
     const root=$('schoolDashboard'); if(!root)return;
     if(!D.initialized){
-      root.innerHTML=`<div class="dashboard-shell"><div class="dashboard-visitor-counter" title="IP를 수집하지 않으며 같은 브라우저는 하루에 한 번만 계산합니다."><i class="fas fa-users"></i><span>오늘 방문자</span><strong id="dashboardDailyVisitorCount">—</strong><em>·</em><span>누적 방문자</span><strong id="dashboardVisitorCount">—</strong></div>
+      root.innerHTML=`<div class="dashboard-shell"><div class="dashboard-visitor-counter" title="IP를 수집하지 않으며 같은 브라우저는 하루에 한 번만 계산합니다."><i class="fas fa-users"></i><span>오늘 방문자</span><strong id="dashboardDailyVisitorCount">—</strong></div>
         <div class="dashboard-shortcut-bar">${card('links','external-link-alt','업무 바로가기','ivory',true,'span-links')}</div>
         <div class="dashboard-grid">
           ${card('schedule','calendar-day','오늘의 학사일정','mint',true)}
@@ -86,10 +86,7 @@
     if(D.visitorTracking)return;
     if(!firebaseDB){setTimeout(trackAnonymousVisitor,500);return;}
     D.visitorTracking=true;
-    const visitorId=anonymousVisitorId(),visitors=ref('shared/dashboard/anonymousVisitors'),visitor=visitors.child(visitorId);
-    visitor.transaction(current=>current||{firstVisitedAt:firebase.database.ServerValue.TIMESTAMP}).catch(error=>console.warn('방문자 등록 실패',error));
-    visitors.on('value',snapshot=>{const count=snapshot.numChildren(),counter=$('dashboardVisitorCount');if(counter)counter.textContent=count.toLocaleString('ko-KR');},error=>{console.warn('방문자 수 로드 실패',error);const counter=$('dashboardVisitorCount');if(counter)counter.textContent='—';});
-    connectDailyVisitor(visitorId);
+    connectDailyVisitor(anonymousVisitorId());
   }
   window.addEventListener('schoolapp:firebase-ready',bindFirebase);
   window.addEventListener('schoolapp:calendar-updated',()=>{renderSchedule();renderMajor();renderMemos();});
