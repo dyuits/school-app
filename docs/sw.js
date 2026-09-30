@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v120-exam-supervision-manual-date';
+var CACHE_NAME = 'school-app-v121-afterschool-monthly-attendance';
 var ASSETS = [
   './',
   './index.html',
