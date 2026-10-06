@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v121-afterschool-monthly-attendance';
+var CACHE_NAME = 'school-app-v122-library-reservation';
 var ASSETS = [
   './',
   './index.html',
