@@ -379,6 +379,12 @@ function isExternalLesson(teacher, day, period, value = '') {
   return externalValues.length > 0 && !(TEACHER_SCHEDULE[teacher] || {})[slot];
 }
 
+function isSwappableMintLesson(teacher, day, period, value = '', forceExternal = false) {
+  return typeof SWAPPABLE_MINT_TEACHERS !== 'undefined' &&
+    SWAPPABLE_MINT_TEACHERS.has(teacher) &&
+    (forceExternal || isExternalLesson(teacher, day, period, value));
+}
+
 function getGradeGroup(grade) { return String(grade) === '3' ? '3' : '12'; }
 
 function getPeriodTime(period, grade = null) {
@@ -738,7 +744,8 @@ function openLessonMatching(teacher, day, period, val, forceExternal = false) {
     openModal();
     return;
   }
-  if (forceExternal || isExternalLesson(teacher, day, period, val)) {
+  if ((forceExternal || isExternalLesson(teacher, day, period, val)) &&
+      !isSwappableMintLesson(teacher, day, period, val, forceExternal)) {
     if (typeof INDUSTRY_CO_TEACHING_TEACHERS !== 'undefined' && INDUSTRY_CO_TEACHING_TEACHERS.has(teacher)) {
       renderResultModal_blocked(
         teacher,
@@ -761,7 +768,7 @@ function openLessonMatching(teacher, day, period, val, forceExternal = false) {
     return;
   }
 
-  const swapResults = findSwapCandidates(teacher, day, period, val);
+  const swapResults = findSwapCandidates(teacher, day, period, val, createScheduleSnapshot(), forceExternal);
   const subResults  = findSubstituteCandidates(teacher, day, period, val);
 
   swapResults.forEach(r => {
@@ -769,17 +776,20 @@ function openLessonMatching(teacher, day, period, val, forceExternal = false) {
     if (cell) cell.classList.add('is-partner');
   });
 
-  renderResultModal(teacher, day, period, val, swapResults, subResults);
+  renderResultModal(teacher, day, period, val, swapResults, subResults, forceExternal);
   openModal();
 }
 
 // 교체(맞교환) 후보
 // 교체 조건: 두 원수업을 제거하고 서로의 시간에 가상 배치한 최종 상태에서
 // 양쪽 교사와 양쪽 학급 모두 시간 충돌이 없어야 한다.
-function findSwapCandidates(myTeacher, myDay, myPeriod, myVal, scheduleSnapshot = createScheduleSnapshot()) {
-  const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod);
-  if (!myVal || myInfo.isSelect || myInfo.isMint || isExternalLesson(myTeacher, myDay, myPeriod, myVal) || !myInfo.grade || !myInfo.classNum) return [];
-  const sourceLesson = createLessonRecord(myTeacher, myDay, myPeriod, myVal);
+function findSwapCandidates(myTeacher, myDay, myPeriod, myVal, scheduleSnapshot = createScheduleSnapshot(), forceExternal = false) {
+  const myInfo = parseCellValue(myVal, myTeacher, myDay + myPeriod, forceExternal);
+  const sourceMintAllowed = isSwappableMintLesson(myTeacher, myDay, myPeriod, myVal, forceExternal);
+  if (!myVal || myInfo.isSelect || (myInfo.isMint && !sourceMintAllowed) ||
+      (isExternalLesson(myTeacher, myDay, myPeriod, myVal) && !sourceMintAllowed) ||
+      !myInfo.grade || !myInfo.classNum) return [];
+  const sourceLesson = createLessonRecord(myTeacher, myDay, myPeriod, myVal, forceExternal);
 
   const results = [];
   const seen = new Set(); // 중복 방지
@@ -799,24 +809,36 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal, scheduleSnapshot 
         if (isBlockedTime(other, d, p)) return;
         if (isChatcheTime(other, d, p)) return;
 
-        const otherVal = otherRow[d + p];
-        if (!otherVal) return;
-        const otherInfo = parseCellValue(otherVal, other, d + p);
-        if (otherInfo.isSelect || otherInfo.isMint || isExternalLesson(other, d, p, otherVal) || !otherInfo.grade || !otherInfo.classNum) return;
-        const ignored = [
-          { teacher:myTeacher, classKey:sourceLesson.classKey, day:myDay, period:myPeriod },
-          { teacher:other, classKey:`${otherInfo.grade}-${otherInfo.classNum}`, day:d, period:p },
-        ];
-        if (isTeacherBusyAt(myTeacher, d, p, myInfo, ignored) ||
-            isTeacherBusyAt(other, myDay, myPeriod, otherInfo, ignored) ||
-            isClassBusy(myInfo, d, p, ignored) ||
-            isClassBusy(otherInfo, myDay, myPeriod, ignored)) return;
-        const candidateLesson = createLessonRecord(other, d, p, otherVal);
-        if (!evaluateVirtualSwap(sourceLesson, candidateLesson, scheduleSnapshot).valid) return;
-        const key = `${other}|${d}|${p}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        results.push({ teacher: other, day: d, period: p, grade: otherInfo.grade, subject: otherInfo.subject, theirClass: otherInfo.classLabel });
+        const candidateValues = [];
+        const regularValue = otherRow[d + p];
+        if (regularValue) candidateValues.push({ value:regularValue, forceExternal:false });
+        getExternalLessonValues(other, d, p).forEach(value => {
+          if (isSwappableMintLesson(other, d, p, value, true)) {
+            candidateValues.push({ value, forceExternal:true });
+          }
+        });
+
+        candidateValues.forEach(candidate => {
+          const otherInfo = parseCellValue(candidate.value, other, d + p, candidate.forceExternal);
+          const candidateMintAllowed = isSwappableMintLesson(other, d, p, candidate.value, candidate.forceExternal);
+          if (otherInfo.isSelect || (otherInfo.isMint && !candidateMintAllowed) ||
+              (isExternalLesson(other, d, p, candidate.value) && !candidateMintAllowed) ||
+              !otherInfo.grade || !otherInfo.classNum) return;
+          const ignored = [
+            { teacher:myTeacher, classKey:sourceLesson.classKey, day:myDay, period:myPeriod },
+            { teacher:other, classKey:`${otherInfo.grade}-${otherInfo.classNum}`, day:d, period:p },
+          ];
+          if (isTeacherBusyAt(myTeacher, d, p, myInfo, ignored) ||
+              isTeacherBusyAt(other, myDay, myPeriod, otherInfo, ignored) ||
+              isClassBusy(myInfo, d, p, ignored) ||
+              isClassBusy(otherInfo, myDay, myPeriod, ignored)) return;
+          const candidateLesson = createLessonRecord(other, d, p, candidate.value, candidate.forceExternal);
+          if (!evaluateVirtualSwap(sourceLesson, candidateLesson, scheduleSnapshot).valid) return;
+          const key = `${other}|${d}|${p}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          results.push({ teacher: other, day: d, period: p, grade: otherInfo.grade, subject: otherInfo.subject, theirClass: otherInfo.classLabel });
+        });
       });
     });
   });
@@ -825,8 +847,9 @@ function findSwapCandidates(myTeacher, myDay, myPeriod, myVal, scheduleSnapshot 
 
 // 대체 후보 (공강 선생님 중 같은 교과)
 function findSubstituteCandidates(myTeacher, day, period, lessonValue = '') {
-  // PDF의 모든 민트색 수업은 외부강사 수업이므로 교체·대체 후보를 만들지 않는다.
-  if (isExternalLesson(myTeacher, day, period, lessonValue)) {
+  // 조정 가능 교사로 지정되지 않은 외부강사 수업은 교체·대체 후보를 만들지 않는다.
+  if (isExternalLesson(myTeacher, day, period, lessonValue) &&
+      !isSwappableMintLesson(myTeacher, day, period, lessonValue)) {
     return [];
   }
 
@@ -898,6 +921,7 @@ function renderResultModal_blocked(teacher, day, period, val, msg) {
 function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExternal = false) {
   const info      = parseCellValue(val || '', teacher, day + period, forceExternal);
   const externalLesson = forceExternal || isExternalLesson(teacher, day, period, val);
+  const externalMatchable = isSwappableMintLesson(teacher, day, period, val, forceExternal);
   const isChatech = isChatcheTime(teacher, day, period) && !val;
   const lessonName = isChatech ? '창의적 체험활동(창체)' : (info.subject || val || '-');
   const dayNames = {월:'월요일',화:'화요일',수:'수요일',목:'목요일',금:'금요일'};
@@ -919,7 +943,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
       </div>
       ${teacherScheduleLink(teacher, `${teacher} 선생님${homeroomCls ? ' · ' + homeroomCls + '반 담임' : ''}`, 'result-my-teacher')}
       ${info.isSelect ? '<div class="result-rule-badge select"><i class="fas fa-palette"></i> 선택과목 (노란색) — 대체만 가능, 교체 불가</div>' : ''}
-      ${externalLesson ? '<div class="result-rule-badge mint"><i class="fas fa-user-clock"></i> 외부강사 수업 (민트색) — 교체 불가</div>' : ''}
+      ${externalLesson ? `<div class="result-rule-badge mint"><i class="fas fa-user-clock"></i> 산학교사 수업 (민트색) — ${externalMatchable ? '교체·대체 가능' : '교체 불가'}</div>` : ''}
     </div>`;
 
   let html = '';
@@ -928,7 +952,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
   if (info.isMint) {
     html += `<div style="background:#fffde7;border:1.5px solid #f9a825;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
       <span style="font-size:18px;">⚠️</span>
-      <span style="font-weight:700;font-size:13px;color:#e65100;">시간 또는 산학강사가 수업하는 시간입니다</span>
+      <span style="font-weight:700;font-size:13px;color:#e65100;">${externalMatchable ? '산학교사 수업도 실제 시간표 충돌을 확인해 후보를 표시합니다' : '시간 또는 산학강사가 수업하는 시간입니다'}</span>
     </div>`;
   }
 
@@ -938,7 +962,7 @@ function renderResultModal(teacher, day, period, val, swapRes, subRes, forceExte
     ${(!isChatech && !info.isSelect && swapRes.length > 0) ? `<span class="result-count-badge swap">${swapRes.length}명</span>` : ''}
   </div>`;
 
-  if (externalLesson) {
+  if (externalLesson && !externalMatchable) {
     html += `<div class="result-rule-notice mint"><div class="result-rule-icon">🚫</div><div>
       <div style="font-weight:700;font-size:13px;margin-bottom:3px;">외부강사 수업 · 교체 불가</div>
       <div style="font-size:12px;color:var(--txt-mid);line-height:1.5;">외부강사 수업은 맞교환 후보에 포함하지 않습니다.<br>아래 동일 교과 대체 가능 선생님을 확인하세요.</div>
