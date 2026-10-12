@@ -13,16 +13,17 @@
   const className=index=>`${Math.floor(index/10)+1}-${index%10+1}`;
   const displayDate=value=>{const d=new Date(`${value}T00:00:00`);return `${d.getMonth()+1}월 ${d.getDate()}일`;};
   const assignmentTime=(period,index)=>period.gradeTimes?.[Math.floor(index/10)+1]||period.time;
+  const assignmentSubject=(period,index)=>period.gradeSubjects?.[Math.floor(index/10)+1]||period.subject;
   const grades=()=>S.grade?[S.grade]:[1,2,3];
   function validDay(day){return day&&/^\d{4}-\d{2}-\d{2}$/.test(day.date)&&day.homeroom?.length===30&&day.periods?.length;}
   function refreshDays(){const map=new Map([[DEFAULT_DAY.date,DEFAULT_DAY]]);Object.values(S.remote||{}).filter(validDay).forEach(day=>map.set(day.date,day));S.days=[...map.values()].sort((a,b)=>a.date.localeCompare(b.date));if(!S.days.some(day=>day.date===S.date))S.date=S.days[0]?.date||'';}
   function bindRemote(){if(S.listener||typeof firebaseDB==='undefined'||!firebaseDB)return;S.listener=true;firebaseDB.ref('shared/examSupervision').on('value',snap=>{S.remote=snap.val()||{};refreshDays();if(document.getElementById('examSupervisionRoot'))render();},error=>console.warn('감독시간표 불러오기 실패',error));}
-  function searchResults(day){if(!queries().length)return'';const rows=[];day.periods.forEach(p=>p.teachers.forEach((teacher,index)=>{if(matches(teacher))rows.push({teacher,room:className(index),period:p.period,subject:p.subject,time:assignmentTime(p,index)});}));return `<section class="exam-search-results"><h3><i class="fas fa-magnifying-glass"></i> 검색 결과 <span>${rows.length}건</span></h3>${rows.length?`<div>${rows.map(r=>`<article><strong>${esc(r.teacher)}</strong><b>${esc(r.period)} · ${esc(r.subject)}</b><span>${esc(r.room)} 고사실</span><time>${esc(r.time)}</time></article>`).join('')}</div>`:'<p>일치하는 감독 배정이 없습니다.</p>'}</section>`;}
-  function timeGuide(day){const list=grades();return `<section class="exam-time-guide"><h3><i class="fas fa-clock"></i> ${S.grade?`${S.grade}학년`:'학년별'} 시험시간</h3><div class="exam-time-grid ${S.grade?'is-single':''}" style="grid-template-columns:110px repeat(${list.length},1fr)"><div class="exam-time-head">구분</div>${list.map(g=>`<div class="exam-time-head">${g}학년</div>`).join('')}${day.periods.map((p,i)=>`<div class="exam-time-label"><b>${esc(p.period)}</b><span>${esc(p.subject)}</span></div>${list.map(g=>`<div class="exam-time-cell">${esc(p.gradeTimes?.[g]||p.time)}</div>`).join('')}${i===1?`<div class="exam-time-label break"><b>점심</b></div>${list.map(g=>`<div class="exam-time-cell break">${esc(day.breaks.find(b=>b.after===2)?.times?.[g]||'')}</div>`).join('')}`:''}`).join('')}</div></section>`;}
+  function searchResults(day){if(!queries().length)return'';const rows=[];day.periods.forEach(p=>{p.teachers.forEach((teacher,index)=>{if(matches(teacher))rows.push({teacher,room:className(index),period:p.period,subject:assignmentSubject(p,index),time:assignmentTime(p,index)});});(p.extras||[]).forEach(extra=>{if(matches(extra.teacher))rows.push({teacher:extra.teacher,room:extra.room,period:p.period,subject:extra.subject||p.gradeSubjects?.[extra.grade]||p.subject,time:p.gradeTimes?.[extra.grade]||p.time});});});return `<section class="exam-search-results"><h3><i class="fas fa-magnifying-glass"></i> 검색 결과 <span>${rows.length}건</span></h3>${rows.length?`<div>${rows.map(r=>`<article><strong>${esc(r.teacher)}</strong><b>${esc(r.period)} · ${esc(r.subject)}</b><span>${esc(r.room)} 고사실</span><time>${esc(r.time)}</time></article>`).join('')}</div>`:'<p>일치하는 감독 배정이 없습니다.</p>'}</section>`;}
+  function timeGuide(day){const list=grades();return `<section class="exam-time-guide"><h3><i class="fas fa-clock"></i> ${S.grade?`${S.grade}학년`:'학년별'} 시험시간</h3><div class="exam-time-grid ${S.grade?'is-single':''}" style="grid-template-columns:110px repeat(${list.length},1fr)"><div class="exam-time-head">구분</div>${list.map(g=>`<div class="exam-time-head">${g}학년</div>`).join('')}${day.periods.map((p,i)=>{const pause=day.breaks.find(b=>b.after===i+1);return `<div class="exam-time-label"><b>${esc(p.period)}</b><span>${esc(S.grade?(p.gradeSubjects?.[S.grade]||p.subject):p.subject)}</span></div>${list.map(g=>`<div class="exam-time-cell">${esc(p.gradeTimes?.[g]||p.time)}</div>`).join('')}${pause?`<div class="exam-time-label break"><b>${esc(pause.label)}</b></div>${list.map(g=>`<div class="exam-time-cell break">${esc(pause.times?.[g]||'')}</div>`).join('')}`:''}`;}).join('')}</div></section>`;}
   function teacherCell(teacher,index){const active=queries().length>0;return `<td class="exam-teacher-cell ${active?(matches(teacher)?'is-match':'is-muted'):''}" data-room="${className(index)}"><span>${esc(teacher)}</span></td>`;}
   function visible(values){return grades().flatMap(g=>values.slice((g-1)*10,g*10).map((value,i)=>({value,index:(g-1)*10+i})));}
   function breakRow(item){return `<tr class="exam-break-row"><th><b>${esc(item.label)}</b></th>${grades().map(g=>`<td colspan="10"><span>${esc(item.times?.[g]||'')}</span></td>`).join('')}</tr>`;}
-  function matrix(day){const list=grades(),entries=visible(day.homeroom),rows=[];day.periods.forEach((p,i)=>{rows.push(`<tr class="exam-period-row"><th><b>${esc(p.period)} ${p.duration?`(${esc(p.duration)})`:''}</b><strong>${esc(p.subject)}</strong><time>${esc(p.time)}</time></th>${visible(p.teachers).map(v=>teacherCell(v.value,v.index)).join('')}</tr>`);const pause=day.breaks.find(b=>b.after===i+1);if(pause)rows.push(breakRow(pause));});return `<section class="exam-matrix-card"><div class="exam-matrix-toolbar"><div><h2>${esc(day.title)} ${S.grade?`${S.grade}학년`:'전체'} 감독표</h2><p>${displayDate(day.date)} (${esc(day.day)}) · ${S.grade?`${S.grade}학년 10개 학급`:'1~3학년 전체 학급'}</p></div><span><i class="fas fa-expand"></i> ${S.grade?'학년별 확대보기':'한 화면 전체보기'}</span></div><div class="exam-matrix-viewport"><table class="exam-matrix ${S.grade?'is-single':''}"><colgroup><col class="exam-info-col">${entries.map(()=>'<col>').join('')}</colgroup><thead><tr><th rowspan="2">교시·과목·시간</th>${list.map(g=>`<th colspan="10" class="grade-${g}">${g}학년</th>`).join('')}</tr><tr>${entries.map(v=>`<th>${className(v.index)}</th>`).join('')}</tr><tr class="exam-homeroom-row"><th>담임</th>${entries.map(v=>teacherCell(v.value,v.index)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></section>`;}
+  function matrix(day){const list=grades(),entries=visible(day.homeroom),rows=[];day.periods.forEach((p,i)=>{rows.push(`<tr class="exam-period-row"><th><b>${esc(p.period)} ${p.duration?`(${esc(p.duration)})`:''}</b><strong>${esc(S.grade?(p.gradeSubjects?.[S.grade]||p.subject):p.subject)}</strong><time>${esc(p.time)}</time></th>${visible(p.teachers).map(v=>teacherCell(v.value,v.index)).join('')}</tr>`);const pause=day.breaks.find(b=>b.after===i+1);if(pause)rows.push(breakRow(pause));});const extras=day.periods.flatMap(p=>(p.extras||[]).filter(extra=>!S.grade||extra.grade===S.grade).map(extra=>({...extra,period:p.period,time:p.gradeTimes?.[extra.grade]||p.time,subject:extra.subject||p.gradeSubjects?.[extra.grade]||p.subject})));const extraHtml=extras.length?`<section class="exam-search-results"><h3><i class="fas fa-school"></i> 특별 고사실 배정 <span>${extras.length}건</span></h3><div>${extras.map(extra=>`<article><strong>${esc(extra.teacher)}</strong><b>${esc(extra.period)} · ${esc(extra.subject)}</b><span>${esc(extra.room)}</span><time>${esc(extra.time)}</time></article>`).join('')}</div></section>`:'';return `<section class="exam-matrix-card"><div class="exam-matrix-toolbar"><div><h2>${esc(day.title)} ${S.grade?`${S.grade}학년`:'전체'} 감독표</h2><p>${displayDate(day.date)} (${esc(day.day)}) · ${S.grade?`${S.grade}학년 10개 학급`:'1~3학년 전체 학급'}</p></div><span><i class="fas fa-expand"></i> ${S.grade?'학년별 확대보기':'한 화면 전체보기'}</span></div><div class="exam-matrix-viewport"><table class="exam-matrix ${S.grade?'is-single':''}"><colgroup><col class="exam-info-col">${entries.map(()=>'<col>').join('')}</colgroup><thead><tr><th rowspan="2">교시·과목·시간</th>${list.map(g=>`<th colspan="10" class="grade-${g}">${g}학년</th>`).join('')}</tr><tr>${entries.map(v=>`<th>${className(v.index)}</th>`).join('')}</tr><tr class="exam-homeroom-row"><th>담임</th>${entries.map(v=>teacherCell(v.value,v.index)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></section>${extraHtml}`;}
   function render(){bindRemote();const root=document.getElementById('examSupervisionRoot');if(!root)return;const day=S.days.find(d=>d.date===S.date)||S.days[0];if(!day){root.innerHTML='<div class="exam-empty">등록된 시험 감독 일정이 없습니다.</div>';return;}S.date=day.date;root.innerHTML=`<div class="exam-shell"><header class="exam-hero"><div><span class="exam-kicker">EXAM SUPERVISION</span><h2><i class="fas fa-clipboard-user"></i> 감독시간표</h2><p>시험일과 학년을 선택하면 감독 배정과 시간을 크게 확인할 수 있습니다.</p></div><div class="exam-hero-actions"><button class="exam-upload-button" onclick="document.getElementById('examSupervisionFile').click()"><i class="fas fa-file-arrow-up"></i> 감독표 파일 올리기</button><input id="examSupervisionFile" type="file" accept=".xlsx,.xls,.hwp,.hwpx" hidden onchange="examSupervisionImportFile(this)"><div class="exam-date-badge"><strong>${displayDate(day.date)}</strong><span>${esc(day.day)}</span></div></div></header><div class="exam-upload-guide"><i class="fas fa-circle-info"></i> 엑셀(XLSX·XLS)과 한글(HWP·HWPX) 감독표를 자동으로 인식합니다.</div><div class="exam-date-section"><b>시험일 선택</b><div class="exam-date-tabs">${S.days.map(d=>`<button class="${d.date===day.date?'active':''}" onclick="selectExamSupervisionDate('${d.date}')"><span>${displayDate(d.date)}</span><small>${esc(d.title)}</small></button>`).join('')}</div></div><div class="exam-controls"><div class="exam-grade-filter"><b>학년 선택</b>${[1,2,3,0].map(g=>`<button class="${S.grade===g?'active':''}" onclick="selectExamSupervisionGrade(${g})">${g?`${g}학년`:'전체'}</button>`).join('')}</div><label class="exam-search"><i class="fas fa-search"></i><input value="${esc(S.query)}" oncompositionstart="examSupervisionComposition(true)" oncompositionend="examSupervisionComposition(false,this.value)" oninput="searchExamSupervision(this.value,event)" placeholder="교사 이름 검색 (쉼표로 여러 명 검색)" autocomplete="off"><button type="button" onclick="searchExamSupervision('')" aria-label="검색 초기화"><i class="fas fa-times"></i></button></label></div>${searchResults(day)}${timeGuide(day)}${matrix(day)}<p class="exam-source-note"><i class="fas fa-circle-info"></i> ${esc(day.source||'담당교사 업로드 자료')} 기준 · 변경 사항은 일과 담당선생님에게 확인해 주세요.</p></div>`;}
   function cell(ws,row,col){const c=ws[XLSX.utils.encode_cell({r:row-1,c:col-1})];return String(c?.w??c?.v??'').trim();}
   const timeText=value=>(String(value||'').match(/\d{1,2}:\d{2}\s*[~～-]\s*\d{1,2}:\d{2}/g)||[]).join(' / ').replace(/[～-]/g,'~');
@@ -31,7 +32,116 @@
   function rowsFromHwpTexts(texts){const values=texts.flatMap(text=>String(text).split(/\s{2,}|\t/)).map(v=>v.trim()).filter(Boolean),classes=Array.from({length:30},(_,i)=>className(i)),start=values.findIndex((_,i)=>classes.every((name,j)=>values[i+j]===name));if(start<0)throw new Error('HWP에서 1-1부터 3-10까지의 학급 표를 찾지 못했습니다. 표가 유지되는 HWPX로 저장하면 더 정확하게 인식됩니다.');const prefix=values.slice(0,start),rows=prefix.map(value=>[value]),homeroom=values.slice(start+30,start+60);rows.push(['','',...classes],['','',...homeroom]);let cursor=start+60;while(cursor<values.length){const periodAt=values.slice(cursor).findIndex(value=>/[1-9]교시/.test(value));if(periodAt<0)break;cursor+=periodAt;const label=values[cursor++],teachers=values.slice(cursor,cursor+30);if(teachers.length<25)break;rows.push([label,'',...teachers]);cursor+=30;}return rows;}
   async function workbookFromHangul(file){const buffer=await file.arrayBuffer(),magic=new Uint8Array(buffer,0,Math.min(8,buffer.byteLength));let rows;if(magic.length>=8&&magic[0]===0xd0&&magic[1]===0xcf&&magic[2]===0x11&&magic[3]===0xe0){rows=rowsFromHwpTexts(await hwpBinaryTexts(buffer));}else{if(typeof JSZip==='undefined')throw new Error('HWPX 처리 모듈을 불러오지 못했습니다.');const zip=await JSZip.loadAsync(buffer),names=Object.keys(zip.files).filter(name=>/^Contents\/section\d+\.xml$/i.test(name));if(!names.length)throw new Error('올바른 HWP/HWPX 파일이 아닙니다.');rows=[];for(const name of names){const xml=new DOMParser().parseFromString(await zip.file(name).async('string'),'application/xml'),all=[...xml.getElementsByTagName('*')],text=node=>all.filter(e=>e.localName==='t'&&node.contains(e)).map(e=>e.textContent||'').join('').replace(/\s+/g,' ').trim();all.filter(e=>e.localName==='tr').forEach(tr=>{const cells=all.filter(e=>e.localName==='tc'&&tr.contains(e)&&!all.some(parent=>parent!==e&&parent.localName==='tc'&&tr.contains(parent)&&parent.contains(e))).map(text);if(cells.some(Boolean))rows.push(cells);});}}const classRow=rows.find(row=>row.includes('1-1')&&row.includes('3-10')),offset=classRow?.indexOf('1-1')??2;if(classRow)rows=rows.map(row=>{const block=row.slice(offset,offset+30),classHeaders=block[0]==='1-1'&&block[29]==='3-10',teacherCount=block.filter(value=>/^[가-힣]{2,4}$/.test(value)).length;if(!classHeaders&&teacherCount<20)return row;const labels=row.slice(0,offset).filter(Boolean);return[labels[0]||'',labels[1]||'',...block];});const sheet=XLSX.utils.aoa_to_sheet(rows);return{SheetNames:['한글 감독표'],Sheets:{'한글 감독표':sheet}};}
   function parseWorkbook(workbook,fileName){const ws=workbook.Sheets[workbook.SheetNames[0]],max=XLSX.utils.decode_range(ws['!ref']||'A1').e.r+1;let dateLabel='';for(let r=1;r<=Math.min(max,20)&&!dateLabel;r++)for(let c=1;c<=6;c++)if(/\d{1,2}월\s*\d{1,2}일/.test(cell(ws,r,c))){dateLabel=cell(ws,r,c);break;}const dm=dateLabel.match(/(\d{1,2})월\s*(\d{1,2})일/);if(!dm)throw new Error('시험 날짜(예: 9월 2일)를 찾지 못했습니다.');const year=Number(dateLabel.match(/(20\d{2})년/)?.[1]||new Date().getFullYear()),month=Number(dm[1]),number=Number(dm[2]),date=`${year}-${String(month).padStart(2,'0')}-${String(number).padStart(2,'0')}`,day=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][new Date(`${date}T00:00:00`).getDay()];let classRow=0,homeroomRow=0;for(let r=1;r<=Math.min(max,30);r++){const row=Array.from({length:30},(_,i)=>cell(ws,r,i+3));if(row[0]==='1-1'&&row[29]==='3-10')classRow=r;if(row.filter(v=>/^[가-힣]{2,4}$/.test(v)).length>=20)homeroomRow=r;}if(!classRow)throw new Error('1-1부터 3-10까지의 학급 머리글을 찾지 못했습니다.');if(!homeroomRow)homeroomRow=classRow+1;const homeroom=Array.from({length:30},(_,i)=>cell(ws,homeroomRow,i+3));if(homeroom.filter(Boolean).length<25)throw new Error('30개 학급의 담임 정보를 찾지 못했습니다.');const found=[];for(let r=classRow+1;r<=Math.min(max,classRow+20);r++){const label=[cell(ws,r,1),cell(ws,r,2)].join('\n'),m=label.match(/([1-9])교시/);if(m)found.push({row:r,number:Number(m[1]),label});}const rows=[...new Map(found.map(v=>[v.number,v])).values()].sort((a,b)=>a.number-b.number);if(!rows.length)throw new Error('교시별 감독 배정 행을 찾지 못했습니다.');const detailed={};for(let r=classRow+10;r<=max;r++){const label=[cell(ws,r,1),cell(ws,r,2),cell(ws,r,3)].join(' '),m=label.match(/([1-9])교시/),times={3:timeText(cell(ws,r,7)),2:timeText(cell(ws,r,13)),1:timeText(cell(ws,r,19))};if(m)detailed[Number(m[1])]=times;if(/점심/.test(label))detailed.lunch=times;}const periods=rows.map(item=>{const teachers=Array.from({length:30},(_,i)=>cell(ws,item.row,i+3));if(teachers.filter(Boolean).length<25)throw new Error(`${item.number}교시 감독 배정이 30개 학급에 맞지 않습니다.`);const duration=item.label.match(/(\d+)분/)?.[1],subject=String(item.label).split(/\r?\n/).map(v=>v.trim()).find(v=>!v.includes('교시')&&!v.includes('분')&&!/\d{1,2}:\d{2}/.test(v))||`${item.number}교시`;return {period:`${item.number}교시`,subject,duration:duration?`${duration}분`:'',time:timeText(item.label)||Object.values(detailed[item.number]||{}).find(Boolean)||'시간 확인',gradeTimes:detailed[item.number]||{},teachers};});const breaks=[];periods.slice(0,-1).forEach((p,i)=>{const next=periods[i+1],times={};[1,2,3].forEach(g=>{const end=(p.gradeTimes?.[g]||p.time).match(/(\d{1,2}:\d{2})(?!.*\d{1,2}:\d{2})/)?.[1],start=(next.gradeTimes?.[g]||next.time).match(/\d{1,2}:\d{2}/)?.[0];times[g]=end&&start?`${end}~${start}`:'';});breaks.push({after:i+1,label:i===1?'점심시간':'쉬는시간',times:i===1&&detailed.lunch?detailed.lunch:times});});const title=String(fileName||'시험 감독표').replace(/\.(xlsx?|xls)$/i,'').replace(/\s*감독(시간표)?\s*$/,'').trim();return {date,title:title||`${month}월 시험`,day,homeroom,periods,breaks,source:`${fileName} 업로드 자료`};}
-  const parseWorkbookWithDocumentDate=parseWorkbook;
+  const parseLegacyWorkbook=parseWorkbook;
+  function parseSplitGradeWorkbook(workbook,fileName){
+    const ws=workbook.Sheets[workbook.SheetNames[0]],range=XLSX.utils.decode_range(ws['!ref']||'A1'),merges=ws['!merges']||[];
+    const valueAt=(row,col)=>cell(ws,row+1,col+1);
+    const mergeAt=(row,col)=>merges.find(m=>row>=m.s.r&&row<=m.e.r&&col>=m.s.c&&col<=m.e.c);
+    let headerRow=-1;
+    for(let row=0;row<=Math.min(range.e.r,29);row++){
+      const headers=[];
+      for(let col=0;col<=range.e.c;col++)if(/^[1-3]-(?:10|[1-9])$/.test(valueAt(row,col)))headers.push(valueAt(row,col));
+      if(headers.includes('1-1')&&headers.includes('2-1')&&headers.includes('3-1')){headerRow=row;break;}
+    }
+    if(headerRow<0)throw new Error('학년별 학급 머리글을 찾지 못했습니다.');
+    const layouts=[1,2,3].map(grade=>{
+      const cols=Array.from({length:10},(_,index)=>{
+        const label=`${grade}-${index+1}`;
+        for(let col=0;col<=range.e.c;col++)if(valueAt(headerRow,col)===label)return col;
+        return -1;
+      });
+      if(cols.some(col=>col<0))throw new Error(`${grade}학년 10개 학급 머리글을 모두 찾지 못했습니다.`);
+      return {grade,start:cols[0],end:cols[9],labelCol:cols[0]-2,timeCol:cols[0]-1,cols};
+    });
+    let dateLabel='';
+    for(let row=0;row<=Math.min(range.e.r,19)&&!dateLabel;row++)for(let col=0;col<=range.e.c;col++)if(/\d{1,2}월\s*\d{1,2}일/.test(valueAt(row,col))){dateLabel=valueAt(row,col);break;}
+    const dm=dateLabel.match(/(\d{1,2})월\s*(\d{1,2})일/);
+    if(!dm)throw new Error('시험 날짜(예: 10월 13일)를 찾지 못했습니다.');
+    const year=Number(dateLabel.match(/(20\d{2})년/)?.[1]||new Date().getFullYear()),month=Number(dm[1]),number=Number(dm[2]);
+    const date=`${year}-${String(month).padStart(2,'0')}-${String(number).padStart(2,'0')}`;
+    const periodRows={};
+    layouts.forEach(layout=>{
+      for(let row=headerRow+1;row<=range.e.r;row++){
+        const match=valueAt(row,layout.labelCol).match(/([1-9])교시/);
+        if(match)(periodRows[Number(match[1])]||(periodRows[Number(match[1])]={}))[layout.grade]=row;
+      }
+    });
+    const numbers=Object.keys(periodRows).map(Number).sort((a,b)=>a-b);
+    if(!numbers.length)throw new Error('교시별 감독 배정 행을 찾지 못했습니다.');
+    const isTeacher=value=>/^[가-힣]{2,4}$/.test(String(value||'').trim());
+    const cleanSubject=value=>String(value||'').replace(/\s+/g,' ').trim();
+    const durationOf=value=>{const times=String(value||'').match(/(\d{1,2}):(\d{2})\s*[~～-]\s*(\d{1,2}):(\d{2})/);if(!times)return'';const minutes=(Number(times[3])*60+Number(times[4]))-(Number(times[1])*60+Number(times[2]));return minutes>0?`${minutes}분`:'';};
+    const periods=numbers.map(number=>{
+      const teachers=Array(30).fill(''),gradeTimes={},gradeSubjects={},extras=[];
+      layouts.forEach(layout=>{
+        const row=periodRows[number][layout.grade];
+        if(row===undefined)return;
+        gradeTimes[layout.grade]=(timeText(valueAt(row,layout.timeCol))||valueAt(row,layout.timeCol)).replace(/\s+/g,'');
+        const subjects=[];
+        layout.cols.forEach(col=>{const value=cleanSubject(valueAt(row,col));if(value&&value!=='귀가'&&!subjects.includes(value))subjects.push(value);});
+        gradeSubjects[layout.grade]=subjects.join(' · ')||'자습';
+        let endRow=range.e.r+1;
+        for(let next=row+1;next<=range.e.r;next++)if(/(?:예비령|점심시간|[1-9]교시)/.test(valueAt(next,layout.labelCol))){endRow=next;break;}
+        layout.cols.forEach((col,index)=>{
+          const names=[];let extraRoom='';
+          for(let teacherRow=row+1;teacherRow<endRow;teacherRow++){
+            const value=cleanSubject(valueAt(teacherRow,col));
+            if(!value)continue;
+            const merged=mergeAt(teacherRow,col);
+            if(merged&&merged.e.c>merged.s.c)continue;
+            if(isTeacher(value)){
+              if(extraRoom)extras.push({grade:layout.grade,room:extraRoom,teacher:value,subject:gradeSubjects[layout.grade]});
+              else names.push(value);
+            }else if(/[실관]$/.test(value)||/학습실/.test(value))extraRoom=value;
+          }
+          teachers[(layout.grade-1)*10+index]=[...new Set(names)].join(' · ');
+        });
+        const nextLabelCol=layouts.find(item=>item.grade===layout.grade+1)?.labelCol??range.e.c+1;
+        for(let col=layout.end+1;col<nextLabelCol;col++){
+          const room=cleanSubject(valueAt(row,col));
+          if(!room||room==='귀가')continue;
+          for(let teacherRow=row+1;teacherRow<endRow;teacherRow++){
+            const teacher=cleanSubject(valueAt(teacherRow,col));
+            if(isTeacher(teacher))extras.push({grade:layout.grade,room,teacher,subject:gradeSubjects[layout.grade]});
+          }
+        }
+      });
+      const subject=Object.entries(gradeSubjects).map(([grade,value])=>`${grade}학년 ${value}`).join(' / ');
+      const times=[...new Set(Object.values(gradeTimes).filter(Boolean))];
+      return {period:`${number}교시`,subject,duration:durationOf(times[0]),time:times.join(' / '),gradeTimes,gradeSubjects,teachers,extras};
+    });
+    const lunchTimes={};let lunchAfter=0;
+    layouts.forEach(layout=>{
+      for(let row=headerRow+1;row<=range.e.r;row++)if(/점심시간/.test(valueAt(row,layout.labelCol))){
+        lunchAfter=Math.max(...numbers.filter(number=>(periodRows[number][layout.grade]??Infinity)<row),0);
+        const time=layout.cols.map(col=>timeText(valueAt(row,col))).find(Boolean)||timeText(valueAt(row,layout.timeCol));
+        if(time)lunchTimes[layout.grade]=time;
+        break;
+      }
+    });
+    const breaks=[];
+    periods.slice(0,-1).forEach((period,index)=>{
+      const next=periods[index+1],after=Number(period.period.match(/\d+/)?.[0]),times={};
+      [1,2,3].forEach(grade=>{
+        if(after===lunchAfter&&lunchTimes[grade]){times[grade]=lunchTimes[grade];return;}
+        const end=(period.gradeTimes?.[grade]||'').match(/(\d{1,2}:\d{2})(?!.*\d{1,2}:\d{2})/)?.[1],start=(next.gradeTimes?.[grade]||'').match(/\d{1,2}:\d{2}/)?.[0];
+        times[grade]=end&&start?`${end}~${start}`:'';
+      });
+      breaks.push({after,label:after===lunchAfter?'점심시간':'쉬는시간',times});
+    });
+    const title=String(fileName||'시험 감독표').normalize('NFC').replace(/\.(xlsx?|xls)$/i,'').replace(/^\(검색용\)\s*/,'').replace(/^\d{1,2}월\s*\d{1,2}일\([^)]*\)_?\s*/,'').replace(/\s*감독(시간표)?\s*$/,'').trim();
+    const day=['일요일','월요일','화요일','수요일','목요일','금요일','토요일'][new Date(`${date}T00:00:00`).getDay()];
+    return {date,title:title||`${month}월 시험`,day,homeroom:[...HOMEROOM],periods,breaks,source:`${fileName} 업로드 자료`};
+  }
+  const parseWorkbookWithDocumentDate=function(workbook,fileName){
+    const ws=workbook.Sheets[workbook.SheetNames[0]],range=XLSX.utils.decode_range(ws['!ref']||'A1');
+    let one=-1,two=-1,three=-1;
+    for(let row=0;row<=Math.min(range.e.r,29);row++)for(let col=0;col<=range.e.c;col++){
+      const value=cell(ws,row+1,col+1);
+      if(value==='1-1')one=col;if(value==='2-1')two=col;if(value==='3-1')three=col;
+    }
+    return one>=0&&two-one>10&&three-two>10?parseSplitGradeWorkbook(workbook,fileName):parseLegacyWorkbook(workbook,fileName);
+  };
   parseWorkbook=function(workbook,fileName){const ws=workbook.Sheets[workbook.SheetNames[0]],range=XLSX.utils.decode_range(ws['!ref']||'A1');let found=false;for(let row=0;row<=Math.min(range.e.r,19)&&!found;row++)for(let col=0;col<=Math.min(range.e.c,5);col++){const ref=XLSX.utils.encode_cell({r:row,c:col}),value=String(ws[ref]?.w??ws[ref]?.v??'');if(/\d{1,2}월\s*\d{1,2}일/.test(value)){found=true;break;}}if(!found){const entered=prompt(`'${fileName}' 문서에서 시험 날짜를 찾지 못했습니다.\n감독시간표에 사용할 날짜를 입력해주세요. (예: 2026-09-02)`,'');if(entered===null)throw new Error('시험 날짜 입력을 취소했습니다.');const match=String(entered).trim().match(/^(20\d{2})[-./년\s]+(\d{1,2})[-./월\s]+(\d{1,2})(?:일)?$/);if(!match)throw new Error('시험 날짜를 2026-09-02 형식으로 입력해주세요.');const label=`${match[1]}년 ${Number(match[2])}월 ${Number(match[3])}일`;let target=null;for(let row=0;row<20&&!target;row++)for(let col=0;col<6;col++){const ref=XLSX.utils.encode_cell({r:row,c:col});if(!ws[ref]){target={row,col};break;}}target=target||{row:0,col:0};XLSX.utils.sheet_add_aoa(ws,[[label]],{origin:{r:target.row,c:target.col}});}return parseWorkbookWithDocumentDate(workbook,fileName);};
   window.parseExamSupervisionWorkbook=parseWorkbook;
   window.examSupervisionImportFile=async input=>{const file=input.files?.[0];if(!file)return;if(typeof XLSX==='undefined'){alert('파일 처리 기능을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.');input.value='';return;}try{const hangul=/\.hwp(x)?$/i.test(file.name),workbook=hangul?await workbookFromHangul(file):XLSX.read(await file.arrayBuffer(),{type:'array'}),day=parseWorkbook(workbook,file.name);if(S.days.some(d=>d.date===day.date)&&!confirm(`${displayDate(day.date)} 감독시간표가 이미 있습니다. 새 파일로 교체하시겠습니까?`))return;const uploader=prompt('업로드하는 담당교사 이름을 입력해주세요.',localStorage.getItem('dashboardAuthor')||'');if(!uploader?.trim())return;localStorage.setItem('dashboardAuthor',uploader.trim());Object.assign(day,{uploadedBy:uploader.trim(),uploadedAt:Date.now(),fileType:hangul?'hangul':'excel'});if(typeof firebaseDB==='undefined'||!firebaseDB)throw new Error('공유 데이터베이스에 연결되지 않았습니다.');await firebaseDB.ref(`shared/examSupervision/${day.date}`).set(day);S.date=day.date;alert(`${displayDate(day.date)} 감독시간표를 등록했습니다.`);}catch(error){console.error(error);alert(`감독시간표를 등록하지 못했습니다.\n${error.message||'파일의 표 형식을 확인해주세요.'}`);}finally{input.value='';}};

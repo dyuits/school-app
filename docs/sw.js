@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v123-swappable-mint-lessons';
+var CACHE_NAME = 'school-app-v124-split-exam-schedule';
 var ASSETS = [
   './',
   './index.html',
