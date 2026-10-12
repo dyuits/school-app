@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v125-exam-sheet-layout';
+var CACHE_NAME = 'school-app-v126-exam-corridor-supervisors';
 var ASSETS = [
   './',
   './index.html',
