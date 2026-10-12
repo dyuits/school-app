@@ -1,0 +1,62 @@
+.exam-subject-row > th {
+  padding: 5px 4px;
+  background: #f4f7f9;
+}
+
+.exam-subject-row > th b,
+.exam-subject-row > th time {
+  display: block;
+}
+
+.exam-subject-row > th b {
+  font-size: 9px;
+}
+
+.exam-subject-row > th time {
+  margin-top: 3px;
+  color: #687f91;
+  font-size: 7px;
+  line-height: 1.35;
+}
+
+.exam-subject-row td {
+  height: 27px;
+  padding: 2px;
+  background: #f8fafc !important;
+  color: #334e64;
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.exam-subject-row td.grade-1 {
+  background: #edfbed !important;
+}
+
+.exam-subject-row td.grade-2 {
+  background: #edf5fb !important;
+}
+
+.exam-subject-row td.grade-3 {
+  background: #fff9df !important;
+}
+
+.exam-period-row td {
+  height: 36px;
+}
+
+.exam-teacher-cell span + span {
+  border-top: 1px solid #dbe4eb;
+}
+
+.exam-teacher-cell.is-match span.name-muted {
+  color: #9babb6;
+  font-size: 7px;
+  opacity: .28;
+}
+
+.exam-teacher-cell.is-match span.name-match {
+  color: #086c50;
+  font-size: 8px;
+  opacity: 1;
+}

@@ -1,4 +1,4 @@
-var CACHE_NAME = 'school-app-v124-split-exam-schedule';
+var CACHE_NAME = 'school-app-v125-exam-sheet-layout';
 var ASSETS = [
   './',
   './index.html',
@@ -8,6 +8,7 @@ var ASSETS = [
   './css/dashboard.css',
   './css/afterschool.css',
   './css/exam-supervision.css',
+  './css/exam-supervision-layout.css',
   './css/exam-supervision-responsive.css',
   './css/exam-supervision-enhanced.css',
   './js/app.js',
